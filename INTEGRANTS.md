@@ -1,8 +1,13 @@
 ## Integrantes
 
-Lista de integrantes del subgrupo:
+Lista d'integrants del subgrup:
 
-- **He, Wenqiang** — <wenqiang.he@estudiantat.upc.edu>
-- **Catalan, Pol** — <pol.gay@estudiantat.upc.edu>
-- **Grandolfi, Mateus** — <mateus.grandolfi@estudiantat.upc.edu>
-- **Mia, Fardin Arafat** — <fardin.arafat.mia@estudiantat.upc.edu>
+- **He, Wenqiang**
+- **Gay, Pol**
+- **Grandolfi, Mateus**
+- **Mia, Fardin Arafat**
+
+<wenqiang.he@estudiantat.upc.edu>
+<pol.gay@estudiantat.upc.edu>
+<mateus.grandolfi@estudiantat.upc.edu>
+<fardin.arafat.mia@estudiantat.upc.edu>
