@@ -1,4 +1,4 @@
-## Integrantes
+## Integrants
 
 Lista d'integrants del subgrup:
 
