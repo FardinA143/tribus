@@ -3,8 +3,8 @@
 Lista d'integrants del subgrup:
 
 - **He, Wenqiang**
-- **Gay, Pol**
-- **Grandolfi, Mateus**
+- **Gay Hernández, Pol**
+- **Grandolfi Albuquerque, Mateus**
 - **Mia, Fardin Arafat**
 
 <wenqiang.he@estudiantat.upc.edu>
