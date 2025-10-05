@@ -8,6 +8,9 @@ Lista d'integrants del subgrup:
 - **Mia, Fardin Arafat**
 
 <wenqiang.he@estudiantat.upc.edu>
+
 <pol.gay@estudiantat.upc.edu>
+
 <mateus.grandolfi@estudiantat.upc.edu>
+
 <fardin.arafat.mia@estudiantat.upc.edu>
