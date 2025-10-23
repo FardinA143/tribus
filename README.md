@@ -1,7 +1,7 @@
-#PROP-FIB
-Projecte de la assignatura [PROP] (https://www.fib.upc.edu/ca/estudis/graus/grau-en-enginyeria-informatica/pla-destudis/assignatures/PROP) de la Facultad d'informàtica de Barcelona [FIB] (fib.upc.edu)
+# PROP-FIB
+Proyecto de la asignatura [PROP](https://www.fib.upc.edu/estudis/graus/grau-en-enginyeria-informatica/pla-destudis/assignatures/PROP) de la [Facultat d'Informàtica de Barcelona](https://www.fib.upc.edu/en)
 
-##PARTICIPANTS
+## PARTICIPANTS
 - [Wenqiang He] (wenqiang.he@estudiantat.upc.edu)
 - [Pol Gay] (pol.gay@estudiantat.upc.edu)
 - [Mateus Grandolfi] (mateus.grandolfi@estudiantat.upc.edu)
