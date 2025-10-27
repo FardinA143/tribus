@@ -29,7 +29,7 @@ public final class TextAnswer extends Answer {
     //returns if the answer is empty
     @Override
     public boolean isEmpty() {
-        return value == null || value.trim().isEmpty();
+        return value.trim().isEmpty();
     }
 
     //string representation of the object

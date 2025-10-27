@@ -51,14 +51,14 @@ public abstract class Answer {
     }
  //if it is multiple choice, and collection of integers options 
 
-    public static MultipleChoiceAnswer multipleChoise(int questionId, Collection<Integer> optionIds, Set<Integer> validOptionIds) {
-        return new MultipleChoiceAnswer(questionId, optionIds, validOptionIds);
+    public static MultipleChoiceAnswer multipleChoise(int questionId, Collection<Integer> optionIds, ) {
+        return new MultipleChoiceAnswer(questionId, optionIds);
     }
 
 
     //if it is single choice
-    public static SingleChoiceAnswer singleChoise(int questionId, int optionId, Set<Integer> validOptionIds) {
-        return new SingleChoiceAnswer(questionId, optionId, validOptionIds);
+    public static SingleChoiceAnswer singleChoise(int questionId, int optionId) {
+        return new SingleChoiceAnswer(questionId, optionId); 
     }
 
     public static EmptyAnswer empty(int questionId) {
