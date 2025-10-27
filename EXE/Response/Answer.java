@@ -1,4 +1,4 @@
-package response; 
+package Response; 
 
 
 import java.util.*;
@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 
 public abstract class Answer {
-    private int questionId; 
+    private final int questionId; 
 
 
     public Answer(int questionId) {
@@ -59,10 +59,6 @@ public abstract class Answer {
     //if it is single choice
     public static SingleChoiceAnswer singleChoise(int questionId, int optionId) {
         return new SingleChoiceAnswer(questionId, optionId); 
-    }
-
-    public static EmptyAnswer empty(int questionId) {
-        return new EmptyAnswer(questionId);
     }
    
 

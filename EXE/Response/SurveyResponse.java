@@ -1,4 +1,4 @@
-package response;
+package Response;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -110,7 +110,7 @@ public class SurveyResponse  {
             return false; 
         }   
         for (Answer answer : this.answers) {
-            if (answer == null || !answer.isComplete()) {   
+            if (answer == null || answer.isEmpty()) {   
                 return false; 
             }
 

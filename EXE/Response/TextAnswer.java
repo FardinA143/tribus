@@ -1,4 +1,4 @@
-package response; 
+package Response; 
 
 
 public final class TextAnswer extends Answer {
