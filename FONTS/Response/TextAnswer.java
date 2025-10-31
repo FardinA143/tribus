@@ -1,5 +1,7 @@
 package Response; 
 
+import Exceptions.InvalidArgumentException.java;
+import Exceptions.NullArgumentException.java;
 
 public final class TextAnswer extends Answer {
     private final String value; 
@@ -8,7 +10,10 @@ public final class TextAnswer extends Answer {
         super(questionId); 
         //no pot ser null 
         if (value == null) {
-            throw new IllegalArgumentException("El valor no pot ser null");
+            throw new NullArgumentException("Text answer cannot be null");
+        }
+        if (value.TYPE != String) {
+            throw new InvalidArgumentException("Text answer must be a string");
         }
 
         this.value = value; 

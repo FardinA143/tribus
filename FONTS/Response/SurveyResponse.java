@@ -3,6 +3,8 @@ package Response;
 import java.util.ArrayList;
 import java.util.List;
 
+
+
 /*Aquest objecte agrupa totes les respostes (Answer) que l’usuari ha 
 donat a aquella enquesta en una mateixa submissió. Si fa mes submissions t
 tindrem mes surveyResponse*/

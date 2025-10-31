@@ -10,6 +10,7 @@ public abstract class Answer {
 
 
     public Answer(int questionId) {
+        //si el sistema el dona no se si cal posar la excepcio 
         if (questionId < 0) {
             throw new IllegalArgumentException("id no pot ser negatiu"); 
         }
@@ -23,9 +24,6 @@ public abstract class Answer {
         return questionId;
     }
 
-    //tipus de resposta 
-    public abstract Type getType();
-    public abstract boolean isEmpty();
     public enum Type {
         TEXT, 
         INT, 
@@ -33,31 +31,36 @@ public abstract class Answer {
         SINGLE_CHOISE
     } 
 
+    //tipus de resposta 
+    public abstract Type getType();
+    public abstract boolean isEmpty();
+    
+
 
 
     //if it is text 
-    public static TextAnswer text(int questionId, String value) {
+    public static TextAnswer TEXT(int questionId, String value) {
         return new TextAnswer(questionId, value);
     }
     //if it is an integer
-    public static IntAnswer integer(int questionId, int value) {
+    public static IntAnswer INT(int questionId, int value) {
         return new IntAnswer(questionId, value);
     }
 
 
     //if it is multiple choice, options separated by commas
-    public static MultipleChoiceAnswer multipleChoise(int questionId, String optionIdsCsv) {
+    public static MultipleChoiceAnswer MULTIPLE_CHOISE(int questionId, String optionIdsCsv) {
         return new MultipleChoiceAnswer(questionId, optionIdsCsv);
     }
  //if it is multiple choice, and collection of integers options 
 
-    public static MultipleChoiceAnswer multipleChoise(int questionId, Collection<Integer> optionIds, ) {
+    public static MultipleChoiceAnswer MULTIPLE_CHOISE(int questionId, Collection<Integer> optionIds, ) {
         return new MultipleChoiceAnswer(questionId, optionIds);
     }
 
 
     //if it is single choice
-    public static SingleChoiceAnswer singleChoise(int questionId, int optionId) {
+    public static SingleChoiceAnswer SINGLE_CHOISE(int questionId, int optionId) {
         return new SingleChoiceAnswer(questionId, optionId); 
     }
    
