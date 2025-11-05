@@ -40,7 +40,6 @@ public class TxtResponseSerializer implements ResponseSerializer {
                     sb.append("mc,")
                       .append(mc.getId()).append(",")
                       .append(mc.getQuestion().getId()).append(",");
-                    // Lista de opciones separadas por '|'
                     sb.append(String.join("|", mc.getSelectedOptions()));
                 }
 
