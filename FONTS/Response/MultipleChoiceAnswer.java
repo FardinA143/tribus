@@ -10,15 +10,17 @@ public final class MultipleChoiceAnswer extends Answer {
     private final List<Integer> optionIds;
 
 
-    public MultipleChoiceAnswer(int questionId, String optionIdsCsv) {
+    public MultipleChoiceAnswer(int questionId, String optionIdsCsv) { // split the csv string into a list of integers
         super(questionId); 
-        if (optionIds == null) {
-             throw new NullArgumentException("optionIds cannot be null")
-        }
+        if (optionIdsCsv == null) {
+             throw new NullArgumentException("ID List cannot be null");
+        } lista =  "192,123542,352313,456344423".split(",");
+        lista = {192, 123542, 352313, 456344423, }
 
         for (Integer id : optionIds) {
             if (id == null || id < 0) {
               throw new InvalidArgumentException("optionId negatiu o null");
+
             }
         }
         this.optionIds = Collection.unmodifiableList(new ArrayList<>(optionIds)); 
