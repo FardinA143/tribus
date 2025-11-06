@@ -1,0 +1,18 @@
+Primera linea dels atributs de Survey
+
+Despŕes comença les preguntes, una per linea,el primer input indica tipus de pregunta: "oi" = openInt, "mc" = multipleChoice, "sc"  = singlechoice, "os" = openString.
+Els següents n inputs dependràn del tipus de pregunta (min,max,minChoices,maxChoices,maxLength,pattern).
+La resta seràn els atributs de la classe Question
+
+Sempre estarà separat per comes, sense espais i tractat com a string. 
+
+PRECONDICIÓ: Es suposa que els paràmetres importats/exportats seràn sempre correctes
+
+EXEMPLE:
+
+id,title,description,createdby,k,initmethod,distance,createdat,updatedat
+
+oi,min,maxid,text,required,position,weight
+mc,minchoices,maxchoices,,text,required,position,weight
+sc,,text,required,position,weight
+os,maxlength,pattern,text,required,position,weight
