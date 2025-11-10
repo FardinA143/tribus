@@ -18,5 +18,14 @@ public class RegisteredUser extends User {
         return password;
     }   
 
+    //Setters
+    public void changeUsername(String name){
+        username = name;
+    }
+
+    public void changePassword(String passwd){
+        password = passwd;
+    }
+
 
 }
