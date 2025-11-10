@@ -19,4 +19,9 @@ public abstract class User {
          return displayName; 
     }
 
+    //Setters
+    public void changeDisplayName(String name) {
+        displayName = name;
+    }
+
 }
