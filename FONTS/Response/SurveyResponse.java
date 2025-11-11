@@ -1,132 +1,100 @@
+// java
 package Response;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+/*
+  SurveyResponse: agrupa les respostes d'una submissió.
+  emptyAnswer = true  -> NO hi ha respostes (llista buida)
+  emptyAnswer = false -> Hi ha almenys una resposta
+*/
+public class SurveyResponse {
+    private final String id;
+    private final String surveyId;
+    private final String userId;
+    private boolean emptyAnswer;
+    private String submittedAt;
 
+    private final List<Answer> answers;
 
-/*Aquest objecte agrupa totes les respostes (Answer) que l’usuari ha 
-donat a aquella enquesta en una mateixa submissió. Si fa mes submissions t
-tindrem mes surveyResponse*/
+    // Constructor principal: emptyAnswer calculat a partir de la llista d'answers
+    public SurveyResponse(String id, String surveyId, String userId, String submittedAt, List<Answer> answers) {
+        if (id == null || id.isEmpty()) throw new IllegalArgumentException("id no pot ser null o buit");
+        if (surveyId == null || surveyId.isEmpty()) throw new IllegalArgumentException("surveyId no pot ser null o buit");
+        if (userId == null || userId.isEmpty()) throw new IllegalArgumentException("userId no pot ser null o buit");
 
-public class SurveyResponse  {
-    private String id; 
-    private String surveyId; 
-    private String userId; 
-    private boolean emptyAnswer; 
-    private String  submittedAt; 
+        this.id = id;
+        this.surveyId = surveyId;
+        this.userId = userId;
+        this.submittedAt = submittedAt;
 
-    private final List<Answer> answers; 
-
-    //constructors
-    public SurveyResponse(
-             String id, 
-             String surveyId,
-             String userId, 
-             boolean emptyAnswer, 
-             String  submittedAt, 
-
-             List<Answer> answers) {
-
-            /*comprovem que no siguin camps buits ni nulls */
-        
-
-
-        if (id == null || id.isEmpty()) {
-            throw new IllegalArgumentException("id no pot ser null o buit");
-        }
-        if (surveyId == null || surveyId.isEmpty()) {
-            throw new IllegalArgumentException("surveyId no pot ser null o buit");
-        }
-        if (userId == null || userId.isEmpty()) {
-            throw new IllegalArgumentException("userId no pot ser null o buit");
-        }
-
-        /*this.id → el camp (atribut) de la instància.
-        id → el paràmetre del mètode/constructor (amb el mateix nom). */
-
-        this.id = id;  //no pot ser null 
-        this.surveyId = surveyId; 
-        this.userId = userId; 
-        this.emptyAnswer = false; //fins que no es contesti
-        this.submittedAt = submittedAt; 
-
-        this.answers = new ArrayList<>(); 
-
-        if (answers != null) {
-            this.answers.addAll(answers); 
+        this.answers = new ArrayList<>();
+        if (answers != null && !answers.isEmpty()) {
+            this.answers.addAll(answers);
+            this.emptyAnswer = false;
+        } else {
+            this.emptyAnswer = true;
         }
     }
 
-    public String getId() {
-        return id;
+    // Constructor alternatiu senzill (sense answers)
+    public SurveyResponse(String id, String surveyId, String userId) {
+        this(id, surveyId, userId, null, null);
     }
 
-    public String getSurveyId() {
-        return surveyId; 
-    }
+    // Getters
+    public String getId() { return id; }
+    public String getSurveyId() { return surveyId; }
+    public String getUserId() { return userId; }
+    public boolean isEmptyAnswer() { return emptyAnswer; }
+    public String getSubmittedAt() { return submittedAt; }
+    public List<Answer> getAnswers() { return new ArrayList<>(answers); }
 
-    public String getUserId()  {
-        return userId; 
-    }
-
-    public boolean isEmptyAnswer() {
-      return emptyAnswer; 
-    }
-
-    
-
-    public String getSubmittedAt() {
-       return submittedAt; 
-    }
-
-
-
-    //afegim una resposta a la List
+    // Afegir resposta: actualitza emptyAnswer
     public void addAnswer(Answer answer) {
-        //si null 
         if (answer == null) return;
-        //en cas de haver resposta la afegim 
         this.answers.add(answer);
-        this.emptyAnswer = true;
+        this.emptyAnswer = false;
     }
-    
-    //borrem una resposta de la List
 
+    // Eliminar resposta per objecte
     public boolean removeAnswer(Answer answer) {
-        //si null retorna false (cap que borrar)
         if (answer == null) return false;
-        //en cas de haver resposta la afegim 
-        this.emptyAnswer = true;
         boolean removed = this.answers.remove(answer);
-
-        //si la llista queda buida: 
-        if (this.answers.isEmpty()) {
-            return false; 
-        }
-        return removed; 
+        if (this.answers.isEmpty()) this.emptyAnswer = true;
+        return removed;
     }
 
+    // Eliminar resposta per id
+    public boolean removeAnswerById(String answerId) {
+        if (answerId == null || answerId.isEmpty()) return false;
+        boolean removed = this.answers.removeIf(a -> answerId.equals(a.getId()));
+        if (this.answers.isEmpty()) this.emptyAnswer = true;
+        return removed;
+    }
+
+
+    // isComplete segons UML: hi ha respostes i cap d'elles és buida
     public boolean isComplete() {
-        if (this.answers.isEmpty()) {
-            return false; 
-        }   
-        for (Answer answer : this.answers) {
-            if (answer == null || answer.isEmpty()) {   
-                return false; 
-            }
-
-        }   
-        return true; 
-
-
+        if (this.answers.isEmpty()) return false;
+        for (Answer a : this.answers) {
+            if (a == null || a.isEmpty()) return false;
+        }
+        return true;
     }
-    
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof SurveyResponse)) return false;
+        SurveyResponse that = (SurveyResponse) o;
+        return id.equals(that.id);
+    }
 
-
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
+    }
 }
-
-
-
-

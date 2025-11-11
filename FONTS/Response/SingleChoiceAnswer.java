@@ -1,5 +1,7 @@
 package Response;
 
+import java.util.Objects;
+
 import Exceptions.NullArgumentException;
 
 public final class SingleChoiceAnswer extends Answer {

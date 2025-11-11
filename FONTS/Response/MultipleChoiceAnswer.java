@@ -1,8 +1,10 @@
 package Response; 
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
-;
 import Exceptions.InvalidArgumentException;
 import Exceptions.NullArgumentException;
 
@@ -21,7 +23,7 @@ public final class MultipleChoiceAnswer extends Answer {
               throw new InvalidArgumentException("optionId negatiu o null");
             }
         }
-        this.optionIds = Collection.unmodifiableList(new ArrayList<>(optionIds)); 
+        this.optionIds = Collections.unmodifiableList(new ArrayList<>(optionIds)); 
     }
 
     //return string with mutliple answers 
