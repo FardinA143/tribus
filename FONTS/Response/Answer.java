@@ -1,12 +1,24 @@
 package Response; 
 
 
-import java.util.*;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
+import java.util.List;
+
+import Exceptions.InvalidArgumentException; 
+
 
 
 public abstract class Answer {
     private final int questionId; 
+
+    public enum Type {
+        TEXT, 
+        INT, 
+        MULTIPLE_CHOICE, 
+        SINGLE_CHOICE
+    } 
+
 
 
     public Answer(int questionId) {
@@ -24,18 +36,11 @@ public abstract class Answer {
         return questionId;
     }
 
-    public enum Type {
-        TEXT, 
-        INT, 
-        MULTIPLE_CHOISE, 
-        SINGLE_CHOISE
-    } 
-
+    
     //tipus de resposta 
     public abstract Type getType();
     public abstract boolean isEmpty();
     
-
 
 
     //if it is text 
@@ -49,18 +54,18 @@ public abstract class Answer {
 
 
     //if it is multiple choice, options separated by commas
-    public static MultipleChoiceAnswer MULTIPLE_CHOISE(int questionId, String optionIdsCsv) {
+    public static MultipleChoiceAnswer MULTIPLE_CHOICE(int questionId, String optionIdsCsv) {
         return new MultipleChoiceAnswer(questionId, optionIdsCsv);
     }
  //if it is multiple choice, and collection of integers options 
 
-    public static MultipleChoiceAnswer MULTIPLE_CHOISE(int questionId, Collection<Integer> optionIds, ) {
-        return new MultipleChoiceAnswer(questionId, optionIds);
+    public static MultipleChoiceAnswer MULTIPLE_CHOICE(int questionId, ColleLisction<Integer> optionIds) {
+        return new MultipleChoiceAnswer(questionId, new ArrayList<>(optionIds));
     }
 
 
     //if it is single choice
-    public static SingleChoiceAnswer SINGLE_CHOISE(int questionId, int optionId) {
+    public static SingleChoiceAnswer SINGLE_CHOICE(int questionId, int optionId) {
         return new SingleChoiceAnswer(questionId, optionId); 
     }
    

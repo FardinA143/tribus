@@ -25,7 +25,7 @@ public final class SingleChoiceAnswer extends Answer {
         return optionId; 
     }
     //tipe of answer
-    @Override public Type getType() { return Type.SINGLE_CHOISE; }
+    @Override public Type getType() { return Type.SINGLE_CHOICE; }
 
     @Override public boolean isEmpty() { return false; }
 

@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import Exceptions.InvalidArgumentException;
 import Exceptions.NullArgumentException;
 
+
 public final class MultipleChoiceAnswer extends Answer {
     private final List<Integer> optionIds;
 
