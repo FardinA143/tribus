@@ -1,7 +1,7 @@
 package Domain;
 
 import Exceptions.*;
-impport java.util.List;
+import java.util.List;
 
 public interface IEncoder {
     //prepara qualsevol estat intern (diccionaris, dominis, etc.)
