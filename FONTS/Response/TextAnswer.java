@@ -11,7 +11,6 @@ public final class TextAnswer extends Answer {
         if (value == null) {
             throw new NullArgumentException("Text answer cannot be null");
         }
-        this.value = value;
     }
 
     public String getValue() {
