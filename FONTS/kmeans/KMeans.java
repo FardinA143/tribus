@@ -1,13 +1,12 @@
-package FONTS.kmeans;
+package Domain;
 
+import Exceptions.*;
 import java.util.*;
-import FONTS.distance.Distance;
-import FONTS.distance.EuclideanDistance;
 
 public class KMeans implements IClusteringAlgorithm {
     @Override
     public ClusterModel fit(double[][] X, int k, Distance dist, long seed, int maxIter, double tol) {
-        Object.requireNonNull(X);
+        Objects.requireNonNull(X);
         if (k <= 0) throw new IllegalArgumentException("k must be > 0");
         if (dist == null) dist = new EuclideanDistance();
         final Random rnd = new Random(seed);

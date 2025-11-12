@@ -1,6 +1,7 @@
-package FONTS.Encoder;
+package Domain;
 
-import java.util.List;
+import Exceptions.*;
+impport java.util.List;
 
 public interface IEncoder {
     //prepara qualsevol estat intern (diccionaris, dominis, etc.)

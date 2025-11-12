@@ -1,4 +1,6 @@
-package FONTS.kmeans;
+package Domain;
+
+import Exceptions.*;
 
 public final class ClusterModel {
     private final double[][] centroids;

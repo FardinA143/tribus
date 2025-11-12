@@ -1,5 +1,6 @@
-package FONTS.Encoder;
+package Domain;
 
+import Exceptions.*;
 import java.util.*;
 
 public class OneHotEncoder implements IEncoder {

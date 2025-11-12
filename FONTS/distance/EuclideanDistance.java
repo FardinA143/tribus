@@ -1,4 +1,6 @@
-package FONTS.distance;
+package Domain;
+
+import Exceptions.*;
 
 public final class EuclideanDistance implements Distance {
     @Override public double between(double[] a, double[] b) {
