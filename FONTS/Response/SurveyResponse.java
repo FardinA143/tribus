@@ -14,16 +14,22 @@ public class SurveyResponse {
     private final String id;
     private final String surveyId;
     private final String userId;
-    private boolean emptyAnswer;
+
     private String submittedAt;
 
     private final List<Answer> answers;
 
     // Constructor principal: emptyAnswer calculat a partir de la llista d'answers
     public SurveyResponse(String id, String surveyId, String userId, String submittedAt, List<Answer> answers) {
-        if (id == null || id.isEmpty()) throw new IllegalArgumentException("id no pot ser null o buit");
-        if (surveyId == null || surveyId.isEmpty()) throw new IllegalArgumentException("surveyId no pot ser null o buit");
-        if (userId == null || userId.isEmpty()) throw new IllegalArgumentException("userId no pot ser null o buit");
+        if (id == null || id.isEmpty()) {
+            throw new IllegalArgumentException("id no pot ser null o buit");
+        }
+        if (surveyId == null || surveyId.isEmpty()) {
+            throw new IllegalArgumentException("surveyId no pot ser null o buit");
+        }
+        if (userId == null || userId.isEmpty()) {
+            throw new IllegalArgumentException("userId no pot ser null o buit");
+        }
 
         this.id = id;
         this.surveyId = surveyId;
@@ -33,9 +39,7 @@ public class SurveyResponse {
         this.answers = new ArrayList<>();
         if (answers != null && !answers.isEmpty()) {
             this.answers.addAll(answers);
-            this.emptyAnswer = false;
-        } else {
-            this.emptyAnswer = true;
+            
         }
     }
 
@@ -48,36 +52,19 @@ public class SurveyResponse {
     public String getId() { return id; }
     public String getSurveyId() { return surveyId; }
     public String getUserId() { return userId; }
-    public boolean isEmptyAnswer() { return emptyAnswer; }
     public String getSubmittedAt() { return submittedAt; }
     public List<Answer> getAnswers() { return new ArrayList<>(answers); }
 
     // Afegir resposta: actualitza emptyAnswer
     public void addAnswer(Answer answer) {
-        if (answer == null) return;
         this.answers.add(answer);
-        this.emptyAnswer = false;
     }
 
     // Eliminar resposta per objecte
-    public boolean removeAnswer(Answer answer) {
-        if (answer == null) return false;
-        boolean removed = this.answers.remove(answer);
-        if (this.answers.isEmpty()) this.emptyAnswer = true;
-        return removed;
+    public void removeAnswer(Answer answer) {
+        this.answers.remove(answer);
     }
 
-
-    // isComplete segons UML: hi ha respostes i cap d'elles és buida
-    public boolean isComplete() {
-        if (this.answers.isEmpty()) return false;
-
-        for (Answer a : this.answers) {
-            if (a == null || a.isEmpty()) return false;
-        }
-
-        return true;
-    }
 
     @Override
     public boolean equals(Object o) {

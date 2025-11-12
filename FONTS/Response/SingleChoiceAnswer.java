@@ -2,7 +2,7 @@ package Response;
 
 import java.util.Objects;
 
-import FONTS.Exceptions.InvalidArgumentException;
+import Exceptions.InvalidArgumentException;
 
 public final class SingleChoiceAnswer extends Answer {
     private final int optionId; 

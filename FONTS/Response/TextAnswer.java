@@ -1,7 +1,7 @@
 // java
 package Response;
 
-import FONTS.Exceptions.NullArgumentException;
+import Exceptions.NullArgumentException;
 
 public final class TextAnswer extends Answer {
     private final String value;
