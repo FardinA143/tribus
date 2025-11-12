@@ -67,21 +67,15 @@ public class SurveyResponse {
         return removed;
     }
 
-    // Eliminar resposta per id
-    public boolean removeAnswerById(String answerId) {
-        if (answerId == null || answerId.isEmpty()) return false;
-        boolean removed = this.answers.removeIf(a -> answerId.equals(a.getId()));
-        if (this.answers.isEmpty()) this.emptyAnswer = true;
-        return removed;
-    }
-
 
     // isComplete segons UML: hi ha respostes i cap d'elles és buida
     public boolean isComplete() {
         if (this.answers.isEmpty()) return false;
+
         for (Answer a : this.answers) {
             if (a == null || a.isEmpty()) return false;
         }
+
         return true;
     }
 

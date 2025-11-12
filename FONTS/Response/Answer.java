@@ -4,20 +4,15 @@ package Response;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.List;
-
-import Exceptions.InvalidArgumentException; 
+import FONTS.Exceptions.InvalidArgumentException; // Import assumit
+import FONTS.Exceptions.NullArgumentException; // Import assumit
 
 
 
 public abstract class Answer {
     private final int questionId; 
 
-    public enum Type {
-        TEXT, 
-        INT, 
-        MULTIPLE_CHOICE, 
-        SINGLE_CHOICE
-    } 
+    
 
 
 
@@ -31,10 +26,14 @@ public abstract class Answer {
     }
 
     //getters
+    public int getQuestionId() { return questionId; }
 
-    public int getQuestionId() {
-        return questionId;
-    }
+    public enum Type {
+        TEXT, 
+        INT, 
+        MULTIPLE_CHOICE, 
+        SINGLE_CHOICE
+    } 
 
     
     //tipus de resposta 
@@ -57,9 +56,9 @@ public abstract class Answer {
     public static MultipleChoiceAnswer MULTIPLE_CHOICE(int questionId, String optionIdsCsv) {
         return new MultipleChoiceAnswer(questionId, optionIdsCsv);
     }
- //if it is multiple choice, and collection of integers options 
 
-    public static MultipleChoiceAnswer MULTIPLE_CHOICE(int questionId, ColleLisction<Integer> optionIds) {
+    //if it is multiple choice, and collection of integers options 
+    public static MultipleChoiceAnswer MULTIPLE_CHOICE(int questionId, Collection<Integer> optionIds) {
         return new MultipleChoiceAnswer(questionId, new ArrayList<>(optionIds));
     }
 

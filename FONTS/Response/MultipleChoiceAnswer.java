@@ -29,7 +29,7 @@ public final class MultipleChoiceAnswer extends Answer {
 
     //return string with mutliple answers 
     public MultipleChoiceAnswer(int questionId, String optionIdsCsv) {
-        this(questionId, parsercCsv(optionIdsCsv)); 
+        this(questionId, parseCsv(optionIdsCsv)); 
     }
 
     public List<Integer> getOptionIds() {

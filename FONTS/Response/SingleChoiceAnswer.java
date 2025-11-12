@@ -2,7 +2,7 @@ package Response;
 
 import java.util.Objects;
 
-import Exceptions.NullArgumentException;
+import FONTS.Exceptions.InvalidArgumentException;
 
 public final class SingleChoiceAnswer extends Answer {
     private final int optionId; 
@@ -11,11 +11,8 @@ public final class SingleChoiceAnswer extends Answer {
     public SingleChoiceAnswer(int questionId, int optionId) {
         super(questionId); 
 
-        if (optionId == null) {
-            throw NullArgumentException("optionId cannot be null for q=" + questionId);
-        }
         if (optionId < 0) {
-            throw new IllegalArgumentException("optionId cannot be negative for q=:" + questionId);
+            throw new InvalidArgumentException("optionId cannot be negative for q=:" + questionId);
         }
     
         this.optionId = optionId; 
