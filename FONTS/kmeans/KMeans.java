@@ -145,7 +145,7 @@ public class KMeans implements IClusteringAlgorithm {
         double best = -1;
         for (int i = 0; i < X.length; i++) {
             double dj = dist.between(X[i], C[nearest(X[i], C, dist)]);
-            if (dj < best) {
+            if (dj > best) {
                 best = dj;
                 far = i;
             }
