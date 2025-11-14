@@ -4,8 +4,8 @@ package Response;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.List;
-import FONTS.Exceptions.InvalidArgumentException; // Import assumit
-import FONTS.Exceptions.NullArgumentException; // Import assumit
+import Exceptions.InvalidArgumentException; // Import assumit
+import Exceptions.NullArgumentException; // Import assumit
 
 
 
