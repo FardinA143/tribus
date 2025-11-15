@@ -1,5 +1,6 @@
 # **EXTRACTOR DE PROTOTIPUS DE COMPORTAMENT O PERFILS**
 
+
 Projecte de PROP - Tardor 2025-26. Es tracta de construir un entorn on es pot interactuar amb diferents enquestes amb les seves
 respectives preguntes i respostes i extraur-ne diferents perfils.
 
