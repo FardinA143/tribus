@@ -66,7 +66,7 @@ public class TxtResponseSerializer implements ResponseSerializer {
             }
         }
 
-        case SINGLE_CHOISE -> {
+        case SINGLE_CHOICE -> {
             if(!ans.isEmpty()){
             SingleChoiceAnswer a = (SingleChoiceAnswer) ans;
             sb.append("sc").append(a.getQuestionId()).append(",")
@@ -74,7 +74,7 @@ public class TxtResponseSerializer implements ResponseSerializer {
             }
         }
 
-        case MULTIPLE_CHOISE -> {
+        case MULTIPLE_CHOICE -> {
             // Ejemplo: multiple,questionId,opción1|opción2|opción3
             MultipleChoiceAnswer a = (MultipleChoiceAnswer) ans;
             sb.append("mc").append(a.getQuestionId()).append(",")
