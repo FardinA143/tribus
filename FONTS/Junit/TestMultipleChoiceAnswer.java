@@ -37,6 +37,14 @@ public class TestMultipleChoiceAnswer {
     }
 
 
+    //comprovacio per valor al csv no integer 
+    @Test(expected = InvalidArgumentException.class) 
+    public void testMultipleChoiceAnswerInvalidCsv() throws InvalidArgumentException {
+    // Si s'inclou un string que no és un enter ("ABC"), NumberFormatException és llençada.
+    Answer.MULTIPLE_CHOICE(6, "1, ABC, 5"); 
+}
+
+
     // Cas d'error: Identificador negatiu a la llista d'opcions 
     //resvisar(es pot escollir opcions negatives?)
     @Test
