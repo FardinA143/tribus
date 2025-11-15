@@ -2,6 +2,10 @@ package Survey;
 
 import java.util.*;
 
+/**
+ * Question subtype that forces respondents to pick exactly one option from a
+ * predefined list.
+ */
 public class SingleChoiceQuestion extends Question {
     private List<ChoiceOption> options;
 

@@ -1,6 +1,11 @@
 package app;
 
-import Exceptions.*;
+import Exceptions.InvalidArgumentException;
+import Exceptions.InvalidQuestionException;
+import Exceptions.InvalidSurveyException;
+import Exceptions.NullArgumentException;
+import Exceptions.NotValidFileException;
+import Exceptions.PersistenceException;
 import Response.*;
 import Survey.*;
 import app.controller.*;
@@ -13,6 +18,7 @@ public class TerminalDriver {
     private final Scanner scanner = new Scanner(System.in);
     private final LocalPersistence persistence = new LocalPersistence();
     private final SurveySerializer surveySerializer = new TxtSurveySerializer();
+    private final ResponseSerializer responseSerializer = new TxtResponseSerializer();
     private final UserController userController = new UserController();
     private final SurveyController surveyController = new SurveyController(persistence, surveySerializer);
     private final ResponseController responseController = new ResponseController(persistence);
@@ -29,6 +35,7 @@ public class TerminalDriver {
 
         boolean exit = false;
         while (!exit) {
+            pageBreak();
             showMenu();
             String choice = prompt("Seleccione una opción");
             switch (choice) {
@@ -36,11 +43,17 @@ public class TerminalDriver {
                 case "2" -> login();
                 case "3" -> logout();
                 case "4" -> createSurvey();
-                case "5" -> importSurvey();
-                case "6" -> answerSurvey();
-                case "7" -> performAnalysis();
+                case "5" -> answerSurvey();
+                case "6" -> importSurvey();
+                case "7" -> exportSurveyToFile();
+                case "8" -> importResponsesFromFile();
+                case "9" -> exportResponsesToFile();
+                case "10" -> performAnalysis();
                 case "0" -> exit = true;
                 default -> System.out.println("Opción no válida. Intente nuevamente.");
+            }
+            if (!exit) {
+                prompt("Presione Enter para continuar");
             }
         }
 
@@ -53,9 +66,12 @@ public class TerminalDriver {
         System.out.println("2) Iniciar sesión");
         System.out.println("3) Cerrar sesión");
         System.out.println("4) Crear encuesta");
-        System.out.println("5) Importar encuesta desde archivo");
-        System.out.println("6) Responder encuesta");
-        System.out.println("7) Realizar análisis");
+        System.out.println("5) Responder encuesta");
+        System.out.println("6) Importar encuesta desde archivo");
+        System.out.println("7) Exportar encuesta a archivo");
+        System.out.println("8) Importar respuestas desde archivo");
+        System.out.println("9) Exportar respuestas a archivo");
+        System.out.println("10) Realizar análisis");
         System.out.println("0) Salir");
     }
 
@@ -200,6 +216,70 @@ public class TerminalDriver {
             System.out.println("Encuesta importada con ID " + survey.getId());
         } catch (NotValidFileException | PersistenceException e) {
             System.out.println("No se pudo importar la encuesta: " + e.getMessage());
+        }
+    }
+
+    private void importResponsesFromFile() {
+        if (!ensureSession()) return;
+        System.out.println("\n== Importar respuestas ==");
+        String path = promptNonEmpty("Ruta del archivo .txt");
+        try {
+            SurveyResponse response = responseSerializer.fromFile(path);
+            surveyController.loadSurvey(response.getSurveyId());
+            responseController.saveResponse(response);
+            System.out.println("Respuesta importada con ID " + response.getId());
+        } catch (NotValidFileException e) {
+            System.out.println("El archivo no tiene un formato válido: " + e.getMessage());
+        } catch (PersistenceException e) {
+            System.out.println("No se pudo guardar la respuesta importada: " + e.getMessage());
+        }
+    }
+
+    private void exportSurveyToFile() {
+        if (!ensureSession()) return;
+        Collection<Survey> surveys = surveyController.listSurveys();
+        if (surveys.isEmpty()) {
+            System.out.println("No hay encuestas registradas para exportar.");
+            return;
+        }
+        System.out.println("\nEncuestas disponibles:");
+        surveys.forEach(s -> System.out.println(" - " + s.getId() + " :: " + s.getTitle()));
+        String surveyId = promptNonEmpty("ID de la encuesta a exportar");
+        String path = promptNonEmpty("Ruta destino del archivo .txt");
+        try {
+            Survey survey = surveyController.loadSurvey(surveyId);
+            surveySerializer.toFile(survey, path);
+            System.out.println("Encuesta exportada correctamente a " + path);
+        } catch (PersistenceException e) {
+            System.out.println("No se pudo exportar la encuesta: " + e.getMessage());
+        } catch (RuntimeException e) {
+            System.out.println("Error al escribir el archivo: " + e.getMessage());
+        }
+    }
+
+    private void exportResponsesToFile() {
+        if (!ensureSession()) return;
+        Collection<Survey> surveys = surveyController.listSurveys();
+        if (surveys.isEmpty()) {
+            System.out.println("No hay encuestas registradas.");
+            return;
+        }
+        System.out.println("\nEncuestas disponibles:");
+        surveys.forEach(s -> System.out.println(" - " + s.getId() + " :: " + s.getTitle()));
+        String surveyId = promptNonEmpty("ID de la encuesta cuyas respuestas desea exportar");
+        try {
+            List<SurveyResponse> responses = responseController.listResponses(surveyId);
+            if (responses.isEmpty()) {
+                System.out.println("La encuesta no tiene respuestas registradas.");
+                return;
+            }
+            String path = promptNonEmpty("Ruta destino del archivo .txt");
+            responseSerializer.toFile(responses, path);
+            System.out.println("Respuestas exportadas correctamente a " + path);
+        } catch (PersistenceException e) {
+            System.out.println("No se pudieron obtener las respuestas: " + e.getMessage());
+        } catch (RuntimeException e) {
+            System.out.println("Error al escribir el archivo: " + e.getMessage());
         }
     }
 
@@ -354,6 +434,12 @@ public class TerminalDriver {
         }
         userController.refreshSession();
         return true;
+    }
+
+    private void pageBreak() {
+        for (int i = 0; i < 40; i++) {
+            System.out.println();
+        }
     }
 
     private void showOptions(List<ChoiceOption> options) {
