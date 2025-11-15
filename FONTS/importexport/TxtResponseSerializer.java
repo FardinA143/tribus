@@ -8,8 +8,33 @@ import java.util.stream.Collectors;
 import Exceptions.NotValidFileException;
 import Survey.*;
 
+/**
+ * Implementación de {@link ResponseSerializer} para un formato de texto (TXT).
+ *
+ * <p>Formato esperado (escritura):</p>
+ * <ul>
+ *   <li>Línea 1: campos cabezera separados por comas: id,surveyId,userId,submittedAt</li>
+ *   <li>Líneas siguientes: una línea por respuesta/answer con prefijos de tipo
+ *       y valores separados por comas. Tipos soportados: <code>ia</code> (int),
+ *       <code>ta</code> (text), <code>sc</code> (single choice),
+ *       <code>mc</code> (multiple choice).</li>
+ * </ul>
+ *
+ * <p>La implementación intenta ser tolerante al escribir y lanzar
+ * {@link NotValidFileException} al leer si el fichero no cumple el formato
+ * esperado.</p>
+ */
 public class TxtResponseSerializer implements ResponseSerializer {
 
+    /**
+     * Escribe una lista de {@link SurveyResponse} en el fichero indicado.
+     *
+     * @param lresponse Lista de respuestas a serializar. Se asume no vacía
+     *                  (la implementación actual usa el primer elemento
+     *                  para escribir la cabecera).
+     * @param path      Ruta del fichero de salida.
+     */
+    @Override
     public void toFile(List<SurveyResponse> lresponse, String path) {
         try (PrintWriter writer = new PrintWriter(new FileWriter(path))) {
             //Primera linea imprime: 012334,234,345,
@@ -66,6 +91,13 @@ public class TxtResponseSerializer implements ResponseSerializer {
         }
     }
 
+    /**
+     * Lee una {@link SurveyResponse} desde un fichero en el formato propio.
+     *
+     * @param path Ruta del fichero a leer.
+     * @return SurveyResponse reconstruida a partir del fichero.
+     * @throws NotValidFileException Si el fichero está vacío o malformado.
+     */
     @Override
     public SurveyResponse fromFile(String path) throws NotValidFileException {
         SurveyResponse response = null;
