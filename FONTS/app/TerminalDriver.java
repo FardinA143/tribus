@@ -1,40 +1,13 @@
 package app;
 
-import Exceptions.InvalidArgumentException;
-import Exceptions.NotValidFileException;
-import Exceptions.NullArgumentException;
-import Exceptions.PersistenceException;
-import Response.Answer;
-import Response.IntAnswer;
-import Response.MultipleChoiceAnswer;
-import Response.SingleChoiceAnswer;
-import Response.SurveyResponse;
-import Response.TextAnswer;
-import Survey.ChoiceOption;
-import Survey.InvalidQuestionException;
-import Survey.InvalidSurveyException;
-import Survey.LocalPersistence;
-import Survey.MultipleChoiceQuestion;
-import Survey.OpenIntQuestion;
-import Survey.OpenStringQuestion;
-import Survey.Question;
-import Survey.SingleChoiceQuestion;
-import Survey.Survey;
-import app.controller.AnalyticsController;
-import app.controller.AnalyticsResult;
-import app.controller.ResponseController;
-import app.controller.SurveyController;
-import app.controller.UserController;
-import importexport.SurveySerializer;
-import importexport.TxtSurveySerializer;
-import user.Sesion;
-import user.User;
+import Exceptions.*;
+import Response.*;
+import Survey.*;
+import app.controller.*;
+import importexport.*;
+import user.*;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Scanner;
-import java.util.UUID;
+import java.util.*;
 
 public class TerminalDriver {
     private final Scanner scanner = new Scanner(System.in);
