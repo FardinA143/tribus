@@ -1,6 +1,6 @@
-package FONTS.kmeans;
+package kmeans;
 
-import FONTS.distance.Distance;
+import distance.Distance;
 
 public interface IClusteringAlgorithm {
     ClusterModel fit(double[][] data, int k, Distance distance, long seed, int maxIter, double tol);

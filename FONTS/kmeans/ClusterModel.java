@@ -1,4 +1,4 @@
-package FONTS.kmeans;
+package kmeans;
 
 public final class ClusterModel {
     private final double[][] centroids;

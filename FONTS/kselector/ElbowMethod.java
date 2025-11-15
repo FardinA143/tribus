@@ -1,7 +1,8 @@
-package FONTS.kselector;
+package kselector;
 
-import FONTS.kmeans.*;
-import FONTS.distance.Distance;
+import kmeans.IClusteringAlgorithm;
+import kmeans.ClusterModel;
+import distance.Distance;
 import java.util.*;
 
 public class ElbowMethod implements IKSelector {

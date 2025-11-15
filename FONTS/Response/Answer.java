@@ -1,12 +1,18 @@
 package Response; 
 
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collection;
+import Exceptions.InvalidArgumentException;
+import Exceptions.NullArgumentException;
+
 
 
 public abstract class Answer {
     private final int questionId; 
+
+    
+
 
 
     public Answer(int questionId) {
@@ -19,27 +25,24 @@ public abstract class Answer {
     }
 
     //getters
-
-    public int getQuestionId() {
-        return questionId;
-    }
+    public int getQuestionId() { return questionId; }
 
     public enum Type {
         TEXT, 
         INT, 
-        MULTIPLE_CHOISE, 
-        SINGLE_CHOISE
+        MULTIPLE_CHOICE, 
+        SINGLE_CHOICE
     } 
 
+    
     //tipus de resposta 
     public abstract Type getType();
     public abstract boolean isEmpty();
     
 
 
-
     //if it is text 
-    public static TextAnswer TEXT(int questionId, String value) {
+    public static TextAnswer TEXT(int questionId, String value) throws NullArgumentException {
         return new TextAnswer(questionId, value);
     }
     //if it is an integer
@@ -49,18 +52,18 @@ public abstract class Answer {
 
 
     //if it is multiple choice, options separated by commas
-    public static MultipleChoiceAnswer MULTIPLE_CHOISE(int questionId, String optionIdsCsv) {
+    public static MultipleChoiceAnswer MULTIPLE_CHOICE(int questionId, String optionIdsCsv) throws InvalidArgumentException, NullArgumentException {
         return new MultipleChoiceAnswer(questionId, optionIdsCsv);
     }
- //if it is multiple choice, and collection of integers options 
 
-    public static MultipleChoiceAnswer MULTIPLE_CHOISE(int questionId, Collection<Integer> optionIds, ) {
-        return new MultipleChoiceAnswer(questionId, optionIds);
+    //if it is multiple choice, and collection of integers options 
+    public static MultipleChoiceAnswer MULTIPLE_CHOICE(int questionId, Collection<Integer> optionIds) throws InvalidArgumentException, NullArgumentException {
+        return new MultipleChoiceAnswer(questionId, new ArrayList<>(optionIds));
     }
 
 
     //if it is single choice
-    public static SingleChoiceAnswer SINGLE_CHOISE(int questionId, int optionId) {
+    public static SingleChoiceAnswer SINGLE_CHOICE(int questionId, int optionId) throws InvalidArgumentException {
         return new SingleChoiceAnswer(questionId, optionId); 
     }
    

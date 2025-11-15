@@ -1,19 +1,16 @@
 package Response;
 
-import Exceptions.NullArgumentException;
+import Exceptions.InvalidArgumentException;
 
 public final class SingleChoiceAnswer extends Answer {
     private final int optionId; 
     
 
-    public SingleChoiceAnswer(int questionId, int optionId) {
+    public SingleChoiceAnswer(int questionId, int optionId) throws InvalidArgumentException {
         super(questionId); 
 
-        if (optionId == null) {
-            throw NullArgumentException("optionId cannot be null for q=" + questionId);
-        }
         if (optionId < 0) {
-            throw new IllegalArgumentException("optionId cannot be negative for q=:" + questionId);
+            throw new InvalidArgumentException("optionId cannot be negative for q=:" + questionId);
         }
     
         this.optionId = optionId; 
@@ -23,7 +20,7 @@ public final class SingleChoiceAnswer extends Answer {
         return optionId; 
     }
     //tipe of answer
-    @Override public Type getType() { return Type.SINGLE_CHOISE; }
+    @Override public Type getType() { return Type.SINGLE_CHOICE; }
 
     @Override public boolean isEmpty() { return false; }
 

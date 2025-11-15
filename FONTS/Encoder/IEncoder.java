@@ -1,5 +1,4 @@
-package FONTS.Encoder;
-
+package Encoder;
 import java.util.List;
 
 public interface IEncoder {

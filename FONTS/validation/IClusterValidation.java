@@ -1,8 +1,7 @@
-package FONTS.validation;
+package validation;
 
-import FONTS.kmeans.ClusterModel;
-import FONTS.distance.Distance;
-
+import kmeans.ClusterModel;
+import distance.Distance;
 
 public interface IClusterValidation {
     double[] scorePerPoint(double[][] data, ClusterModel model, Distance dist);

@@ -1,13 +1,13 @@
-package FONTS.kmeans;
+package kmeans;
 
+import distance.Distance;
+import distance.EuclideanDistance;
 import java.util.*;
-import FONTS.distance.Distance;
-import FONTS.distance.EuclideanDistance;
 
 public class KMeansPlusPlus extends KMeans {
     @Override
     public ClusterModel fit(double[][] X, int k, Distance dist, long seed, int maxIter, double tol) {
-        if (dist == null) dist = new EuclideanDIstance();
+        if (dist == null) dist = new EuclideanDistance();
         final Random rnd = new Random(seed);
         final int n = X.length, d = X[0].length;
 

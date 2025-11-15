@@ -1,4 +1,4 @@
-package FONTS.distance;
+package distance;
 
 public final class EuclideanDistance implements Distance {
     @Override public double between(double[] a, double[] b) {

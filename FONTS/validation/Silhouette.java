@@ -1,8 +1,8 @@
-package FONTS.validation;
+package validation;
 
-import FONTS.kmeans.ClusterModel;
-import FONTS.distance.Distance;
-import FONTS.distance.EuclideanDistance;
+import kmeans.ClusterModel;
+import distance.Distance;
+import distance.EuclideanDistance;
 
 public class Silhouette implements IClusterValidation {
     @Override
