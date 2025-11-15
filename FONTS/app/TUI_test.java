@@ -1,46 +1,17 @@
 package app;
 
 import Encoder.OneHotEncoder;
-import Response.Answer;
-import Response.IntAnswer;
-import Response.MultipleChoiceAnswer;
-import Response.SingleChoiceAnswer;
-import Response.SurveyResponse;
-import Response.TextAnswer;
-import Survey.ChoiceOption;
-import Survey.InvalidQuestionException;
-import Survey.InvalidSurveyException;
-import Survey.LocalPersistence;
-import Survey.MultipleChoiceQuestion;
-import Survey.OpenIntQuestion;
-import Survey.OpenStringQuestion;
-import Survey.Question;
-import Survey.SingleChoiceQuestion;
-import Survey.Survey;
-import Exceptions.InvalidArgumentException;
-import Exceptions.NotValidFileException;
-import Exceptions.NullArgumentException;
-import Exceptions.PersistenceException;
+import Response.*;
+import Survey.*;
+import Exceptions.*;
 import distance.EuclideanDistance;
-import importexport.SurveySerializer;
-import importexport.TxtSurveySerializer;
-import kmeans.ClusterModel;
-import kmeans.KMeans;
-import user.AuthService;
-import user.Sesion;
-import user.User;
+import importexport.*;
+import kmeans.*;
+import user.*;
 import validation.Silhouette;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import java.util.*;
 
 /**
  * Driver legado, conservado únicamente para pruebas manuales y comparaciones.
