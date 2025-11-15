@@ -3,7 +3,7 @@
 
 param(
     [Parameter(Mandatory=$false)]
-    [ValidateSet("compile", "run", "clean", "help")]
+    [ValidateSet("compile", "run", "clean", "help", "test")]
     [string]$Command = "help"
 )
 
@@ -68,6 +68,58 @@ function Invoke-Run {
     java -cp $OUT_DIR $MAIN_CLASS
 }
 
+function Invoke-Test {
+    Write-Host "[*] Ejecutando suite de tests JUnit..." -ForegroundColor Yellow
+
+    # Requiere compilación previa
+    if (-not (Invoke-Compile)) {
+        Write-Host "[!] Compilación fallida. Abortando tests." -ForegroundColor Red
+        return
+    }
+
+    $junitJar = Join-Path -Path "libs" -ChildPath "junit-4.13.2.jar"
+    $hamcrestJar = Join-Path -Path "libs" -ChildPath "hamcrest-core-1.3.jar"
+
+    if (-not (Test-Path $junitJar)) {
+        Write-Host "[!] No se encontró '$junitJar'. Coloca junit-4.13.2.jar en la carpeta libs\ y vuelve a intentar." -ForegroundColor Red
+        return
+    }
+
+    # Compilar tests
+    $testSources = Get-ChildItem -Path "$FONTS_DIR\Junit" -Recurse -Filter "*.java" -ErrorAction SilentlyContinue | ForEach-Object { $_.FullName }
+    if ($testSources.Count -eq 0) {
+        Write-Host "[!] No se encontraron tests en $FONTS_DIR\Junit" -ForegroundColor Yellow
+        return
+    }
+
+    $cpParts = @($OUT_DIR, $junitJar)
+    if (Test-Path $hamcrestJar) { $cpParts += $hamcrestJar }
+    $cp = ($cpParts -join ";")
+
+    Write-Host "[*] Compilando tests (classpath: $cp)..." -ForegroundColor Yellow
+    try {
+        & javac -cp $cp -d $OUT_DIR $testSources
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "[!] Errores durante la compilación de tests" -ForegroundColor Red
+            return
+        }
+    } catch {
+        Write-Host "[!] Error al compilar tests: $_" -ForegroundColor Red
+        return
+    }
+
+    # Construir lista de clases de test (asumimos paquete 'Junit' y nombre de clase == fichero)
+    $testClasses = Get-ChildItem -Path "$FONTS_DIR\Junit" -Filter "*.java" | ForEach-Object { "Junit.$($_.BaseName)" }
+    $testArg = $testClasses -join ' '
+
+    Write-Host "[*] Ejecutando tests: $testArg" -ForegroundColor Yellow
+    try {
+        & java -cp $cp org.junit.runner.JUnitCore $testArg
+    } catch {
+        Write-Host "[!] Error al ejecutar tests: $_" -ForegroundColor Red
+    }
+}
+
 function Invoke-Clean {
     Write-Host "[*] Limpiando archivos compilados..." -ForegroundColor Yellow
     
@@ -83,6 +135,7 @@ function Invoke-Clean {
 switch ($Command) {
     "compile" { Invoke-Compile | Out-Null }
     "run" { Invoke-Run }
+    "test" { Invoke-Test }
     "clean" { Invoke-Clean }
     "help" { Show-Help }
     default { Show-Help }
