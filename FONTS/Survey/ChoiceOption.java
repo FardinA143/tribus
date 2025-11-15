@@ -18,7 +18,7 @@ public class ChoiceOption {
         return label;
     }
 
-    // probablemente terminemos no usando los setters, pero los dejo por si acaso
+    // probablemente terminemos no usando los setters, pero los dejo por si acaso.
 
     public void setId(int id) {
         this.id = id;
