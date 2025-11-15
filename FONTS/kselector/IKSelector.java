@@ -1,8 +1,6 @@
-package FONTS.kselector;
+package Domain;
 
-import FONTS.kmeans.ClusterModel;
-import FONTS.kmeans.IClusteringAlgorithm;
-import FONTS.distance.Distance;
+import Exceptions.*;
 
 public interface IKSelector {
     int suggestK(double[][] data, int kMin, int kMax, IClusteringAlgorithm algo, Distance dist, long seed);

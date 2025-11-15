@@ -1,8 +1,6 @@
-package FONTS.validation;
+package Domain;
 
-import FONTS.kmeans.ClusterModel;
-import FONTS.distance.Distance;
-
+import Exceptions.*;
 
 public interface IClusterValidation {
     double[] scorePerPoint(double[][] data, ClusterModel model, Distance dist);

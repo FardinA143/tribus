@@ -1,7 +1,6 @@
-package FONTS.kselector;
+package Domain;
 
-import FONTS.kmeans.*;
-import FONTS.distance.Distance;
+import Exceptions.*;
 import java.util.*;
 
 public class ElbowMethod implements IKSelector {
