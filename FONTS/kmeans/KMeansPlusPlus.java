@@ -1,9 +1,33 @@
-package Domain;
+package kmeans;
 
-import Exceptions.*;
 import java.util.*;
+import distance.Distance;
+import distance.EuclideanDistance;
 
+/**
+ * Implementació de l'algorisme K-Means++ per a clustering.
+ * Millora l'algorisme K-Means estàndard utilitzant una inicialització
+ * "intel·ligent" dels centroides basada en probabilitats proporcionals
+ * a les distàncies quadrades. D'aquesta manera, estem reduint la
+ * probabilitat de convergir a solucions subòptimes i accelerant
+ * la convergència.
+ */
 public class KMeansPlusPlus extends KMeans {
+    
+    /**
+     * Executa l'algorisme K-Means++ sobre un conjunt de dades.
+     * Utilitza la inicialització K++ per seleccionar els centroides inicials
+     * de manera més intel·ligent que l'assignació aleatòria, triant punts
+     * que estan lluny dels centroides ja seleccionats.
+     *
+     * @param X Matriu de dades a agrupar (n_mostres x n_features).
+     * @param k El nombre de clústers a trobar.
+     * @param dist La mètrica de distància a utilitzar. Si és null, s'usarà EuclideanDistance.
+     * @param seed La llavor per al generador de números aleatoris.
+     * @param maxIter El nombre màxim d'iteracions a executar.
+     * @param tol La tolerància per declarar convergència (canvi en la inèrcia).
+     * @return Un objecte ClusterModel amb els centroides, etiquetes i inèrcia resultants.
+     */
     @Override
     public ClusterModel fit(double[][] X, int k, Distance dist, long seed, int maxIter, double tol) {
         if (dist == null) dist = new EuclideanDistance();
