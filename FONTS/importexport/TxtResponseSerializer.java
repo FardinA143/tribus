@@ -3,10 +3,8 @@ package importexport;
 import Response.*;
 import java.io.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import Exceptions.NotValidFileException;
-import Survey.*;
 
 public class TxtResponseSerializer implements ResponseSerializer {
 
@@ -41,7 +39,7 @@ public class TxtResponseSerializer implements ResponseSerializer {
             }
         }
 
-        case SINGLE_CHOISE -> {
+        case SINGLE_CHOICE -> {
             if(!ans.isEmpty()){
             SingleChoiceAnswer a = (SingleChoiceAnswer) ans;
             sb.append("sc").append(a.getQuestionId()).append(",")
@@ -49,7 +47,7 @@ public class TxtResponseSerializer implements ResponseSerializer {
             }
         }
 
-        case MULTIPLE_CHOISE -> {
+        case MULTIPLE_CHOICE -> {
             // Ejemplo: multiple,questionId,opción1|opción2|opción3
             MultipleChoiceAnswer a = (MultipleChoiceAnswer) ans;
             sb.append("mc").append(a.getQuestionId()).append(",")
@@ -74,14 +72,13 @@ public class TxtResponseSerializer implements ResponseSerializer {
             if(line == null) throw new NotValidFileException();
 
             String[] surveyFields = line.split(",");
-            if(surveyFields.length < 5) throw new NotValidFileException();
+            if(surveyFields.length < 4) throw new NotValidFileException();
 
             List<Answer>answers = new ArrayList<>();
             response  = new SurveyResponse(surveyFields[0],
                 surveyFields[1], 
                 surveyFields[2], 
-                Boolean.parseBoolean(surveyFields[3]),
-                surveyFields[4], 
+                surveyFields[3], 
                 answers);
 
             while((line = reader.readLine()) != null){

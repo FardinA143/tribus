@@ -1,6 +1,7 @@
-package Survey;
+package Enquesta;
 
 import java.util.*;
+import Survey.Question;
 
 public class Survey {
     private String id;

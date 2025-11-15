@@ -6,11 +6,12 @@ import Exceptions.NullArgumentException;
 public final class TextAnswer extends Answer {
     private final String value;
 
-    public TextAnswer(int questionId, String value) {
+    public TextAnswer(int questionId, String value) throws NullArgumentException {
         super(questionId);
         if (value == null) {
             throw new NullArgumentException("Text answer cannot be null");
         }
+        this.value = value;
     }
 
     public String getValue() {

@@ -1,6 +1,4 @@
-package Domain;
-
-import Exceptions.*;
+package Encoder;
 import java.util.List;
 
 public interface IEncoder {

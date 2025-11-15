@@ -1,14 +1,12 @@
 package Response;
 
-import java.util.Objects;
-
 import Exceptions.InvalidArgumentException;
 
 public final class SingleChoiceAnswer extends Answer {
     private final int optionId; 
     
 
-    public SingleChoiceAnswer(int questionId, int optionId) {
+    public SingleChoiceAnswer(int questionId, int optionId) throws InvalidArgumentException {
         super(questionId); 
 
         if (optionId < 0) {

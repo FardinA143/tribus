@@ -1,6 +1,8 @@
-package Domain;
+package validation;
 
-import Exceptions.*;
+import kmeans.ClusterModel;
+import distance.Distance;
+import distance.EuclideanDistance;
 
 public class Silhouette implements IClusterValidation {
     @Override

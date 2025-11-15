@@ -1,4 +1,4 @@
-package FONTS.Enquesta;
+package Enquesta;
 
 public class SingleChoiceQuestion {
     

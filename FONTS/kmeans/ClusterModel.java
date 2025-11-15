@@ -1,6 +1,4 @@
-package Domain;
-
-import Exceptions.*;
+package kmeans;
 
 public final class ClusterModel {
     private final double[][] centroids;

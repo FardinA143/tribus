@@ -1,7 +1,7 @@
 package importexport;
 
 import Exceptions.NotValidFileException;
-import Response.SurveyResponse;
+import Response.*;
 import java.util.*;
 
 public interface ResponseSerializer {

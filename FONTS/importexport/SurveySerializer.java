@@ -1,7 +1,7 @@
 package importexport;
 
 import Exceptions.NotValidFileException;
-import Survey.Survey;
+import Survey.*;
 
 public interface SurveySerializer {
     void toFile(Survey s, String path);

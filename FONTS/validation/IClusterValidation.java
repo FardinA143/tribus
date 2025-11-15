@@ -1,6 +1,7 @@
-package Domain;
+package validation;
 
-import Exceptions.*;
+import kmeans.ClusterModel;
+import distance.Distance;
 
 public interface IClusterValidation {
     double[] scorePerPoint(double[][] data, ClusterModel model, Distance dist);

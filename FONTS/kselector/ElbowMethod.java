@@ -1,6 +1,8 @@
-package Domain;
+package kselector;
 
-import Exceptions.*;
+import kmeans.IClusteringAlgorithm;
+import kmeans.ClusterModel;
+import distance.Distance;
 import java.util.*;
 
 public class ElbowMethod implements IKSelector {

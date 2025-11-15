@@ -1,7 +1,7 @@
 package Survey;
 
 import Response.SurveyResponse;
-import Exceptions.*;
+import Exceptions.PersistenceException;
 import java.util.*;
 
 public class LocalPersistence {
@@ -80,5 +80,10 @@ public class LocalPersistence {
             throw new PersistenceException("Response not found.");
         }
         responses.remove(id);
+    }
+
+    // Expose all surveys (read-only) to clients such as the CLI driver
+    public Collection<Survey> listAllSurveys() {
+        return Collections.unmodifiableCollection(new ArrayList<>(surveys.values()));
     }
 }

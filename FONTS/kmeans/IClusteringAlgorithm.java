@@ -1,6 +1,6 @@
-package Domain;
+package kmeans;
 
-import Exceptions.*;
+import distance.Distance;
 
 public interface IClusteringAlgorithm {
     ClusterModel fit(double[][] data, int k, Distance distance, long seed, int maxIter, double tol);

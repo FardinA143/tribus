@@ -1,4 +1,4 @@
-package Survey;
+package Enquesta;
 
 import Response.SurveyResponse;
 import java.util.*;

@@ -1,6 +1,7 @@
-package Domain;
+package kmeans;
 
-import Exceptions.*;
+import distance.Distance;
+import distance.EuclideanDistance;
 import java.util.*;
 
 public class KMeans implements IClusteringAlgorithm {
