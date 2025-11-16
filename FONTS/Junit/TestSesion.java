@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-public class SesionTest {
+public class TestSesion {
 
     private Sesion sesion;
     private User testUser;

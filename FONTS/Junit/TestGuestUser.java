@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.junit.runners.*;
 import org.junit.Before;
 
-public class GuestUserTest {
+public class TestGuestUser {
     private GuestUser gu;
     String GUEST_ID = "g234";
     String GUEST_NAME = "Invitado";
