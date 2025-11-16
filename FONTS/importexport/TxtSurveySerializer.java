@@ -3,21 +3,20 @@ package importexport;
 import java.io.*;
 import java.util.*;
 import Survey.*;
-import Exceptions.*;
 
 /**
- * Implementación de {@link SurveySerializer} que permite exportar e importar
- * encuestas en formato de texto plano (TXT), utilizando un formato basado en
- * líneas y valores separados por comas.
+ * Implementació de {@link SurveySerializer} que permet exportar i importar
+ * enquestes en format de text pla (TXT), utilitzant un format basat en
+ * línies i valors separats per comes.
  *
- * <p>El archivo generado contiene:</p>
+ * <p>El fitxer generat conté:</p>
  * <ul>
- *   <li><b>Línea 1:</b> Los campos principales de la encuesta.</li>
- *   <li><b>Líneas siguientes:</b> Una línea por cada pregunta, con formato
- *       dependiente del tipo de pregunta.</li>
+ *   <li><b>Línia 1:</b> Els camps principals de l'enquesta.</li>
+ *   <li><b>Línies següents:</b> Una línia per a cada pregunta, amb format
+ *       dependent del tipus de pregunta.</li>
  * </ul>
  *
- * <p>Soporta los siguientes tipos de preguntas:</p>
+ * <p>Suporta els següents tipus de preguntes:</p>
  * <ul>
  *   <li>{@link OpenIntQuestion}</li>
  *   <li>{@link MultipleChoiceQuestion}</li>
@@ -28,18 +27,21 @@ import Exceptions.*;
 public class TxtSurveySerializer implements SurveySerializer {
 
     /**
-     * Escribe una encuesta en un archivo de texto siguiendo el formato
-     * establecido. La primera línea contiene los campos de la encuesta y las
-     * siguientes cada una de sus preguntas.
+     * Escriu una enquesta en un fitxer de text seguint el format establert.
+     * La primera línia conté els camps de l'enquesta i les següents línies
+     * contenen cadascuna de les preguntes.
      *
-     * @param s     Encuesta que se desea serializar.
-     * @param path  Ruta del archivo donde se guardará la encuesta.
+     * @param s     Enquesta que es vol serialitzar.
+     * @param path  Ruta del fitxer on es desarà l'enquesta.
      */
     @Override
     public void toFile(Survey s, String path) {
+        if(!path.toLowerCase().endsWith(".txt")){
+            path = path + ".txt";
+        }
         try (PrintWriter writer = new PrintWriter(new FileWriter(path))) {
 
-            // Línea 1: datos base de la encuesta
+            // Línia 1: dades principals de l'enquesta
             writer.println(String.join(",",
                 s.getId(),
                 s.getTitle(),
@@ -52,18 +54,18 @@ public class TxtSurveySerializer implements SurveySerializer {
                 s.getUpdatedAt()
             ));
 
-            // Siguientes líneas: preguntas de la encuesta
+            // Línies següents: preguntes de l'enquesta
             for (Question q : s.getQuestions()) {
                 StringBuilder sb = new StringBuilder();
 
-                // Campos comunes
+                // Camps comuns
                 sb.append(q.getId()).append(",")
                   .append(q.getText()).append(",")
                   .append(q.isRequired()).append(",")
                   .append(q.getPosition()).append(",")
                   .append(q.getWeight());
 
-                // Campos específicos según tipo
+                // Camps específics segons el tipus
                 if (q instanceof OpenIntQuestion oi) {
                     sb.append(",oi,")
                       .append(oi.getMin()).append(",")
@@ -86,29 +88,29 @@ public class TxtSurveySerializer implements SurveySerializer {
             }
 
         } catch (IOException e) {
-            System.err.println("Error writing survey to file: " + e.getMessage());
+            System.err.println("Error escrivint l'enquesta al fitxer: " + e.getMessage());
         }
     }
 
     /**
-     * Lee una encuesta desde un archivo de texto en formato propio y construye
-     * un objeto {@link Survey} con sus preguntas.
+     * Llegeix una enquesta des d'un fitxer de text en format propi i construeix
+     * un objecte {@link Survey} amb les seves preguntes.
      *
-     * @param path Ruta del archivo que contiene la encuesta.
-     * @return Un objeto {@link Survey} cargado desde el archivo.
-     * @throws NotValidFileException Si el archivo está vacío, incompleto,
-     *                               malformado o algún dato no puede parsearse.
+     * @param path Ruta del fitxer que conté l'enquesta.
+     * @return Un objecte {@link Survey} carregat des del fitxer.
+     * @throws IOException Si el fitxer està buit, incomplet,
+     *                     malformat o algun dada no es pot parsejar.
      */
     @Override
-    public Survey fromFile(String path) throws NotValidFileException {
+    public Survey fromFile(String path) throws IOException {
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
 
             String line = br.readLine();
-            if (line == null) throw new NotValidFileException();
+            if (line == null) throw new IOException("File is empty");
 
-            // Campos principales de Survey
+            // Camps principals de Survey
             String[] surveyFields = line.split(",");
-            if (surveyFields.length < 9) throw new NotValidFileException();
+            if (surveyFields.length < 9) throw new IOException("Invalid header format");
 
             Survey survey = new Survey(
                 surveyFields[0],
@@ -124,33 +126,39 @@ public class TxtSurveySerializer implements SurveySerializer {
 
             List<Question> questions = new ArrayList<>();
 
-            // Leer preguntas
+            // Llegir preguntes
             while ((line = br.readLine()) != null) {
                 String[] parts = line.split(",");
+
+                if(parts.length < 6) continue; // Salta línies malformades
 
                 Question q = null;
                 String type = parts[5];
 
                 switch (type) {
-                    case "oi" -> q = new OpenIntQuestion(
-                        Integer.parseInt(parts[0]),
-                        parts[1],
-                        Boolean.parseBoolean(parts[2]),
-                        Integer.parseInt(parts[3]),
-                        Double.parseDouble(parts[4]),
-                        Integer.parseInt(parts[6]),
-                        Integer.parseInt(parts[7])
-                    );
+                    case "oi" -> {
+                        if(parts.length >= 8) q = new OpenIntQuestion(
+                            Integer.parseInt(parts[0]),
+                            parts[1],
+                            Boolean.parseBoolean(parts[2]),
+                            Integer.parseInt(parts[3]),
+                            Double.parseDouble(parts[4]),
+                            Integer.parseInt(parts[6]),
+                            Integer.parseInt(parts[7])
+                        );
+                    }
 
-                    case "mc" -> q = new MultipleChoiceQuestion(
-                        Integer.parseInt(parts[0]),
-                        parts[1],
-                        Boolean.parseBoolean(parts[2]),
-                        Integer.parseInt(parts[3]),
-                        Double.parseDouble(parts[4]),
-                        Integer.parseInt(parts[6]),
-                        Integer.parseInt(parts[7])
-                    );
+                    case "mc" -> {
+                        if(parts.length >= 8) q = new MultipleChoiceQuestion(
+                            Integer.parseInt(parts[0]),
+                            parts[1],
+                            Boolean.parseBoolean(parts[2]),
+                            Integer.parseInt(parts[3]),
+                            Double.parseDouble(parts[4]),
+                            Integer.parseInt(parts[6]),
+                            Integer.parseInt(parts[7])
+                        );
+                    }
 
                     case "sc" -> q = new SingleChoiceQuestion(
                         Integer.parseInt(parts[0]),
@@ -160,14 +168,16 @@ public class TxtSurveySerializer implements SurveySerializer {
                         Double.parseDouble(parts[4])
                     );
 
-                    case "os" -> q = new OpenStringQuestion(
-                        Integer.parseInt(parts[0]),
-                        parts[1],
-                        Boolean.parseBoolean(parts[2]),
-                        Integer.parseInt(parts[3]),
-                        Double.parseDouble(parts[4]),
-                        Integer.parseInt(parts[6])
-                    );
+                    case "os" -> {
+                        if(parts.length >= 7) q = new OpenStringQuestion(
+                            Integer.parseInt(parts[0]),
+                            parts[1],
+                            Boolean.parseBoolean(parts[2]),
+                            Integer.parseInt(parts[3]),
+                            Double.parseDouble(parts[4]),
+                            Integer.parseInt(parts[6])
+                        );
+                    }
                 }
 
                 if (q != null) questions.add(q);
@@ -177,9 +187,9 @@ public class TxtSurveySerializer implements SurveySerializer {
             return survey;
 
         } catch (IOException e) {
-            throw new NotValidFileException();
+            throw e;
         } catch (Exception e) {
-            throw new NotValidFileException();
+            throw new IOException("Error reading survey file: " + e.getMessage(), e);
         }
     }
 }

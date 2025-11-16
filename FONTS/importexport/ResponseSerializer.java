@@ -5,33 +5,33 @@ import Response.*;
 import java.util.*;
 
 /**
- * Interfaz para serializar y deserializar respuestas de encuestas.
+ * Interfície per serialitzar i deserialitzar respostes d’enquestes.
  *
- * <p>Las implementaciones convertirán entre objetos {@link Response.SurveyResponse}
- * y su representación en fichero (por ejemplo, texto plano). Se espera que
- * {@code toFile} escriba una o varias respuestas en la ruta indicada y que
- * {@code fromFile} reconstruya un {@link Response.SurveyResponse} desde un
- * fichero.</p>
+ * <p>Les implementacions convertiran entre objectes {@link Response.SurveyResponse}
+ * i la seva representació en fitxer txt S’espera que
+ * {@code toFile} escrigui diverses respostes al camí indicat i que
+ * {@code fromFile} reconstrueixi un {@link Response.SurveyResponse} a partir
+ * d’un fitxer.</p>
  *
  * @see importexport.TxtResponseSerializer
  */
 public interface ResponseSerializer {
+
     /**
-     * Serializa una lista de respuestas de encuesta a un fichero.
+     * Serialitza una llista de respostes d’enquesta a un fitxer.
      *
-     * @param s    Lista de {@link SurveyResponse} a serializar (no nula).
-     * @param path Ruta del fichero de salida donde se escribirá la representación.
+     * @param s    Llista de {@link SurveyResponse} a serialitzar (no nul·la).
+     * @param path Camí del fitxer de sortida on s’escriurà la representació.
      */
     void toFile(List<SurveyResponse> s, String path);
 
     /**
-     * Lee y deserializa una respuesta desde el fichero indicado.
+     * Llegeix i deserialitza una resposta des del fitxer indicat.
      *
-     * @param path Ruta del fichero de entrada.
-     * @return El {@link SurveyResponse} leído desde el fichero.
-     * @throws NotValidFileException Si el fichero está vacío, malformado o no
-     *                               cumple el formato esperado.
+     * @param path Camí del fitxer d’entrada.
+     * @return El {@link SurveyResponse} llegit del fitxer.
+     * @throws NotValidFileException Si el fitxer és buit, està malformat
+     *                               o no compleix el format esperat.
      */
     SurveyResponse fromFile(String path) throws NotValidFileException;
 }
-
