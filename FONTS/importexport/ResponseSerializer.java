@@ -1,6 +1,5 @@
 package importexport;
 
-import Exceptions.NotValidFileException;
 import Response.SurveyResponse;
 
 import java.io.IOException;
@@ -10,10 +9,9 @@ import java.util.*;
  * Interfície per serialitzar i deserialitzar respostes d’enquestes.
  *
  * <p>Les implementacions convertiran entre objectes {@link Response.SurveyResponse}
- * i la seva representació en fitxer txt S’espera que
+ * i la seva representació en fitxer txt. S’espera que
  * {@code toFile} escrigui diverses respostes al camí indicat i que
- * {@code fromFile} reconstrueixi un {@link Response.SurveyResponse} a partir
- * d’un fitxer.</p>
+ * {@code fromFile} reconstrueixi totes les respostes presents al fitxer.</p>
  *
  * @see importexport.TxtResponseSerializer
  */
@@ -28,12 +26,12 @@ public interface ResponseSerializer {
     void toFile(List<SurveyResponse> s, String path);
 
     /**
-     * Llegeix i deserialitza una resposta des del fitxer indicat.
+     * Llegeix i deserialitza totes les respostes contingudes en el fitxer indicat.
      *
      * @param path Camí del fitxer d’entrada.
-     * @return El {@link SurveyResponse} llegit del fitxer.
+     * @return Llista de {@link SurveyResponse} llegides del fitxer.
      * @throws IOException Si el fitxer és buit, està malformat
-     *                               o no compleix el format esperat.
+     *                     o no compleix el format esperat.
      */
-    SurveyResponse fromFile(String path) throws IOException;
+    List<SurveyResponse> fromFile(String path) throws IOException;
 }

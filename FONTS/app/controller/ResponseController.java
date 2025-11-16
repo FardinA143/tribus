@@ -38,4 +38,8 @@ public class ResponseController {
     public List<SurveyResponse> listResponses(String surveyId) throws PersistenceException {
         return persistence.listResponsesBySurvey(surveyId);
     }
+
+    public List<SurveyResponse> listAllResponses() {
+        return persistence.listAllResponses();
+    }
 }

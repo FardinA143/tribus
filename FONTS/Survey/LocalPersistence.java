@@ -90,4 +90,9 @@ public class LocalPersistence {
     public Collection<Survey> listAllSurveys() {
         return Collections.unmodifiableCollection(new ArrayList<>(surveys.values()));
     }
+
+    // Expose all responses (read-only) so drivers can list submissions
+    public List<SurveyResponse> listAllResponses() {
+        return Collections.unmodifiableList(new ArrayList<>(responses.values()));
+    }
 }

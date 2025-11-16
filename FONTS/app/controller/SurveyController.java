@@ -9,6 +9,7 @@ import importexport.SurveySerializer;
 import importexport.TxtSurveySerializer;
 import user.User;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Collection;
 
@@ -52,7 +53,7 @@ public class SurveyController {
         persistence.saveSurvey(survey);
     }
 
-    public Survey importSurvey(String path) throws NotValidFileException, PersistenceException {
+    public Survey importSurvey(String path) throws IOException, PersistenceException {
         Survey survey = serializer.fromFile(path);
         persistence.saveSurvey(survey);
         return survey;

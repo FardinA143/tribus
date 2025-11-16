@@ -4,7 +4,6 @@ import Exceptions.InvalidArgumentException;
 import Exceptions.InvalidQuestionException;
 import Exceptions.InvalidSurveyException;
 import Exceptions.NullArgumentException;
-import Exceptions.NotValidFileException;
 import Exceptions.PersistenceException;
 import Response.*;
 import Survey.*;
@@ -12,6 +11,7 @@ import app.controller.*;
 import importexport.*;
 import user.*;
 
+import java.io.IOException;
 import java.util.*;
 
 public class TerminalDriver {
@@ -51,6 +51,7 @@ public class TerminalDriver {
                 case "10" -> performAnalysis();
                 case "11" -> viewSurveyDetails();
                 case "12" -> viewRegisteredUsers();
+                case "13" -> viewRegisteredResponses();
                 case "0" -> exit = true;
                 default -> System.out.println("Opción no válida. Intente nuevamente.");
             }
@@ -76,6 +77,7 @@ public class TerminalDriver {
         System.out.println("10) Realizar análisis");
         System.out.println("11) Ver encuesta");
         System.out.println("12) Ver usuarios registrados");
+        System.out.println("13) Ver respuestas registradas");
         System.out.println("0) Salir");
     }
 
@@ -218,7 +220,7 @@ public class TerminalDriver {
         try {
             Survey survey = surveyController.importSurvey(path);
             System.out.println("Encuesta importada con ID " + survey.getId());
-        } catch (NotValidFileException | PersistenceException e) {
+        } catch (IOException | PersistenceException e) {
             System.out.println("No se pudo importar la encuesta: " + e.getMessage());
         }
     }
@@ -228,11 +230,19 @@ public class TerminalDriver {
         System.out.println("\n== Importar respuestas ==");
         String path = promptNonEmpty("Ruta del archivo .txt");
         try {
-            SurveyResponse response = responseSerializer.fromFile(path);
-            surveyController.loadSurvey(response.getSurveyId());
-            responseController.saveResponse(response);
-            System.out.println("Respuesta importada con ID " + response.getId());
-        } catch (NotValidFileException e) {
+            List<SurveyResponse> responses = responseSerializer.fromFile(path);
+            if (responses.isEmpty()) {
+                System.out.println("El archivo no contenía respuestas válidas.");
+                return;
+            }
+            int imported = 0;
+            for (SurveyResponse response : responses) {
+                surveyController.loadSurvey(response.getSurveyId());
+                responseController.saveResponse(response);
+                imported++;
+            }
+            System.out.println("Se importaron " + imported + " respuesta(s) correctamente.");
+        } catch (IOException e) {
             System.out.println("El archivo no tiene un formato válido: " + e.getMessage());
         } catch (PersistenceException e) {
             System.out.println("No se pudo guardar la respuesta importada: " + e.getMessage());
@@ -494,6 +504,63 @@ public class TerminalDriver {
 
         System.out.println("\n== Usuarios registrados ==");
         users.forEach(user -> System.out.println(" - ID: " + user.getId() + ", Usuario: " + user.getUsername() + ", Nombre: " + user.getDisplayName()));
+    }
+
+    private void viewRegisteredResponses() {
+        if (!ensureSession()) return;
+        List<SurveyResponse> responses = responseController.listAllResponses();
+        if (responses.isEmpty()) {
+            System.out.println("No se han registrado respuestas todavía.");
+            return;
+        }
+
+        System.out.println("\n== Respuestas registradas ==");
+        for (SurveyResponse response : responses) {
+            System.out.println("\nRespuesta ID: " + response.getId());
+            System.out.println("Encuesta: " + response.getSurveyId());
+            System.out.println("Usuario: " + response.getUserId());
+            System.out.println("Fecha: " + (response.getSubmittedAt() == null ? "N/A" : response.getSubmittedAt()));
+            System.out.println("Respuestas:");
+
+            Map<Integer, String> questionTexts = buildQuestionTextMap(response.getSurveyId());
+            if (response.getAnswers().isEmpty()) {
+                System.out.println("  (Sin respuestas registradas)");
+                continue;
+            }
+            response.getAnswers().forEach(answer -> {
+                String qText = questionTexts.get(answer.getQuestionId());
+                System.out.println("  Pregunta " + answer.getQuestionId() + (qText != null ? " - " + qText : "") + " -> " + formatAnswer(answer));
+            });
+        }
+    }
+
+    private Map<Integer, String> buildQuestionTextMap(String surveyId) {
+        try {
+            Survey survey = surveyController.loadSurvey(surveyId);
+            Map<Integer, String> map = new HashMap<>();
+            for (Question question : survey.getQuestions()) {
+                map.put(question.getId(), question.getText());
+            }
+            return map;
+        } catch (PersistenceException e) {
+            return Collections.emptyMap();
+        }
+    }
+
+    private String formatAnswer(Answer answer) {
+        if (answer instanceof TextAnswer text) {
+            return text.getValue();
+        }
+        if (answer instanceof IntAnswer number) {
+            return String.valueOf(number.getValue());
+        }
+        if (answer instanceof SingleChoiceAnswer single) {
+            return "Opción única -> " + single.getOptionId();
+        }
+        if (answer instanceof MultipleChoiceAnswer multi) {
+            return "Opciones -> " + multi.getOptionIds();
+        }
+        return answer.toString();
     }
 
     private boolean ensureSession() {

@@ -1,6 +1,7 @@
 package importexport;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import Survey.*;
 
@@ -66,23 +67,28 @@ public class TxtSurveySerializer implements SurveySerializer {
                   .append(q.getWeight());
 
                 // Camps específics segons el tipus
-                if (q instanceof OpenIntQuestion oi) {
-                    sb.append(",oi,")
-                      .append(oi.getMin()).append(",")
-                      .append(oi.getMax());
-                } 
-                else if (q instanceof MultipleChoiceQuestion mc) {
-                    sb.append(",mc,")
-                      .append(mc.getMinChoices()).append(",")
-                      .append(mc.getMaxChoices());
-                } 
-                else if (q instanceof OpenStringQuestion os) {
-                    sb.append(",os,")
-                      .append(os.getMaxLength());
-                }
-                else {
-                    sb.append(",sc");
-                }
+                                if (q instanceof OpenIntQuestion oi) {
+                                        sb.append(",oi,")
+                                            .append(oi.getMin()).append(",")
+                                            .append(oi.getMax());
+                                }
+                                else if (q instanceof MultipleChoiceQuestion mc) {
+                                        sb.append(",mc,")
+                                            .append(mc.getMinChoices()).append(",")
+                                            .append(mc.getMaxChoices()).append(",")
+                                            .append(serializeOptions(mc.getOptions()));
+                                }
+                                else if (q instanceof OpenStringQuestion os) {
+                                        sb.append(",os,")
+                                            .append(os.getMaxLength());
+                                }
+                                else if (q instanceof SingleChoiceQuestion sc) {
+                                        sb.append(",sc,")
+                                            .append(serializeOptions(sc.getOptions()));
+                                }
+                                else {
+                                        sb.append(",sc");
+                                }
 
                 writer.println(sb.toString());
             }
@@ -109,7 +115,7 @@ public class TxtSurveySerializer implements SurveySerializer {
             if (line == null) throw new IOException("File is empty");
 
             // Camps principals de Survey
-            String[] surveyFields = line.split(",");
+            String[] surveyFields = line.split(",", -1);
             if (surveyFields.length < 9) throw new IOException("Invalid header format");
 
             Survey survey = new Survey(
@@ -128,7 +134,7 @@ public class TxtSurveySerializer implements SurveySerializer {
 
             // Llegir preguntes
             while ((line = br.readLine()) != null) {
-                String[] parts = line.split(",");
+                String[] parts = line.split(",", -1);
 
                 if(parts.length < 6) continue; // Salta línies malformades
 
@@ -149,24 +155,36 @@ public class TxtSurveySerializer implements SurveySerializer {
                     }
 
                     case "mc" -> {
-                        if(parts.length >= 8) q = new MultipleChoiceQuestion(
+                        if(parts.length >= 8) {
+                            MultipleChoiceQuestion mc = new MultipleChoiceQuestion(
+                                Integer.parseInt(parts[0]),
+                                parts[1],
+                                Boolean.parseBoolean(parts[2]),
+                                Integer.parseInt(parts[3]),
+                                Double.parseDouble(parts[4]),
+                                Integer.parseInt(parts[6]),
+                                Integer.parseInt(parts[7])
+                            );
+                            if(parts.length >= 9) {
+                                hydrateOptions(mc.getOptions(), parts[8]);
+                            }
+                            q = mc;
+                        }
+                    }
+
+                    case "sc" -> {
+                        SingleChoiceQuestion sc = new SingleChoiceQuestion(
                             Integer.parseInt(parts[0]),
                             parts[1],
                             Boolean.parseBoolean(parts[2]),
                             Integer.parseInt(parts[3]),
-                            Double.parseDouble(parts[4]),
-                            Integer.parseInt(parts[6]),
-                            Integer.parseInt(parts[7])
+                            Double.parseDouble(parts[4])
                         );
+                        if(parts.length >= 7) {
+                            hydrateOptions(sc.getOptions(), parts[6]);
+                        }
+                        q = sc;
                     }
-
-                    case "sc" -> q = new SingleChoiceQuestion(
-                        Integer.parseInt(parts[0]),
-                        parts[1],
-                        Boolean.parseBoolean(parts[2]),
-                        Integer.parseInt(parts[3]),
-                        Double.parseDouble(parts[4])
-                    );
 
                     case "os" -> {
                         if(parts.length >= 7) q = new OpenStringQuestion(
@@ -190,6 +208,42 @@ public class TxtSurveySerializer implements SurveySerializer {
             throw e;
         } catch (Exception e) {
             throw new IOException("Error reading survey file: " + e.getMessage(), e);
+        }
+    }
+
+    private String serializeOptions(List<ChoiceOption> options) {
+        if (options == null || options.isEmpty()) {
+            return "";
+        }
+        StringJoiner joiner = new StringJoiner("|");
+        for (ChoiceOption option : options) {
+            String label = option.getLabel() == null ? "" : option.getLabel();
+            String encodedLabel = Base64.getEncoder().encodeToString(label.getBytes(StandardCharsets.UTF_8));
+            joiner.add(option.getId() + ":" + encodedLabel);
+        }
+        return joiner.toString();
+    }
+
+    private void hydrateOptions(List<ChoiceOption> target, String encoded) {
+        if (target == null || encoded == null || encoded.isEmpty()) {
+            return;
+        }
+        String[] tokens = encoded.split("\\|");
+        for (String token : tokens) {
+            if (token.isEmpty()) {
+                continue;
+            }
+            String[] parts = token.split(":", 2);
+            if (parts.length < 2) {
+                continue;
+            }
+            try {
+                int id = Integer.parseInt(parts[0]);
+                String label = new String(Base64.getDecoder().decode(parts[1]), StandardCharsets.UTF_8);
+                target.add(new ChoiceOption(id, label));
+            } catch (IllegalArgumentException e) {
+                // Ignore malformed option entries
+            }
         }
     }
 }
