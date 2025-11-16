@@ -9,6 +9,11 @@ import java.util.*;
 import Survey.*;
 import org.junit.jupiter.api.*;
 
+/**
+ * Proves unitàries per a la classe TxtSurveySerializer.
+ * Verifica la correcta serialització i deserialització d'una enquesta (Survey)
+ * amb diferents tipus de preguntes.
+ */
 public class TxtSurveySerializerTest {
 
     private TxtSurveySerializer serializer;
@@ -25,6 +30,10 @@ public class TxtSurveySerializerTest {
         Files.deleteIfExists(temp);
     }
 
+    /**
+     * Comprova la serialització completa a fitxer i la posterior deserialització,
+     * verificant que els atributs de l'enquesta i els tipus de preguntes es mantenen.
+     */
     @Test
     void testToFileAndFromFile_fullSurvey() throws Exception {
         List<Question> qs = new ArrayList<>();
@@ -42,33 +51,47 @@ public class TxtSurveySerializerTest {
         assertEquals(s.getId(), loaded.getId());
         assertEquals(4, loaded.getQuestions().size());
 
+        // Verificació dels tipus de preguntes
         assertTrue(loaded.getQuestions().get(0) instanceof OpenIntQuestion);
         assertTrue(loaded.getQuestions().get(1) instanceof OpenStringQuestion);
         assertTrue(loaded.getQuestions().get(2) instanceof SingleChoiceQuestion);
         assertTrue(loaded.getQuestions().get(3) instanceof MultipleChoiceQuestion);
     }
 
+    /**
+     * Comprova que si l'arxiu està completament buit, es llança una excepció.
+     */
     @Test
     void testEmptyFileThrows() throws Exception {
         Files.writeString(temp, "");
+        // El fromFile re-llança la IOException com a NotValidFileException si no troba línia
         assertThrows(IOException.class, () -> serializer.fromFile(temp.toString()));
     }
 
+    /**
+     * Comprova que si la capçalera (la línia de Survey) és mal formada (menys de 9 camps),
+     * es llança una excepció.
+     */
     @Test
     void testMalformedHeaderThrows() throws Exception {
         Files.writeString(temp, "bad,header\n");
         assertThrows(IOException.class, () -> serializer.fromFile(temp.toString()));
     }
 
+    /**
+     * Comprova que les línies de preguntes mal formades (que provoquen excepcions internes)
+     * són ignorades, i només les línies vàlides són carregades.
+     */
     @Test
     void testMalformedQuestionLineIgnored() throws Exception {
         String content = "sid,title,desc,yo,3,init,dist,2025,2025\n" +
-                         "1,Texto,true,1,1.0,oi,0,100\n" +
-                         "mal,formed,line\n" +
-                         "2,Texto2,false,2,0.5,sc\n";
+                         "1,Texto,true,1,1.0,oi,0,100\n" + // VÀLIDA
+                         "mal,formed,line\n" + // MAL FORMADA (s'ignora o provoca excepció)
+                         "2,Texto2,false,2,0.5,sc\n"; // VÀLIDA
         Files.writeString(temp, content);
 
         Survey s = serializer.fromFile(temp.toString());
+        // El test espera que només les dues preguntes vàlides siguin carregades.
         assertEquals(2, s.getQuestions().size());
     }
 }

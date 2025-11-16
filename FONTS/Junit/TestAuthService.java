@@ -5,6 +5,10 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+/**
+ * Proves unitàries per a la classe AuthService, que gestiona el registre,
+ * l'inici de sessió i el tancament de sessió d'usuaris.
+ */
 public class TestAuthService {
 
     private AuthService authService;
@@ -14,6 +18,10 @@ public class TestAuthService {
         authService = new AuthService();
     }
 
+    /**
+     * Comprova que el registre d'un nou usuari és exitós i que les dades
+     * s'emmagatzemen correctament (incloent-hi el hash de contrasenya).
+     */
     @Test
     public void RegisterSuccessfulTest() {
         RegisteredUser user = authService.register("u1", "Nuevo Usuario", "new_user", "pass123");
@@ -24,6 +32,10 @@ public class TestAuthService {
                         "pass123", user.getPasswordHash());
     }
 
+    /**
+     * Comprova que el registre falla quan l'usuari intenta utilitzar
+     * un nom d'usuari ja existent.
+     */
     @Test
     public void RegisterUsernameTakenTest() {
         authService.register("u1", "User 1", "user_taken", "pass1");
@@ -31,6 +43,9 @@ public class TestAuthService {
         assertNull("El segundo usuario debería ser nulo por username duplicado", user2);
     }
 
+    /**
+     * Comprova que l'inici de sessió és exitós amb credencials correctes.
+     */
     @Test
     public void LoginSuccessfulTest() {
         RegisteredUser user = authService.register("u1", "User 1", "user_login", "pass123");
@@ -42,6 +57,9 @@ public class TestAuthService {
                      user.getId(), sesion.getUser().getId());
     }
 
+    /**
+     * Comprova que l'inici de sessió falla amb un nom d'usuari inexistent.
+     */
     @Test
     public void LoginInvalidUsernameTest() {
         authService.register("u1", "User 1", "user_login", "pass123");
@@ -49,6 +67,9 @@ public class TestAuthService {
         assertNull("La sesión debe ser nula para un username inválido", sesion);
     }
 
+    /**
+     * Comprova que l'inici de sessió falla amb una contrasenya incorrecta.
+     */
     @Test
     public void LoginInvalidPasswordTest() {
         authService.register("u1", "User 1", "user_login", "pass123");
@@ -56,6 +77,9 @@ public class TestAuthService {
         assertNull("La sesión debe ser nula para una contraseña inválida", sesion);
     }
 
+    /**
+     * Comprova que el tancament de sessió (logout) desactiva la sessió correctament.
+     */
     @Test
     public void LogoutTest() {
         authService.register("u1", "User 1", "user_login", "pass123");

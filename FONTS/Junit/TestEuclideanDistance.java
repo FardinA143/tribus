@@ -29,6 +29,7 @@ public class TestEuclideanDistance {
 
     /**
      * Comprova un cas simple de distància 2D (triangle pitagòric 3-4-5).
+     * $\sqrt{(3-0)^2 + (4-0)^2} = \sqrt{9 + 16} = 5$
      */
     @Test
     public void testSimple2DDistance() {
@@ -41,12 +42,12 @@ public class TestEuclideanDistance {
 
     /**
      * Comprova un cas simple de distància 3D.
+     * $\sqrt{(4-1)^2 + (6-2)^2 + (8-3)^2} = \sqrt{3^2 + 4^2 + 5^2} = \sqrt{50}$
      */
     @Test
     public void testSimple3DDistance() {
         double[] a = {1.0, 2.0, 3.0};
         double[] b = {4.0, 6.0, 8.0}; // Diferències: 3, 4, 5
-        // sqrt(3^2 + 4^2 + 5^2) = sqrt(9 + 16 + 25) = sqrt(50)
         double expected = Math.sqrt(50.0);
         double actual = distance.between(a, b);
         assertEquals(expected, actual, DELTA);

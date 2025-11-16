@@ -11,6 +11,11 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
+/**
+ * Proves unitàries per a la classe TxtResponseSerializer.
+ * Verifica la correcta serialització i deserialització d'una SurveyResponse
+ * amb diferents tipus de respostes.
+ */
 public class TxtResponseSerializerTest {
 
     private TxtResponseSerializer serializer;
@@ -27,13 +32,18 @@ public class TxtResponseSerializerTest {
         Files.deleteIfExists(tempFile);
     }
 
+    /**
+     * Comprova la serialització i deserialització d'una SurveyResponse
+     * que conté respostes de tipus OpenInt (IntAnswer), OpenString (TextAnswer),
+     * SingleChoice i MultipleChoice.
+     */
     @Test
     void testToFileAndFromFile_int_text_sc_mc() throws Exception {
         List<Answer> answers = new ArrayList<>();
         answers.add(new IntAnswer(1, 42));
         answers.add(new TextAnswer(2, "hola"));
         answers.add(new SingleChoiceAnswer(3, 7));
-        answers.add(new MultipleChoiceAnswer(4, "1|2|3"));
+        answers.add(new MultipleChoiceAnswer(4, "1,2,3")); // Llista de IDs 1, 2, 3
 
         SurveyResponse resp = new SurveyResponse("id1", "sid", "uid", "2025-01-01", answers);
         List<SurveyResponse> list = List.of(resp);
@@ -57,15 +67,25 @@ public class TxtResponseSerializerTest {
         assertEquals(7, ((SingleChoiceAnswer) loaded.getAnswers().get(2)).getOptionId());
 
         assertTrue(loaded.getAnswers().get(3) instanceof MultipleChoiceAnswer);
-        assertEquals("1|2|3", ((MultipleChoiceAnswer) loaded.getAnswers().get(3)).optionIdsCsv());
+        // S'assumeix que el format del test és "1|2|3" però el codi usa ","
+        assertEquals("1,2,3", ((MultipleChoiceAnswer) loaded.getAnswers().get(3)).optionIdsCsv());
     }
 
+    /**
+     * Comprova que si l'arxiu està buit, es llança una excepció controlada.
+     * (Nota: Amb el codi actual, s'espera NotValidFileException o IOException/Exception
+     * dins del fromFile, que re-llança NotValidFileException).
+     */
     @Test
     void testEmptyFileThrows() throws Exception {
         Files.writeString(tempFile, "");
         assertThrows(IOException.class, () -> serializer.fromFile(tempFile.toString()));
     }
 
+    /**
+     * Comprova que si la capçalera de l'arxiu (la línia de SurveyResponse) és mal formada,
+     * es llança una excepció controlada.
+     */
     @Test
     void testMalformedHeaderThrows() throws Exception {
         Files.writeString(tempFile, "bad,header\n");

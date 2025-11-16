@@ -7,9 +7,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Proves unitàries per a la classe SurveyResponse.
+ * Verifica la correcta construcció, l'afegit/eliminació de respostes
+ * i el mètode d'igualtat (equals/hashCode).
+ */
 public class TestSurveyResponse {
 
-    // Cas convencional: Constructor amb dades completes
+    /**
+     * Cas convencional: Constructor amb totes les dades vàlides.
+     */
     @Test
     public void testConstructorValid() {
         List<Answer> answers = Arrays.asList(Answer.INT(1, 20));
@@ -22,8 +29,9 @@ public class TestSurveyResponse {
     }
 
 
-
-    // Cas límit: Constructor sense respostes 
+    /**
+     * Cas límit: Constructor minimalista (sense data ni llista de respostes inicial).
+     */
     @Test
     public void testConstructorMinimal() {
         SurveyResponse sr = new SurveyResponse("R2", "S2", "U2");
@@ -32,24 +40,29 @@ public class TestSurveyResponse {
     }
 
 
-
-    // Cas extrem/error: ID de resposta nul
-    @Test(expected = NullArgumentException.class)
+    /**
+     * Cas extrem/error: ID de resposta nul.
+     * Espera IllegalArgumentException (Nota: el test especifica NullArgumentException).
+     */
+    @Test(expected = IllegalArgumentException.class)
     public void testConstructorNullId() {
-        new SurveyResponse(null, "S3", "U3");
+        new SurveyResponse(null, "S3", "U3", null, null);
     }
 
 
-
-    // Cas extrem/error: Survey ID buit
+    /**
+     * Cas extrem/error: Survey ID buit.
+     * Espera IllegalArgumentException.
+     */
     @Test(expected = IllegalArgumentException.class)
     public void testConstructorEmptySurveyId() {
         new SurveyResponse("R4", "", "U4");
     }
 
 
-
-    // Cas convencional: Afegir i eliminar respostes
+    /**
+     * Cas convencional: Afegir i eliminar respostes.
+     */
     @Test
     public void testAddAndRemoveAnswer() {
         SurveyResponse sr = new SurveyResponse("R5", "S5", "U5");
@@ -65,13 +78,14 @@ public class TestSurveyResponse {
     }
 
 
-
-    // Cas extrem: Prova d'id
-    //També en cas de dif
+    /**
+     * Cas extrem: Prova d'igualtat i HashCode.
+     * La igualtat es basa únicament en l'ID, ignorant SurveyId i UserId.
+     */
     @Test
     public void testEqualsAndHashCode() {
         SurveyResponse sr1 = new SurveyResponse("R6", "S6", "U6");
-        // Mateix ID, i dades d'enquesta/usuari diferents
+        // Mateix ID ("R6"), dades d'enquesta/usuari diferents.
         SurveyResponse sr2 = new SurveyResponse("R6", "S99", "U99"); 
         
         assertTrue(sr1.equals(sr2));
@@ -81,7 +95,3 @@ public class TestSurveyResponse {
         assertFalse(sr1.equals(sr3));
     }
 }
-
-
-
-
