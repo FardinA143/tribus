@@ -109,7 +109,7 @@ public class OneHotEncoder implements IEncoder {
                 categoricalVocab.put(q.getId(), optionMap);
 
             }
-            else if (q instanceof OpenIntQuestion oiq) {
+            else if (q instanceof OpenIntQuestion) {
                 double min = Double.POSITIVE_INFINITY;
                 double max = Double.NEGATIVE_INFINITY;
                 for (SurveyResponse res : allResponses) {
