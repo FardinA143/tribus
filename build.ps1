@@ -3,7 +3,7 @@
 
 param(
     [Parameter(Mandatory=$false)]
-    [ValidateSet("compile", "run", "clean", "help", "test", "docs")]
+    [ValidateSet("compile", "run", "clean", "cleandocs", "help", "test", "docs")]
     [string]$Command = "help"
 )
 
@@ -22,6 +22,7 @@ function Show-Help {
     Write-Host "  compile    - Compila todos los fuentes Java" -ForegroundColor White
     Write-Host "  run        - Ejecuta el driver de terminal" -ForegroundColor White
     Write-Host "  clean      - Elimina el directorio de salida (out/)" -ForegroundColor White
+    Write-Host "  cleandocs  - Elimina el directorio de documentación (javadocs/)" -ForegroundColor White
     Write-Host "  docs       - Genera la documentación Javadoc" -ForegroundColor White
     Write-Host "  help       - Muestra este mensaje de ayuda" -ForegroundColor White
     Write-Host ""
@@ -132,13 +133,24 @@ function Invoke-Clean {
     }
 }
 
+function Invoke-CleanDocs {
+    Write-Host "[*] Limpiando documentación..." -ForegroundColor Yellow
+    
+    if (Test-Path "javadocs") {
+        Remove-Item -Path "javadocs" -Recurse -Force
+        Write-Host "[✓] Directorio javadocs/ eliminado" -ForegroundColor Green
+    } else {
+        Write-Host "[!] No hay directorio javadocs para limpiar" -ForegroundColor Yellow
+    }
+}
+
 function Invoke-Docs {
     Write-Host "[*] Generando documentación Javadoc..." -ForegroundColor Yellow
     
     try {
-        javadoc -sourcepath $FONTS_DIR -d distance Encoder Exceptions importexport kmeans kselector Response Survey user validation 2>&1
+        javadoc -sourcepath $FONTS_DIR -d javadocs app distance Encoder Exceptions importexport kmeans kselector Response Survey user validation 2>&1
         if ($LASTEXITCODE -eq 0) {
-            Write-Host "[✓] Documentación generada en docs/" -ForegroundColor Green
+            Write-Host "[✓] Documentación generada en javadocs/" -ForegroundColor Green
         } else {
             Write-Host "[!] Errores durante la generación de docs" -ForegroundColor Red
         }
@@ -153,6 +165,7 @@ switch ($Command) {
     "run" { Invoke-Run }
     "test" { Invoke-Test }
     "clean" { Invoke-Clean }
+    "cleandocs" { Invoke-CleanDocs }
     "docs" { Invoke-Docs }
     "help" { Show-Help }
     default { Show-Help }
