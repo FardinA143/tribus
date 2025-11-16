@@ -4,29 +4,35 @@ import Exceptions.NotValidFileException;
 import Survey.Survey;
 
 /**
- * Interfaz para serializar y deserializar encuestas ({@link Survey.Survey}).
+ * Interfície per serialitzar i deserialitzar enquestes ({@link Survey.Survey}).
  *
- * <p>Permite convertir una {@link Survey} a un fichero y volver a construirla
- * desde ese fichero. El formato concreto queda a cargo de la implementación
- * (por ejemplo, texto plano - {@link TxtSurveySerializer}).</p>
+ * <p>Permet convertir una {@link Survey} en un fitxer i tornar-la a construir
+ * des d’aquest fitxer. S'espera que {@code toFile} escrigui el "header" amb els atributs de {@link Survey}
+ * i les diverses preguntes que tenen amb un identificador del tipus de pregunta</p>
+ * 
+ * @see importexport.SurveySerializer
+ * 
  */
+
+
 public interface SurveySerializer {
+
     /**
-     * Serializa la encuesta proporcionada en la ruta indicada.
+     * Serialitza l’enquesta proporcionada al camí indicat.
      *
-     * @param s    Encuesta a serializar.
-     * @param path Ruta del fichero de salida.
+     * @param s    Enquesta a serialitzar.
+     * @param path Camí del fitxer de sortida.
      */
     void toFile(Survey s, String path);
 
     /**
-     * Lee una encuesta desde el fichero indicado y la devuelve como objeto
+     * Llegeix una enquesta des del fitxer indicat i la retorna com a objecte
      * {@link Survey}.
      *
-     * @param path Ruta del fichero de entrada.
-     * @return La {@link Survey} leída desde el fichero.
-     * @throws NotValidFileException Si el fichero está vacío, incompleto o
-     *                               malformado.
+     * @param path Camí del fitxer d’entrada.
+     * @return La {@link Survey} llegida del fitxer.
+     * @throws NotValidFileException Si el fitxer és buit, incomplet o
+     *                               malformat.
      */
     Survey fromFile(String path) throws NotValidFileException;
 }
