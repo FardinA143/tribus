@@ -3,7 +3,7 @@
 
 param(
     [Parameter(Mandatory=$false)]
-    [ValidateSet("compile", "run", "clean", "help", "test")]
+    [ValidateSet("compile", "run", "clean", "help", "test", "docs")]
     [string]$Command = "help"
 )
 
@@ -22,6 +22,7 @@ function Show-Help {
     Write-Host "  compile    - Compila todos los fuentes Java" -ForegroundColor White
     Write-Host "  run        - Ejecuta el driver de terminal" -ForegroundColor White
     Write-Host "  clean      - Elimina el directorio de salida (out/)" -ForegroundColor White
+    Write-Host "  docs       - Genera la documentación Javadoc" -ForegroundColor White
     Write-Host "  help       - Muestra este mensaje de ayuda" -ForegroundColor White
     Write-Host ""
 }
@@ -131,12 +132,28 @@ function Invoke-Clean {
     }
 }
 
+function Invoke-Docs {
+    Write-Host "[*] Generando documentación Javadoc..." -ForegroundColor Yellow
+    
+    try {
+        javadoc -sourcepath $FONTS_DIR -d distance Encoder Exceptions importexport kmeans kselector Response Survey user validation 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            Write-Host "[✓] Documentación generada en docs/" -ForegroundColor Green
+        } else {
+            Write-Host "[!] Errores durante la generación de docs" -ForegroundColor Red
+        }
+    } catch {
+        Write-Host "[!] Error: $_" -ForegroundColor Red
+    }
+}
+
 # Main
 switch ($Command) {
     "compile" { Invoke-Compile | Out-Null }
     "run" { Invoke-Run }
     "test" { Invoke-Test }
     "clean" { Invoke-Clean }
+    "docs" { Invoke-Docs }
     "help" { Show-Help }
     default { Show-Help }
 }

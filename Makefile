@@ -1,4 +1,4 @@
-.PHONY: compile run clean help test
+.PHONY: compile run clean help test docs
 
 FONTS_DIR = FONTS
 OUT_DIR = out
@@ -14,6 +14,7 @@ help:
 	@echo "  make run        - Ejecuta el driver de terminal"
 	@echo "  make test       - Compila y ejecuta los tests JUnit (requiere libs/junit-4.13.2.jar)"
 	@echo "  make clean      - Elimina el directorio de salida (out/)"
+	@echo "  make docs       - Genera la documentación Javadoc"
 	@echo "  make help       - Muestra este mensaje de ayuda"
 	@echo ""
 
@@ -57,3 +58,8 @@ clean:
 	@echo "[*] Limpiando archivos compilados..."
 	@rm -rf $(OUT_DIR)
 	@echo "[✓] Directorio $(OUT_DIR)/ eliminado"
+
+docs:
+	@echo "[*] Generando documentación Javadoc..."
+	@javadoc -sourcepath $(FONTS_DIR) -d docs app distance Encoder Exceptions importexport kmeans kselector Response Survey user validation
+	@echo "[✓] Documentación generada en docs/"

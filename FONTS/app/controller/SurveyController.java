@@ -1,7 +1,6 @@
 package app.controller;
 
 import Exceptions.InvalidSurveyException;
-import Exceptions.NotValidFileException;
 import Exceptions.PersistenceException;
 import Survey.LocalPersistence;
 import Survey.Survey;
@@ -51,6 +50,37 @@ public class SurveyController {
 
     public void saveSurvey(Survey survey) throws PersistenceException {
         persistence.saveSurvey(survey);
+    }
+
+    public void deleteSurvey(String id) throws PersistenceException {
+        persistence.removeSurvey(id);
+        persistence.removeResponsesBySurvey(id);
+    }
+
+    public Survey editSurvey(String originalId,
+                             String newId,
+                             String title,
+                             String description,
+                             int k,
+                             String initMethod,
+                             String distance) throws PersistenceException, InvalidSurveyException {
+        Survey survey = persistence.loadSurvey(originalId);
+        String effectiveId = (newId == null || newId.isBlank()) ? originalId : newId;
+
+        if (!originalId.equals(effectiveId)) {
+            persistence.removeSurvey(originalId);
+            survey.setId(effectiveId);
+        }
+
+        survey.setTitle(title);
+        survey.setDescription(description);
+        survey.setK(k);
+        survey.setInitMethod(initMethod);
+        survey.setDistance(distance);
+        survey.setUpdatedAt(LocalDateTime.now().toString());
+
+        persistence.saveSurvey(survey);
+        return survey;
     }
 
     public Survey importSurvey(String path) throws IOException, PersistenceException {
