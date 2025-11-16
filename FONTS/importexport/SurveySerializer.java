@@ -1,5 +1,7 @@
 package importexport;
 
+import java.io.IOException;
+
 import Exceptions.NotValidFileException;
 import Survey.*;
 
@@ -31,8 +33,8 @@ public interface SurveySerializer {
      *
      * @param path Camí del fitxer d’entrada.
      * @return La {@link Survey} llegida del fitxer.
-     * @throws NotValidFileException Si el fitxer és buit, incomplet o
+     * @throws IOException Si el fitxer és buit, incomplet o
      *                               malformat.
      */
-    Survey fromFile(String path) throws NotValidFileException;
+    Survey fromFile(String path) throws IOException;
 }
