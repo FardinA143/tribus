@@ -4,30 +4,30 @@ import java.util.Map;
 import java.util.HashMap;
 
 /**
- * Servicio encargado de gestionar el registro, autenticación y sesiones activas
- * de los usuarios del sistema.
+ * Servei encarregat de gestionar el registre, l'autenticació i les sessions 
+ * actives dels usuaris del sistema.
  * 
- * <p>Proporciona operaciones para registrar nuevos usuarios, iniciar sesión,
- * cerrar sesión y realizar validaciones básicas de credenciales. Utiliza un 
- * almacenamiento en memoria basado en {@code HashMap}.</p>
+ * <p>Proporciona operacions per registrar nous usuaris, iniciar sessió,
+ * tancar sessió i realitzar validacions bàsiques de credencials. Utilitza un
+ * emmagatzematge en memòria basat en {@code HashMap}.</p>
  */
 public class AuthService {
 
-    /** Mapa de usuarios registrados, indexados por su ID. */
+    /** Map d'usuaris registrats, indexats pel seu ID. */
     private Map<String, RegisteredUser> registeredUsers = new HashMap<>(); 
 
-    /** Mapa de sesiones activas, indexadas por su ID de sesión. */
+    /** Map de sessions actives, indexades pel seu ID de sessió. */
     private Map<String, Sesion> activeSessions = new HashMap<>(); 
 
     /**
-     * Registra un nuevo usuario en el sistema.
+     * Registra un usuari nou al sistema.
      *
-     * @param id           ID único del usuario.
-     * @param displayName  Nombre visible del usuario.
-     * @param username     Nombre de usuario para iniciar sesión.
-     * @param password     Contraseña en texto plano del usuario.
-     * @return El {@link RegisteredUser} recién registrado, o {@code null} si el
-     *         nombre de usuario ya está en uso.
+     * @param id           ID únic de l'usuari.
+     * @param displayName  Nom visible de l'usuari.
+     * @param username     Nom d'usuari per iniciar sessió.
+     * @param password     Contrasenya en text pla de l'usuari.
+     * @return El {@link RegisteredUser} acabat de registrar, o {@code null} si
+     *         el nom d'usuari ja està en ús.
      */
     public RegisteredUser register(String id, String displayName, String username, String password) {
         if (registeredUsers.values().stream().anyMatch(u -> u.getUsername().equals(username))) {
@@ -47,12 +47,12 @@ public class AuthService {
     }
 
     /**
-     * Inicia sesión con un nombre de usuario y contraseña.
+     * Inicia sessió amb un nom d'usuari i contrasenya.
      *
-     * @param username Nombre de usuario.
-     * @param password Contraseña en texto plano.
-     * @return Una nueva {@link Sesion} si las credenciales son válidas, o 
-     *         {@code null} si la autenticación falla.
+     * @param username Nom d'usuari.
+     * @param password Contrasenya en text pla.
+     * @return Una nova {@link Sesion} si les credencials són vàlides, o 
+     *         {@code null} si l'autenticació falla.
      */
     public Sesion login(String username, String password) {
         for (RegisteredUser usr : registeredUsers.values()) {
@@ -67,9 +67,9 @@ public class AuthService {
     }
 
     /**
-     * Cierra una sesión activa y la elimina del registro de sesiones.
+     * Tanca una sessió activa i l'elimina del registre de sessions.
      *
-     * @param sess La sesión a cerrar.
+     * @param sess La sessió que s'ha de tancar.
      */
     public void logout(Sesion sess) {
         sess.close();
@@ -77,28 +77,26 @@ public class AuthService {
     }
 
     // ======================
-    // Métodos auxiliares
+    // Mètodes auxiliars
     // ======================
 
     /**
-     * Genera un hash simple basado en {@code hashCode()} para una contraseña.
+     * Genera un hash simple basat en {@code hashCode()} per a una contrasenya.
      *
-     * <p><b>Nota:</b> Este método no debe usarse en producción, ya que no es
-     * criptográﬁcamente seguro.</p>
      *
-     * @param password Contraseña en texto plano.
-     * @return Cadena hash correspondiente.
+     * @param password Contrasenya en text pla.
+     * @return Cadena hash corresponent.
      */
     private String hashPassword(String password) {
         return Integer.toHexString(password.hashCode());
     }
 
     /**
-     * Verifica si una contraseña coincide con su hash almacenado.
+     * Verifica si una contrasenya coincideix amb el seu hash emmagatzemat.
      *
-     * @param password Contraseña en texto plano.
-     * @param hash     Hash almacenado.
-     * @return {@code true} si la contraseña coincide; {@code false} en caso contrario.
+     * @param password Contrasenya en text pla.
+     * @param hash     Hash emmagatzemat.
+     * @return {@code true} si la contrasenya coincideix; {@code false} en cas contrari.
      */
     private boolean verifyPassword(String password, String hash) {
         return hashPassword(password).equals(hash);

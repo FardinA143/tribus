@@ -1,28 +1,28 @@
 package user;
 
 /**
- * Representa a un usuario registrado dentro del sistema.
+ * Representa un usuari registrat dins del sistema.
  * 
- * <p>Extiende la clase {@link User} añadiendo credenciales necesarias para
- * la autenticación, como el nombre de usuario y la contraseña (almacenada
- * como hash).</p>
+ * <p>Extén la classe {@link User} afegint-hi les credencials necessàries per
+ * a l'autenticació, com el nom d'usuari i la contrasenya (emmagatzemada
+ * com a hash).</p>
  */
 public class RegisteredUser extends User {
 
-    /** Nombre de usuario utilizado para iniciar sesión. */
+    /** Nom d’usuari utilitzat per iniciar sessió. */
     private String username;
 
-    /** Hash de la contraseña del usuario. */
+    /** Hash de la contrasenya de l’usuari. */
     private String password;
 
     /**
-     * Crea un nuevo usuario registrado.
+     * Crea un nou usuari registrat.
      *
-     * @param id          Identificador único del usuario.
-     * @param displayName Nombre visible del usuario.
-     * @param createdAt   Fecha y hora de creación del usuario.
-     * @param username    Nombre de usuario para autenticación.
-     * @param password    Hash de la contraseña del usuario.
+     * @param id          Identificador únic de l’usuari.
+     * @param displayName Nom visible de l’usuari.
+     * @param createdAt   Data i hora de creació de l’usuari.
+     * @param username    Nom d’usuari per a l’autenticació.
+     * @param password    Hash de la contrasenya de l’usuari.
      */
     public RegisteredUser(String id, String displayName, String createdAt, String username, String password) {
         super(id, displayName);
@@ -31,38 +31,38 @@ public class RegisteredUser extends User {
     }   
 
     /**
-     * Obtiene el nombre de usuario.
+     * Retorna el nom d’usuari.
      *
-     * @return Nombre de usuario.
+     * @return Nom d’usuari.
      */
     public String getUsername() {
         return username;
     }   
 
     /**
-     * Obtiene el hash de la contraseña almacenada.
+     * Retorna el hash de la contrasenya emmagatzemada.
      *
-     * @return Hash de la contraseña.
+     * @return Hash de la contrasenya.
      */
     public String getPasswordHash() {
         return password;
     }   
 
     /**
-     * Cambia el nombre de usuario.
+     * Canvia el nom d’usuari.
      *
-     * @param name Nuevo nombre de usuario.
+     * @param name Nou nom d’usuari.
      */
     public void changeUsername(String name){
         username = name;
     }
 
     /**
-     * Cambia la contraseña almacenada.
+     * Canvia la contrasenya emmagatzemada.
      *
-     * <p>Se espera que el valor recibido ya sea un hash seguro.</p>
+     * <p>S’espera que el valor rebut ja sigui un hash segur.</p>
      *
-     * @param passwd Nuevo hash de contraseña.
+     * @param passwd Nou hash de contrasenya.
      */
     public void changePassword(String passwd){
         password = passwd;

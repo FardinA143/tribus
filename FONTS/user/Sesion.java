@@ -4,29 +4,29 @@ import java.time.LocalDateTime;
 import java.util.random.RandomGenerator;
 
 /**
- * Representa una sesión activa asociada a un usuario.
+ * Representa una sessió activa associada a un usuari.
  *
- * <p>Una sesión contiene un identificador único, información del usuario,
- * un registro del último acceso y un estado que indica si está activa.</p>
+ * <p>Una sessió conté un identificador únic, informació de l’usuari,
+ * un registre de l’últim accés i un estat que indica si continua activa.</p>
  */
 public class Sesion {
 
-    /** Identificador único de la sesión. */
+    /** Identificador únic de la sessió. */
     private String sessionId;
 
-    /** Usuario al que pertenece la sesión. */
+    /** Usuari al qual pertany la sessió. */
     private User user;
 
-    /** Fecha y hora del último acceso. */
+    /** Data i hora de l’últim accés. */
     private String lastAccessTime;
 
-    /** Indica si la sesión está activa. */
+    /** Indica si la sessió està activa. */
     private boolean active;
     
     /**
-     * Crea una nueva sesión para un usuario dado.
+     * Crea una nova sessió per a un usuari donat.
      *
-     * @param user Usuario al que se asigna la sesión.
+     * @param user Usuari al qual s’assigna la sessió.
      */
     public Sesion(User user) {
         this.user = user;
@@ -36,62 +36,62 @@ public class Sesion {
     }
 
     /**
-     * Actualiza la marca temporal del último acceso a la sesión.
+     * Actualitza la marca temporal de l’últim accés a la sessió.
      */
     public void updateLastAccessTime() {
         this.lastAccessTime = LocalDateTime.now().toString();
     }
 
     /**
-     * Genera un identificador aleatorio único para la sesión.
+     * Genera un identificador aleatori únic per a la sessió.
      *
-     * @return ID de sesión en formato hexadecimal.
+     * @return ID de sessió en format hexadecimal.
      */
     private String generateSessionId() {
         return Long.toHexString(RandomGenerator.getDefault().nextLong());
     }
 
     /**
-     * Obtiene el identificador de la sesión.
+     * Retorna l’identificador de la sessió.
      *
-     * @return ID de la sesión.
+     * @return ID de la sessió.
      */
     public String getSessionId() {
         return sessionId;
     }
 
     /**
-     * Obtiene el usuario asociado a la sesión.
+     * Retorna l’usuari associat a la sessió.
      *
-     * @return Usuario de la sesión.
+     * @return Usuari de la sessió.
      */
     public User getUser() {
         return user;
     }
 
     /**
-     * Obtiene la fecha y hora del último acceso.
+     * Retorna la data i hora de l’últim accés.
      *
-     * @return Cadena ISO-8601 con fecha y hora.
+     * @return Cadena en format ISO-8601 amb data i hora.
      */
     public String getLastAccessTime() {
         return lastAccessTime;
     }   
 
     /**
-     * Indica si la sesión sigue activa.
+     * Indica si la sessió continua activa.
      *
-     * @return {@code true} si la sesión está activa; {@code false} en caso contrario.
+     * @return {@code true} si la sessió està activa; {@code false} en cas contrari.
      */
     public boolean isActive() {
         return active;
     }
 
     /**
-     * Cierra la sesión y la marca como inactiva.
+     * Tanca la sessió i la marca com a inactiva.
      */
     public void close() {
-        System.out.println("Session " + sessionId + " closed.");
+        System.out.println("Sessió " + sessionId + " tancada.");
         this.active = false;
     }
 }

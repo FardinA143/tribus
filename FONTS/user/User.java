@@ -1,25 +1,25 @@
 package user;
 
 /**
- * Clase base abstracta que representa a un usuario dentro del sistema.
+ * Classe base abstracta que representa un usuari dins del sistema.
  *
- * <p>Define atributos comunes como el identificador único y el nombre visible,
- * además de proporcionar métodos de acceso y modificación. Las clases derivadas
- * deben extender esta clase para añadir comportamientos o datos adicionales.</p>
+ * <p>Defineix atributs comuns com l’identificador únic i el nom visible,
+ * a més de proporcionar mètodes d’accés i modificació. Les classes derivades
+ * han d’estendre aquesta classe per afegir comportaments o dades addicionals.</p>
  */
 public abstract class User {
 
-    /** Identificador único del usuario. */
+    /** Identificador únic de l’usuari. */
     protected String id;
 
-    /** Nombre visible del usuario. */
+    /** Nom visible de l’usuari. */
     protected String displayName;
 
     /**
-     * Crea un nuevo usuario con un ID y un nombre visible.
+     * Crea un nou usuari amb un ID i un nom visible.
      *
-     * @param id           Identificador único del usuario.
-     * @param displayName  Nombre visible asociado al usuario.
+     * @param id           Identificador únic de l’usuari.
+     * @param displayName  Nom visible associat a l’usuari.
      */
     public User(String id, String displayName) {
         this.id = id;
@@ -27,27 +27,27 @@ public abstract class User {
     }
 
     /**
-     * Obtiene el identificador del usuario.
+     * Retorna l’identificador de l’usuari.
      *
-     * @return ID del usuario.
+     * @return ID de l’usuari.
      */
     public String getId() {
         return id;
     }
 
     /**
-     * Obtiene el nombre visible del usuario.
+     * Retorna el nom visible de l’usuari.
      *
-     * @return Nombre mostrado al público.
+     * @return Nom mostrat públicament.
      */
     public String getDisplayName() {
         return displayName;
     }
 
     /**
-     * Cambia el nombre visible del usuario.
+     * Canvia el nom visible de l’usuari.
      *
-     * @param name Nuevo nombre visible.
+     * @param name Nou nom visible.
      */
     public void changeDisplayName(String name) {
         displayName = name;
