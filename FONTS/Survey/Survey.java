@@ -1,8 +1,13 @@
 package Survey;
 
+import Exceptions.InvalidQuestionException;
+import Exceptions.InvalidSurveyException;
 import java.util.*;
-import Exceptions.*;
 
+/**
+ * Aggregate root that groups metadata and the ordered list of questions that
+ * constitute a survey definition.
+ */
 public class Survey {
     private String id; // unique survey_id, formed by
     private String title;
@@ -50,10 +55,10 @@ public class Survey {
         }
     }
 
-    public void deleteQuestion(int questionId) throws QuestionNotFoundException {
+    public void deleteQuestion(int questionId) throws InvalidQuestionException {
         boolean removed = questions.removeIf(q -> q.getId() == questionId);
         if (!removed) {
-            throw new QuestionNotFoundException("Question with ID " + questionId + " not found.");
+            throw new InvalidQuestionException("Question with ID " + questionId + " not found.");
         }
     }
     // Getters and setters

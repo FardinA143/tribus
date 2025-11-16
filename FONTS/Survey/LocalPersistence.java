@@ -1,9 +1,13 @@
 package Survey;
 
-import Response.SurveyResponse;
 import Exceptions.PersistenceException;
+import Response.SurveyResponse;
 import java.util.*;
 
+/**
+ * In-memory storage used by the CLI to manage surveys and responses without
+ * relying on an external database.
+ */
 public class LocalPersistence {
     private Map<String, Survey> surveys;
     private Map<String, SurveyResponse> responses;
