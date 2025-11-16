@@ -49,6 +49,8 @@ public class TerminalDriver {
                 case "8" -> importResponsesFromFile();
                 case "9" -> exportResponsesToFile();
                 case "10" -> performAnalysis();
+                case "11" -> viewSurveyDetails();
+                case "12" -> viewRegisteredUsers();
                 case "0" -> exit = true;
                 default -> System.out.println("Opción no válida. Intente nuevamente.");
             }
@@ -72,6 +74,8 @@ public class TerminalDriver {
         System.out.println("8) Importar respuestas desde archivo");
         System.out.println("9) Exportar respuestas a archivo");
         System.out.println("10) Realizar análisis");
+        System.out.println("11) Ver encuesta");
+        System.out.println("12) Ver usuarios registrados");
         System.out.println("0) Salir");
     }
 
@@ -425,6 +429,71 @@ public class TerminalDriver {
         } catch (PersistenceException e) {
             System.out.println("No se pudo ejecutar el análisis: " + e.getMessage());
         }
+    }
+
+    private void viewSurveyDetails() {
+        if (!ensureSession()) return;
+        Collection<Survey> surveys = surveyController.listSurveys();
+        if (surveys.isEmpty()) {
+            System.out.println("No hay encuestas registradas.");
+            return;
+        }
+
+        System.out.println("\nEncuestas disponibles:");
+        surveys.forEach(s -> System.out.println(" - " + s.getId() + " :: " + s.getTitle()));
+        String surveyId = promptNonEmpty("ID de la encuesta a visualizar");
+        try {
+            Survey survey = surveyController.loadSurvey(surveyId);
+            System.out.println("\n== Detalle de encuesta ==");
+            System.out.println("ID: " + survey.getId());
+            System.out.println("Título: " + survey.getTitle());
+            System.out.println("Descripción: " + survey.getDescription());
+            System.out.println("Preguntas configuradas: " + survey.getQuestions().size());
+
+            if (survey.getQuestions().isEmpty()) {
+                System.out.println("La encuesta no tiene preguntas definidas.");
+                return;
+            }
+
+            survey.getQuestions().stream()
+                .sorted(Comparator.comparingInt(Question::getPosition))
+                .forEach(this::printQuestionDetails);
+        } catch (PersistenceException e) {
+            System.out.println("No se pudo cargar la encuesta: " + e.getMessage());
+        }
+    }
+
+    private void printQuestionDetails(Question question) {
+        System.out.println("\nPregunta #" + question.getPosition() + " (ID " + question.getId() + ")");
+        System.out.println("Texto: " + question.getText());
+        System.out.println("Tipo: " + question.getClass().getSimpleName());
+        System.out.println("Obligatoria: " + (question.isRequired() ? "Sí" : "No"));
+
+        if (question instanceof OpenIntQuestion intQuestion) {
+            System.out.println("Campo: número entero entre " + intQuestion.getMin() + " y " + intQuestion.getMax());
+        } else if (question instanceof OpenStringQuestion stringQuestion) {
+            System.out.println("Campo: texto (máx " + stringQuestion.getMaxLength() + " caracteres)");
+        } else if (question instanceof SingleChoiceQuestion singleQuestion) {
+            System.out.println("Campo: seleccionar una única opción.");
+            showOptions(singleQuestion.getOptions());
+        } else if (question instanceof MultipleChoiceQuestion multipleQuestion) {
+            System.out.println("Campo: seleccionar entre " + multipleQuestion.getMinChoices() + " y " + multipleQuestion.getMaxChoices() + " opciones.");
+            showOptions(multipleQuestion.getOptions());
+        } else {
+            System.out.println("Campo: tipo de pregunta no soportado.");
+        }
+    }
+
+    private void viewRegisteredUsers() {
+        if (!ensureSession()) return;
+        Collection<RegisteredUser> users = userController.listRegisteredUsers();
+        if (users.isEmpty()) {
+            System.out.println("Todavía no hay usuarios registrados.");
+            return;
+        }
+
+        System.out.println("\n== Usuarios registrados ==");
+        users.forEach(user -> System.out.println(" - ID: " + user.getId() + ", Usuario: " + user.getUsername() + ", Nombre: " + user.getDisplayName()));
     }
 
     private boolean ensureSession() {

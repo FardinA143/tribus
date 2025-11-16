@@ -1,8 +1,11 @@
 package app.controller;
 
 import user.AuthService;
+import user.RegisteredUser;
 import user.Sesion;
 import user.User;
+
+import java.util.Collection;
 
 public class UserController {
     private final AuthService authService;
@@ -52,5 +55,9 @@ public class UserController {
         if (hasActiveSession()) {
             currentSession.updateLastAccessTime();
         }
+    }
+
+    public Collection<RegisteredUser> listRegisteredUsers() {
+        return authService.listRegisteredUsers();
     }
 }

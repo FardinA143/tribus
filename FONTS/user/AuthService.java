@@ -1,7 +1,9 @@
 package user;
 
-import java.util.Map;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Servicio encargado de gestionar el registro, autenticación y sesiones activas
@@ -74,6 +76,15 @@ public class AuthService {
     public void logout(Sesion sess) {
         sess.close();
         activeSessions.remove(sess.getSessionId());
+    }
+
+    /**
+     * Retorna una vista inmutable de los usuarios registrados.
+     *
+     * @return colección no modificable con los usuarios registrados.
+     */
+    public Collection<RegisteredUser> listRegisteredUsers() {
+        return Collections.unmodifiableCollection(registeredUsers.values());
     }
 
     // ======================
