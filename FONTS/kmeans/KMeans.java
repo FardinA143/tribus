@@ -2,9 +2,29 @@ package kmeans;
 
 import distance.Distance;
 import distance.EuclideanDistance;
+import Exceptions.*;
 import java.util.*;
 
+/**
+ * Implementació de l'algorisme K-Means per a clustering.
+ * Agrupa les dades en k clústers mitjançant la minimització iterativa
+ * de la suma de distàncies quadrades dins de cada clúster (inèrcia).
+ * Utilitza inicialització aleatòria dels centroides i gestiona clústers
+ * buits reassignant punts llunyans.
+ */
 public class KMeans implements IClusteringAlgorithm {
+
+    /**
+     * Executa l'algorisme K-Means sobre un conjunt de dades.
+     *
+     * @param X Matriu de dades a agrupar (n_mostres x n_features).
+     * @param k El nombre de clústers a trobar.
+     * @param dist La mètrica de distància a utilitzar. Si és null, s'usarà EuclideanDistance.
+     * @param seed La seed per al generador de números aleatoris.
+     * @param maxIter El nombre màxim d'iteracions a executar.
+     * @param tol La tolerància per declarar convergència (canvi en la inèrcia).
+     * @return Un objecte ClusterModel amb els centroides, etiquetes i inèrcia resultants.
+     */
     @Override
     public ClusterModel fit(double[][] X, int k, Distance dist, long seed, int maxIter, double tol) {
         Objects.requireNonNull(X);
@@ -13,7 +33,6 @@ public class KMeans implements IClusteringAlgorithm {
         final Random rnd = new Random(seed);
         final int n = X.length, d = X[0].length;
 
-        //init: sample k distinct points
         double[][] C = new double[k][d];
         List<Integer> idx = new ArrayList<>();
         for (int i = 0; i < n; i++) idx.add(i);
@@ -25,7 +44,6 @@ public class KMeans implements IClusteringAlgorithm {
         int it = 0;
 
         while (it < maxIter) {
-            //assign
             double inertia = 0.0;
             for (int i = 0; i < n; i++) {
                 int best = 0; double bestDist = Double.POSITIVE_INFINITY;
@@ -36,17 +54,15 @@ public class KMeans implements IClusteringAlgorithm {
                         best = j;
                     }
                     labels[i] = best;
-                    inertia += bestDist*bestDist; //SSE
+                    inertia += bestDist*bestDist;
                 }
             }
 
-            //check convergence
             if (Math.abs(prevInertia - inertia) <= tol*Math.max(1.0, prevInertia)) {
                 return new ClusterModel(C, labels, inertia, it+1);
             }
             prevInertia = inertia;
 
-            //update centroids
             double[][] newC = new double[k][d];
             int[] counts = new int[k];
             for (int i = 0; i < n; i++) {
@@ -54,7 +70,7 @@ public class KMeans implements IClusteringAlgorithm {
                 counts[c]++;
                 for (int t = 0; t < d; t++) newC[c][t] += X[i][t];
             }
-            //handle empty clusters: reseed with farthest point
+
             for (int c = 0; c < k; c++) {
                 if (counts[c] == 0) {
                     int far = -1;
@@ -79,6 +95,14 @@ public class KMeans implements IClusteringAlgorithm {
         return new ClusterModel(C, labels, prevInertia, it);
     }
 
+    /**
+     * Troba l'índex del centroide més proper a un punt donat.
+     *
+     * @param x El punt per al qual cercar el centroide més proper.
+     * @param C Matriu de centroides.
+     * @param dist La mètrica de distància a utilitzar.
+     * @return L'índex del centroide més proper.
+     */
     private int nearest(double[] x, double[][] C, Distance dist) {
         int best = 0;
         double bestD = Double.POSITIVE_INFINITY;
@@ -92,6 +116,19 @@ public class KMeans implements IClusteringAlgorithm {
         return best;
     }
 
+    /**
+     * Executa K-Means amb centroides inicials personalitzats.
+     * Aquest mètode és utilitzat per KMeansPlusPlus per proporcionar
+     * una inicialització més "intel·ligent" dels centroides.
+     *
+     * @param X Matriu de dades a agrupar.
+     * @param initC Matriu amb els centroides inicials.
+     * @param dist La mètrica de distància a utilitzar.
+     * @param seed La seed per al generador de números aleatoris.
+     * @param maxIter El nombre màxim d'iteracions.
+     * @param tol La tolerància per a la convergència.
+     * @return Un objecte ClusterModel amb els resultats.
+     */
     protected ClusterModel fitWithCustomInit(double[][] X, double[][] initC, Distance dist, long seed, int maxIter, double tol) {
         if (dist == null) dist = new EuclideanDistance();
         final int n = X.length, d = X[0].length, k = initC.length;
@@ -128,7 +165,7 @@ public class KMeans implements IClusteringAlgorithm {
                 for (int t = 0; t < d; t++) newC[c][t] += X[i][t];
             }
             for (int c = 0; c < k; c++) {
-                if (counts[c] == 0) { //reseed simple: copia un punto aleatorio cercano
+                if (counts[c] == 0) {
                     int far = iFarthest(X, C, dist);
                     newC[c] = Arrays.copyOf(X[far], d);
                     counts[c] = 1;
@@ -141,6 +178,15 @@ public class KMeans implements IClusteringAlgorithm {
         return new ClusterModel(C, labels, prevInertia, it);
     }
 
+    /**
+     * Troba l'índex del punt més llunyà del seu centroide més proper.
+     * Utilitzat per reassignar clústers buits.
+     *
+     * @param X Matriu de dades.
+     * @param C Matriu de centroides.
+     * @param dist La mètrica de distància a utilitzar.
+     * @return L'índex del punt més llunyà.
+     */
     private int iFarthest(double[][]X, double[][] C, Distance dist) {
         int far = 0;
         double best = -1;
