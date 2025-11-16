@@ -102,59 +102,86 @@ public class TxtResponseSerializer implements ResponseSerializer {
      * @throws IOException Si el fitxer és buit o malformat.
      */
     @Override
-    public SurveyResponse fromFile(String path) throws IOException {
-        SurveyResponse response = null;
-        try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
-            String line = reader.readLine();
-            if(line == null) throw new IOException("File is empty");
+public SurveyResponse fromFile(String path) throws IOException {
 
-            String[] surveyFields = line.split(",");
-            if(surveyFields.length < 4) throw new IOException("Invalid header format");
+    if (!path.toLowerCase().endsWith(".txt")) {
+        path = path + ".txt";
+    }
 
-            List<Answer>answers = new ArrayList<>();
-            response  = new SurveyResponse(surveyFields[0],
-                surveyFields[1], 
-                surveyFields[2], 
-                surveyFields[3], 
-                answers);
+    try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
 
-            while((line = reader.readLine()) != null){
-                String[] parts = line.split(",");
-                
-                if(parts.length < 3) continue; // Salta línies malformades
+        String line = reader.readLine();
+        if (line == null) throw new IOException("File is empty");
 
-                String type = parts[0];
-                Answer a = null;
+        String[] surveyFields = line.split(",");
+        if (surveyFields.length < 4)
+            throw new IOException("Invalid header format");
 
-                switch(type){
-                    case "ia" -> a = new IntAnswer(
-                        Integer.parseInt(parts[1]), // Id de pregunta
-                        Integer.parseInt(parts[2])  // Valor
+        String id        = surveyFields[0];
+        String surveyId  = surveyFields[1];
+        String userId    = surveyFields[2];
+        String submitted = surveyFields[3];
+
+        List<Answer> answers = new ArrayList<>();
+
+        while ((line = reader.readLine()) != null) {
+
+            if (line.isBlank()) continue;
+
+            String[] parts = line.split(",");
+            if (parts.length < 3) continue; 
+
+            String type = parts[0];
+            String qId  = parts[1];
+
+            Answer a = null;
+
+            switch (type) {
+
+                case "ia" -> {
+                    a = new IntAnswer(
+                        Integer.parseInt(qId),
+                        Integer.parseInt(parts[2])
                     );
-                    
-                    case "mc" -> a = new MultipleChoiceAnswer(
-                        Integer.parseInt(parts[1]), // Id de pregunta
-                        parts[2]
-                    ); 
+                }
 
-                    case "sc" -> a  = new SingleChoiceAnswer(
-                        Integer.parseInt(parts[1]), // Id de pregunta
-                        Integer.parseInt(parts[2])  // Índex de la opció
-                    );
-
-                    case "ta" -> a = new TextAnswer(
-                        Integer.parseInt(parts[1]),
+                case "ta" -> {
+                    a = new TextAnswer(
+                        Integer.parseInt(qId),
                         parts[2]
                     );
                 }
-                if(a != null){
-                    response.addAnswer(a);
+
+                case "sc" -> {
+                    a = new SingleChoiceAnswer(
+                        Integer.parseInt(qId),
+                        Integer.parseInt(parts[2])
+                    );
+                }
+
+                case "mc" -> {
+                    // parts[2] = "1|5|9"
+                    a = new MultipleChoiceAnswer(
+                        Integer.parseInt(qId),
+                        parts[2]
+                    );
                 }
             }
 
-        }  catch (Exception e){
-            throw new IOException("Error reading file: " + e.getMessage(), e);
+            if (a != null) answers.add(a);
         }
-        return response;
+
+        return new SurveyResponse(
+            id,
+            surveyId,
+            userId,
+            submitted,
+            answers
+        );
+
+    } catch (Exception e) {
+        throw new IOException("Error reading file: " + e.getMessage(), e);
     }
+}
+
 }
