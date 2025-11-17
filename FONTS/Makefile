@@ -30,11 +30,13 @@ compile:
 jar: compile
 	@echo "[*] Creant jar executable..."
 	@mkdir -p $(EXE_DIR)
+	@printf "Main-Class: $(MAIN_CLASS)\n" > $(EXE_DIR)/manifest.txt
 	@jar cfm $(EXE_DIR)/app.jar $(EXE_DIR)/manifest.txt -C $(EXE_DIR)/classes .
 	@echo "[✓] Jar creat a $(EXE_DIR)/app.jar"
 
 run: jar
 	@echo "[*] Iniciant driver de terminal..."
+	
 	@java -jar $(EXE_DIR)/app.jar
 
 test: compile
