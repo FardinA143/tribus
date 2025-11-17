@@ -1,8 +1,11 @@
-import org.junit.Test;
-import static org.junit.Assert.*;
+package Junit;
+
+import Exceptions.NullArgumentException;
 import Response.Answer;
 import Response.TextAnswer;
-import Exceptions.NullArgumentException; 
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * Proves unitàries per a la classe TextAnswer.
@@ -17,7 +20,7 @@ public class TestTextAnswer {
      * Comprova el valor, el tipus i que no és buida.
      */
     @Test
-    public void testTextAnswerValid() {
+    public void testTextAnswerValid() throws NullArgumentException {
         TextAnswer a = new TextAnswer(1, "resposta vàlida");
         assertEquals("resposta vàlida", a.getValue());
         assertEquals(Answer.Type.TEXT, a.getType());
@@ -39,7 +42,7 @@ public class TestTextAnswer {
      * Ha de ser considerada buida (isEmpty = true).
      */
     @Test
-    public void testTextAnswerEmptyString() {
+    public void testTextAnswerEmptyString() throws NullArgumentException {
         TextAnswer a = new TextAnswer(3, "");
         assertTrue(a.isEmpty());
     }
@@ -49,7 +52,7 @@ public class TestTextAnswer {
      * Ha de ser considerada buida (isEmpty = true, ja que trim() és buit).
      */
     @Test
-    public void testTextAnswerWhitespace() {
+    public void testTextAnswerWhitespace() throws NullArgumentException {
         TextAnswer a = new TextAnswer(4, "   \t");
         assertTrue(a.isEmpty());
     }

@@ -1,13 +1,18 @@
 package Junit;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.io.*;
-import java.nio.file.*;
-import java.util.*;
-
 import Survey.*;
-import org.junit.jupiter.api.*;
+import importexport.TxtSurveySerializer;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.Assert.*;
 
 /**
  * Proves unitàries per a la classe TxtSurveySerializer.
@@ -19,14 +24,14 @@ public class TxtSurveySerializerTest {
     private TxtSurveySerializer serializer;
     private Path temp;
 
-    @BeforeEach
-    void setup() throws Exception {
+    @Before
+    public void setup() throws Exception {
         serializer = new TxtSurveySerializer();
         temp = Files.createTempFile("survey_test",".txt");
     }
 
-    @AfterEach
-    void cleanup() throws Exception {
+    @After
+    public void cleanup() throws Exception {
         Files.deleteIfExists(temp);
     }
 
@@ -35,7 +40,7 @@ public class TxtSurveySerializerTest {
      * verificant que els atributs de l'enquesta i els tipus de preguntes es mantenen.
      */
     @Test
-    void testToFileAndFromFile_fullSurvey() throws Exception {
+    public void testToFileAndFromFileFullSurvey() throws Exception {
         List<Question> qs = new ArrayList<>();
         qs.add(new OpenIntQuestion(1, "Edad?", true, 1, 1.0, 0, 100));
         qs.add(new OpenStringQuestion(2, "Nombre?", false, 2, 0.5, 80));
@@ -61,21 +66,20 @@ public class TxtSurveySerializerTest {
     /**
      * Comprova que si l'arxiu està completament buit, es llança una excepció.
      */
-    @Test
-    void testEmptyFileThrows() throws Exception {
+    @Test(expected = IOException.class)
+    public void testEmptyFileThrows() throws Exception {
         Files.writeString(temp, "");
-        // El fromFile re-llança la IOException com a NotValidFileException si no troba línia
-        assertThrows(IOException.class, () -> serializer.fromFile(temp.toString()));
+        serializer.fromFile(temp.toString());
     }
 
     /**
      * Comprova que si la capçalera (la línia de Survey) és mal formada (menys de 9 camps),
      * es llança una excepció.
      */
-    @Test
-    void testMalformedHeaderThrows() throws Exception {
+    @Test(expected = IOException.class)
+    public void testMalformedHeaderThrows() throws Exception {
         Files.writeString(temp, "bad,header\n");
-        assertThrows(IOException.class, () -> serializer.fromFile(temp.toString()));
+        serializer.fromFile(temp.toString());
     }
 
     /**
@@ -83,7 +87,7 @@ public class TxtSurveySerializerTest {
      * són ignorades, i només les línies vàlides són carregades.
      */
     @Test
-    void testMalformedQuestionLineIgnored() throws Exception {
+    public void testMalformedQuestionLineIgnored() throws Exception {
         String content = "sid,title,desc,yo,3,init,dist,2025,2025\n" +
                          "1,Texto,true,1,1.0,oi,0,100\n" + // VÀLIDA
                          "mal,formed,line\n" + // MAL FORMADA (s'ignora o provoca excepció)

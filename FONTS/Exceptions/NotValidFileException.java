@@ -1,11 +1,12 @@
 package Exceptions;
 
 public class NotValidFileException extends SurveyException {
+    private static final long serialVersionUID = 1L;
     public NotValidFileException() {
-        super("File is not valid");
+        super("Fitxer no vàlid");
     }
-    
-    public NotValidFileException(String message) {
-        super(message);
+
+    public NotValidFileException(String detail) {
+        super("Fitxer no vàlid: " + detail);
     }
 }

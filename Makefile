@@ -22,7 +22,7 @@ help:
 compile:
 	@echo "[*] Compilando fuentes Java..."
 	@mkdir -p $(OUT_DIR)
-	@find $(FONTS_DIR) -name "*.java" | xargs javac -d $(OUT_DIR) -encoding UTF-8
+	@find $(FONTS_DIR) -path "$(FONTS_DIR)/Junit" -prune -o -name "*.java" -print | xargs javac -d $(OUT_DIR) -encoding UTF-8
 	@echo "[✓] Compilación completada en $(OUT_DIR)/"
 
 run: compile

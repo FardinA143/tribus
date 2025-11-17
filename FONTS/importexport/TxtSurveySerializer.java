@@ -156,34 +156,55 @@ public class TxtSurveySerializer implements SurveySerializer {
 
                     case "mc" -> {
                         if(parts.length >= 8) {
-                            MultipleChoiceQuestion mc = new MultipleChoiceQuestion(
+                            if (parts.length >= 9) {
+                                List<ChoiceOption> opts = new ArrayList<>();
+                                hydrateOptions(opts, parts[8]);
+                                q = new MultipleChoiceQuestion(
+                                    Integer.parseInt(parts[0]),
+                                    parts[1],
+                                    Boolean.parseBoolean(parts[2]),
+                                    Integer.parseInt(parts[3]),
+                                    Double.parseDouble(parts[4]),
+                                    Integer.parseInt(parts[6]),
+                                    Integer.parseInt(parts[7]),
+                                    opts
+                                );
+                            } else {
+                                MultipleChoiceQuestion mc = new MultipleChoiceQuestion(
+                                    Integer.parseInt(parts[0]),
+                                    parts[1],
+                                    Boolean.parseBoolean(parts[2]),
+                                    Integer.parseInt(parts[3]),
+                                    Double.parseDouble(parts[4]),
+                                    Integer.parseInt(parts[6]),
+                                    Integer.parseInt(parts[7])
+                                );
+                                q = mc;
+                            }
+                        }
+                    }
+
+                    case "sc" -> {
+                        if (parts.length >= 7) {
+                            List<ChoiceOption> opts = new ArrayList<>();
+                            hydrateOptions(opts, parts[6]);
+                            q = new SingleChoiceQuestion(
                                 Integer.parseInt(parts[0]),
                                 parts[1],
                                 Boolean.parseBoolean(parts[2]),
                                 Integer.parseInt(parts[3]),
                                 Double.parseDouble(parts[4]),
-                                Integer.parseInt(parts[6]),
-                                Integer.parseInt(parts[7])
+                                opts
                             );
-                            if(parts.length >= 9) {
-                                hydrateOptions(mc.getOptions(), parts[8]);
-                            }
-                            q = mc;
+                        } else {
+                            q = new SingleChoiceQuestion(
+                                Integer.parseInt(parts[0]),
+                                parts[1],
+                                Boolean.parseBoolean(parts[2]),
+                                Integer.parseInt(parts[3]),
+                                Double.parseDouble(parts[4])
+                            );
                         }
-                    }
-
-                    case "sc" -> {
-                        SingleChoiceQuestion sc = new SingleChoiceQuestion(
-                            Integer.parseInt(parts[0]),
-                            parts[1],
-                            Boolean.parseBoolean(parts[2]),
-                            Integer.parseInt(parts[3]),
-                            Double.parseDouble(parts[4])
-                        );
-                        if(parts.length >= 7) {
-                            hydrateOptions(sc.getOptions(), parts[6]);
-                        }
-                        q = sc;
                     }
 
                     case "os" -> {

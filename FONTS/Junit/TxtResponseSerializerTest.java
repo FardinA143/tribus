@@ -1,15 +1,19 @@
-package importexport;
-
-import static org.junit.jupiter.api.Assertions.*;
+package Junit;
 
 import Response.*;
 import Survey.*;
+import importexport.TxtResponseSerializer;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
-import org.junit.jupiter.api.*;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
-import java.io.*;
-import java.nio.file.*;
-import java.util.*;
+import static org.junit.Assert.*;
 
 /**
  * Proves unitàries per a la classe TxtResponseSerializer.
@@ -21,14 +25,14 @@ public class TxtResponseSerializerTest {
     private TxtResponseSerializer serializer;
     private Path tempFile;
 
-    @BeforeEach
-    void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         serializer = new TxtResponseSerializer();
         tempFile = Files.createTempFile("response_test", ".txt");
     }
 
-    @AfterEach
-    void tearDown() throws Exception {
+    @After
+    public void tearDown() throws Exception {
         Files.deleteIfExists(tempFile);
     }
 
@@ -38,7 +42,7 @@ public class TxtResponseSerializerTest {
      * SingleChoice i MultipleChoice.
      */
     @Test
-    void testToFileAndFromFile_int_text_sc_mc() throws Exception {
+    public void testToFileAndFromFileIntTextScMc() throws Exception {
         List<Answer> answers = new ArrayList<>();
         answers.add(new IntAnswer(1, 42));
         answers.add(new TextAnswer(2, "hola"));
@@ -49,7 +53,9 @@ public class TxtResponseSerializerTest {
         List<SurveyResponse> list = List.of(resp);
 
         serializer.toFile(list, tempFile.toString());
-        SurveyResponse loaded = serializer.fromFile(tempFile.toString());
+        List<SurveyResponse> loadedResponses = serializer.fromFile(tempFile.toString());
+        assertEquals(1, loadedResponses.size());
+        SurveyResponse loaded = loadedResponses.get(0);
 
         assertEquals("id1", loaded.getId());
         assertEquals("sid", loaded.getSurveyId());
@@ -76,19 +82,19 @@ public class TxtResponseSerializerTest {
      * (Nota: Amb el codi actual, s'espera NotValidFileException o IOException/Exception
      * dins del fromFile, que re-llança NotValidFileException).
      */
-    @Test
-    void testEmptyFileThrows() throws Exception {
+    @Test(expected = IOException.class)
+    public void testEmptyFileThrows() throws Exception {
         Files.writeString(tempFile, "");
-        assertThrows(IOException.class, () -> serializer.fromFile(tempFile.toString()));
+        serializer.fromFile(tempFile.toString());
     }
 
     /**
      * Comprova que si la capçalera de l'arxiu (la línia de SurveyResponse) és mal formada,
      * es llança una excepció controlada.
      */
-    @Test
-    void testMalformedHeaderThrows() throws Exception {
+    @Test(expected = IOException.class)
+    public void testMalformedHeaderThrows() throws Exception {
         Files.writeString(tempFile, "bad,header\n");
-        assertThrows(IOException.class, () -> serializer.fromFile(tempFile.toString()));
+        serializer.fromFile(tempFile.toString());
     }
 }

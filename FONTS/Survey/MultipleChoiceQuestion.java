@@ -21,6 +21,21 @@ public class MultipleChoiceQuestion extends Question {
     }
 
     /**
+     * Crea la pregunta amb una llista d'opcions inicials (útil per imports).
+     * Es fa una còpia defensiva de la llista proporcionada.
+     */
+    public MultipleChoiceQuestion(int id, String text, boolean required, int position, double weight, int minChoices, int maxChoices, List<ChoiceOption> initialOptions) {
+        super(id, text, required, position, weight);
+        this.minChoices = minChoices;
+        this.maxChoices = maxChoices;
+        if (initialOptions == null) {
+            this.options = new ArrayList<>();
+        } else {
+            this.options = new ArrayList<>(initialOptions);
+        }
+    }
+
+    /**
      * @return el nombre mínim d'opcions que cal marcar
      */
     public int getMinChoices() {

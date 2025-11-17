@@ -1,9 +1,11 @@
 package Junit;
-package kmeans;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
 import distance.EuclideanDistance;
+import kmeans.ClusterModel;
+import kmeans.KMeans;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * Proves unitàries per a l'algorisme KMeans estàndard.

@@ -1,11 +1,13 @@
-import org.junit.Test;
-import static org.junit.Assert.*;
+package Junit;
+
 import Response.Answer;
 import Response.SurveyResponse;
-import Response.IntAnswer;
-import java.util.ArrayList;
+import org.junit.Test;
+
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.Assert.*;
 
 /**
  * Proves unitàries per a la classe SurveyResponse.

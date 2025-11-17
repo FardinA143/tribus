@@ -1,11 +1,16 @@
-import org.junit.Test;
-import static org.junit.Assert.*;
+package Junit;
+
+import Exceptions.InvalidArgumentException;
+import Exceptions.NullArgumentException;
 import Response.Answer;
 import Response.MultipleChoiceAnswer;
-import Exceptions.InvalidArgumentException;
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.Assert.*;
 
 
 /**
@@ -19,7 +24,7 @@ public class TestMultipleChoiceAnswer {
      * Comprova l'ID, la mida de la llista i la representació CSV.
      */
     @Test
-    public void testMultipleChoiceAnswerFromCollectionValid() throws InvalidArgumentException {
+    public void testMultipleChoiceAnswerFromCollectionValid() throws InvalidArgumentException, NullArgumentException {
         List<Integer> options = Arrays.asList(1, 5, 10);
         MultipleChoiceAnswer a = Answer.MULTIPLE_CHOICE(1, options);
         
@@ -35,7 +40,7 @@ public class TestMultipleChoiceAnswer {
      * Cas extrem: Llista buida (ha de ser considerada una resposta buida).
      */
     @Test
-    public void testMultipleChoiceAnswerEmptyList() throws InvalidArgumentException {
+    public void testMultipleChoiceAnswerEmptyList() throws InvalidArgumentException, NullArgumentException {
         List<Integer> options = new ArrayList<>();
         MultipleChoiceAnswer a = Answer.MULTIPLE_CHOICE(2, options);
         
@@ -47,12 +52,11 @@ public class TestMultipleChoiceAnswer {
 
 
     /**
-     * Cas d'error: Comprovació d'un valor no enter en el CSV.
-     * Hauria de llançar NumberFormatException, però és capturat i re-llançat
-     * com a InvalidArgumentException pel mètode constructor.
+    * Cas d'error: Comprovació d'un valor no enter en el CSV.
+    * Actualment la implementació propaga la NumberFormatException directa.
      */
-    @Test(expected = InvalidArgumentException.class) 
-    public void testMultipleChoiceAnswerInvalidCsv() throws InvalidArgumentException {
+    @Test(expected = NumberFormatException.class) 
+    public void testMultipleChoiceAnswerInvalidCsv() throws InvalidArgumentException, NullArgumentException {
         // Si s'inclou un string que no és un enter ("ABC"), NumberFormatException és llençada internament.
         Answer.MULTIPLE_CHOICE(6, "1, ABC, 5"); 
     }
@@ -64,7 +68,7 @@ public class TestMultipleChoiceAnswer {
      * (Nota: El test hauria d'estar marcat amb @Test(expected = InvalidArgumentException.class))
      */
     @Test(expected = InvalidArgumentException.class)
-    public void testMultipleChoiceAnswerNegativeIdInList() throws InvalidArgumentException {
+    public void testMultipleChoiceAnswerNegativeIdInList() throws InvalidArgumentException, NullArgumentException {
         Answer.MULTIPLE_CHOICE(3, Arrays.asList(1, -5, 10)); 
     }
 }

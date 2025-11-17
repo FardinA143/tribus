@@ -1,19 +1,18 @@
 package Junit;
-package kselector;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
-
+import distance.Distance;
 import kmeans.ClusterModel;
 import kmeans.IClusteringAlgorithm;
-import distance.Distance;
+import kselector.ElbowMethod;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.*;
 
 /**
  * Proves unitàries per a ElbowMethod utilitzant Mocks de Mockito.
@@ -21,16 +20,7 @@ import distance.Distance;
  * inèrcies predefinides i així verificar que la lògica de
  * 'suggestK' troba el 'colze' (elbow) correcte.
  */
-@RunWith(MockitoJUnitRunner.class)
 public class TestElbowMethod {
-
-    @Mock // Creem un Mock de l'algorisme
-    private IClusteringAlgorithm mockAlgorithm;
-
-    @Mock // Creem Mocks per als models de resultat
-    private ClusterModel mockModelK2, mockModelK3, mockModelK4;
-
-    @InjectMocks // Creem una instància de la classe a provar i li injectem els mocks
     private ElbowMethod elbowMethod;
     
     // Dades fictícies. El contingut no importa perquè l'algorisme està mockejat.
@@ -43,24 +33,8 @@ public class TestElbowMethod {
      */
     @Before
     public void setUp() {
+        elbowMethod = new ElbowMethod();
         dummyData = new double[][]{{0}, {1}, {2}, {10}, {11}, {12}};
-
-        // 1. Definim el "guió" dels mocks per a la funció fit
-        // L'inèrcia (SSE) baixa fortament entre k=2 (100.0) i k=3 (20.0),
-        // i s'estabilitza a k=4 (15.0).
-        when(mockAlgorithm.fit(any(), eq(2), any(), anyLong(), anyInt(), anyDouble()))
-            .thenReturn(mockModelK2);
-        
-        when(mockAlgorithm.fit(any(), eq(3), any(), anyLong(), anyInt(), anyDouble()))
-            .thenReturn(mockModelK3);
-
-        when(mockAlgorithm.fit(any(), eq(4), any(), anyLong(), anyInt(), anyDouble()))
-            .thenReturn(mockModelK4);
-
-        // 2. Definim la inèrcia que retornarà cada model
-        when(mockModelK2.getInertia()).thenReturn(100.0); // Inèrcia alta (inici de la línia)
-        when(mockModelK3.getInertia()).thenReturn(20.0);  // Gran baixada (el colze esperat)
-        when(mockModelK4.getInertia()).thenReturn(15.0);  // Baixada petita (estabilització)
     }
 
     /**
@@ -70,14 +44,47 @@ public class TestElbowMethod {
     @Test
     public void testSuggestKFindsElbowCorrectly() {
         int kMin = 2, kMax = 4;
-        int suggestedK = elbowMethod.suggestK(dummyData, kMin, kMax, mockAlgorithm, null, 0L);
+        RecordingAlgorithm algorithm = RecordingAlgorithm.withInertia(2, 100.0, 3, 20.0, 4, 15.0);
+
+        int suggestedK = elbowMethod.suggestK(dummyData, kMin, kMax, algorithm, null, 0L);
 
         // El K suggerit hauria de ser 3, el punt de màxima curvatura.
         assertEquals(3, suggestedK);
 
-        // Verificació que s'ha cridat a 'fit' per a cada valor de k.
-        verify(mockAlgorithm, times(1)).fit(any(), eq(2), any(), anyLong(), anyInt(), anyDouble());
-        verify(mockAlgorithm, times(1)).fit(any(), eq(3), any(), anyLong(), anyInt(), anyDouble());
-        verify(mockAlgorithm, times(1)).fit(any(), eq(4), any(), anyLong(), anyInt(), anyDouble());
+        // Verifiquem que l'algorisme s'ha executat per a cadascun dels valors de k provats.
+        assertArrayEquals(new int[]{2, 3, 4}, algorithm.getCalls());
+    }
+
+    /**
+     * Implementació mínima d'IClusteringAlgorithm que retorna models amb inèrcia predefinida
+     * i registra els valors de k utilitzats. D'aquesta manera evitem dependències externes
+     * (Mockito) i mantenim el test unitari totalment determinista.
+     */
+    private static final class RecordingAlgorithm implements IClusteringAlgorithm {
+        private final Map<Integer, Double> inertiaByK;
+        private final List<Integer> calls = new ArrayList<>();
+
+        private RecordingAlgorithm(Map<Integer, Double> inertiaByK) {
+            this.inertiaByK = inertiaByK;
+        }
+
+        static RecordingAlgorithm withInertia(int k1, double i1, int k2, double i2, int k3, double i3) {
+            Map<Integer, Double> map = new HashMap<>();
+            map.put(k1, i1);
+            map.put(k2, i2);
+            map.put(k3, i3);
+            return new RecordingAlgorithm(map);
+        }
+
+        @Override
+        public ClusterModel fit(double[][] data, int k, Distance distance, long seed, int maxIter, double tol) {
+            calls.add(k);
+            double inertia = inertiaByK.getOrDefault(k, Double.NaN);
+            return new ClusterModel(new double[k][1], new int[0], inertia, 1);
+        }
+
+        int[] getCalls() {
+            return calls.stream().mapToInt(Integer::intValue).toArray();
+        }
     }
 }

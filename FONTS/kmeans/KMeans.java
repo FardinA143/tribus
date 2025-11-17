@@ -2,7 +2,6 @@ package kmeans;
 
 import distance.Distance;
 import distance.EuclideanDistance;
-import Exceptions.*;
 import java.util.*;
 
 /**

@@ -1,7 +1,10 @@
-import org.junit.Test;
-import static org.junit.Assert.*;
+package Junit;
+
 import Response.Answer;
 import Response.IntAnswer;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * Proves unitàries per a la classe IntAnswer.

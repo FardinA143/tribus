@@ -56,7 +56,7 @@ public class Survey {
      */
     public void addQuestion(Question question) throws InvalidQuestionException {
         if (question == null) {
-            throw new InvalidQuestionException("Question cannot be null.");
+            throw new InvalidQuestionException("no pot ser nul·la");
         }
         this.questions.add(question);
     }
@@ -69,11 +69,11 @@ public class Survey {
      */
     public void importQuestions(List<Question> questions) throws InvalidQuestionException {
         if (questions == null) {
-            throw new InvalidQuestionException("Questions list cannot be null.");
+            throw new InvalidQuestionException("la llista de preguntes no pot ser nul·la");
         }
         for (Question q : questions) {
             if (q == null) {
-                throw new InvalidQuestionException("Question in the list cannot be null.");
+                throw new InvalidQuestionException("alguna pregunta de la llista és nul·la");
             }
             this.questions.add(q);
         }
@@ -87,7 +87,7 @@ public class Survey {
     public void deleteQuestion(int questionId) throws QuestionNotFoundException {
         boolean removed = questions.removeIf(q -> q.getId() == questionId);
         if (!removed) {
-            throw new QuestionNotFoundException("Question with ID " + questionId + " not found.");
+            throw new QuestionNotFoundException(questionId);
         }
     }
     // Getters and setters

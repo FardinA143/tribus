@@ -1,8 +1,13 @@
 package Exceptions;
 
 public class InvalidQuestionException extends SurveyException {
-    public InvalidQuestionException(String message) {
-        super(message);
+    private static final long serialVersionUID = 1L;
+    public InvalidQuestionException() {
+        super("Pregunta invàlida");
+    }
+
+    public InvalidQuestionException(String detail) {
+        super("Pregunta: " + detail);
     }
 }
 

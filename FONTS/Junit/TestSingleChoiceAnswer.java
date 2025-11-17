@@ -1,8 +1,11 @@
-import org.junit.Test;
-import static org.junit.Assert.*;
+package Junit;
+
+import Exceptions.InvalidArgumentException;
 import Response.Answer;
 import Response.SingleChoiceAnswer;
-import Exceptions.InvalidArgumentException;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * Proves unitàries per a la classe SingleChoiceAnswer.
@@ -15,7 +18,7 @@ public class TestSingleChoiceAnswer {
      * Comprova l'ID, el valor, el tipus i que no és buida.
      */
     @Test
-    public void testSingleChoiceAnswerValid() {
+    public void testSingleChoiceAnswerValid() throws InvalidArgumentException {
         SingleChoiceAnswer a = new SingleChoiceAnswer(1, 5);
         assertEquals(1, a.getQuestionId());
         assertEquals(5, a.getOptionId());
@@ -29,7 +32,7 @@ public class TestSingleChoiceAnswer {
      * Ha de llançar InvalidArgumentException.
      */
     @Test(expected = InvalidArgumentException.class)
-    public void testSingleChoiceAnswerNegativeOptionId() {
+    public void testSingleChoiceAnswerNegativeOptionId() throws InvalidArgumentException {
         new SingleChoiceAnswer(2, -1);
     }
     
@@ -39,7 +42,7 @@ public class TestSingleChoiceAnswer {
      * Si l'ID zero és permès per la Question, l'Answer és vàlida.
      */
     @Test
-    public void testSingleChoiceAnswerZeroOptionId() {
+    public void testSingleChoiceAnswerZeroOptionId() throws InvalidArgumentException {
         SingleChoiceAnswer a = new SingleChoiceAnswer(3, 0);
         assertEquals(0, a.getOptionId());
     }
@@ -50,7 +53,7 @@ public class TestSingleChoiceAnswer {
      * una opció a la vegada, d'acord amb el seu propòsit (Single Choice).
      */
     @Test
-    public void testCannotStoreMultipleOptions() {
+    public void testCannotStoreMultipleOptions() throws InvalidArgumentException {
         // Com que la classe és final i el camp optionId és final, l'única manera de 
         // tenir una opció diferent és creant un objecte nou.
         SingleChoiceAnswer a = new SingleChoiceAnswer(2, 10);

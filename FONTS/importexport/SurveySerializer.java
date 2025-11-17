@@ -2,7 +2,6 @@ package importexport;
 
 import java.io.IOException;
 
-import Exceptions.NotValidFileException;
 import Survey.*;
 
 /**

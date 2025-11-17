@@ -17,6 +17,19 @@ public class SingleChoiceQuestion extends Question {
     }
 
     /**
+     * Crea la pregunta amb una llista d'opcions inicials (útil per imports).
+     * @param initialOptions llista d'opcions a prémer; es fa una còpia defensiva
+     */
+    public SingleChoiceQuestion(int id, String text, boolean required, int position, double weight, List<ChoiceOption> initialOptions) {
+        super(id, text, required, position, weight);
+        if (initialOptions == null) {
+            this.options = new ArrayList<>();
+        } else {
+            this.options = new ArrayList<>(initialOptions);
+        }
+    }
+
+    /**
      * @return llista mutable d'opcions configurades
      */
     public List<ChoiceOption> getOptions() {

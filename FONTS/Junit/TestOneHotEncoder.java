@@ -1,13 +1,13 @@
 package Junit;
-package Encoder;
 
+import Encoder.OneHotEncoder;
+import Exceptions.*;
+import Response.*;
+import Survey.*;
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
 
-import Survey.*;
-import Response.*;
-import Exceptions.*;
+import static org.junit.Assert.*;
 
 import java.time.LocalDateTime;
 import java.util.List;

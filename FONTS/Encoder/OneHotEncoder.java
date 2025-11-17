@@ -1,6 +1,5 @@
 package Encoder;
 
-import Exceptions.*;
 import Survey.*;
 import Response.*;
 import java.util.*;
