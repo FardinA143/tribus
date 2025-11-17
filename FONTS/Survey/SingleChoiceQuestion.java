@@ -10,6 +10,12 @@ public class SingleChoiceQuestion extends Question {
 
     /**
      * Crea la pregunta sense opcions inicials.
+     *
+     * @param id identificador únic de la pregunta.
+     * @param text literal que veurà l'usuari.
+     * @param required indica si és obligatòria.
+     * @param position ordre dins de l'enquesta.
+     * @param weight pes utilitzat per mètriques.
      */
     public SingleChoiceQuestion(int id, String text, boolean required, int position, double weight) {
         super(id, text, required, position, weight);
@@ -18,7 +24,13 @@ public class SingleChoiceQuestion extends Question {
 
     /**
      * Crea la pregunta amb una llista d'opcions inicials (útil per imports).
-     * @param initialOptions llista d'opcions a prémer; es fa una còpia defensiva
+     *
+     * @param id identificador únic de la pregunta.
+     * @param text literal que es mostra.
+     * @param required indica si és obligatòria.
+     * @param position posició dins de l'enquesta.
+     * @param weight pes utilitzat en les mètriques.
+     * @param initialOptions llista d'opcions a prémer; es fa una còpia defensiva.
      */
     public SingleChoiceQuestion(int id, String text, boolean required, int position, double weight, List<ChoiceOption> initialOptions) {
         super(id, text, required, position, weight);
@@ -30,6 +42,8 @@ public class SingleChoiceQuestion extends Question {
     }
 
     /**
+     * Obté la col·lecció editable d'opcions definides.
+     *
      * @return llista mutable d'opcions configurades
      */
     public List<ChoiceOption> getOptions() {

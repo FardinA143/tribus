@@ -28,6 +28,12 @@ import Survey.*;
 public class TxtSurveySerializer implements SurveySerializer {
 
     /**
+     * Crea el serialitzador TXT sense estat intern addicional.
+     */
+    public TxtSurveySerializer() {
+    }
+
+    /**
      * Escriu una enquesta en un fitxer de text seguint el format establert.
      * La primera línia conté els camps de l'enquesta i les següents línies
      * contenen cadascuna de les preguntes.

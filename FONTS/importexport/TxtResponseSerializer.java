@@ -41,6 +41,12 @@ public class TxtResponseSerializer implements ResponseSerializer {
     private static final Base64.Decoder BASE64_DECODER = Base64.getDecoder();
 
     /**
+     * Crea un serialitzador TXT sense dependències addicionals.
+     */
+    public TxtResponseSerializer() {
+    }
+
+    /**
      * Escriu totes les {@link SurveyResponse} al fitxer indicat seguint el format modern.
      *
      * @param responses Llista de respostes a serialitzar.

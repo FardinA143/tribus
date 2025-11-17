@@ -22,6 +22,8 @@ public class OpenStringQuestion extends Question {
     }
 
     /**
+     * Mostra la longitud màxima acceptada per la resposta.
+     *
      * @return la longitud màxima permitida
      */
     public int getMaxLength() {

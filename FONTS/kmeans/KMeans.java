@@ -14,6 +14,12 @@ import java.util.*;
 public class KMeans implements IClusteringAlgorithm {
 
     /**
+     * Crea un nou algorisme K-Means sense estat compartit.
+     */
+    public KMeans() {
+    }
+
+    /**
      * Executa l'algorisme K-Means sobre un conjunt de dades.
      *
      * @param X Matriu de dades a agrupar (n_mostres x n_features).

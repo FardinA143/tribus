@@ -15,6 +15,12 @@ import java.util.Map;
  */
 public class AuthService {
 
+    /**
+     * Crea un servei d'autenticació amb emmagatzematge en memòria.
+     */
+    public AuthService() {
+    }
+
     /** Mapa de usuarios registrados, indexados por su ID. */
     private Map<String, RegisteredUser> registeredUsers = new HashMap<>(); 
 

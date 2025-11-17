@@ -50,7 +50,7 @@ test: compile
 		if [ -f libs/hamcrest-core-1.3.jar ]; then CP="$$CP:libs/hamcrest-core-1.3.jar"; fi; \
 		CLASSES=""; \
 		for f in $(FONTS_DIR)/Junit/*.java; do base=$$(basename $$f .java); CLASSES="$$CLASSES Junit.$$base"; done; \
-		java -cp "$$CP" org.junit.runner.JUnitCore $$CLASSES || true; \
+		java -cp "$$CP" app.TestSuiteRunner $$CLASSES; \
 	else \
 		echo "[!] No se encontró junit en libs/. Coloca junit-4.13.2.jar y ejecuta de nuevo."; exit 1; \
 	fi

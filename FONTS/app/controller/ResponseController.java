@@ -42,4 +42,31 @@ public class ResponseController {
     public List<SurveyResponse> listAllResponses() {
         return persistence.listAllResponses();
     }
+
+    public void removeResponsesBySurvey(String surveyId) throws PersistenceException {
+        persistence.removeResponsesBySurvey(surveyId);
+    }
+
+    public List<SurveyResponse> listResponsesByUser(String userId) throws PersistenceException {
+        return persistence.listResponsesByUser(userId);
+    }
+
+    public void deleteResponse(String responseId) throws PersistenceException {
+        persistence.removeResponse(responseId);
+    }
+
+    public SurveyResponse loadResponse(String responseId) throws PersistenceException {
+        return persistence.loadResponse(responseId);
+    }
+
+    public void updateResponse(SurveyResponse original, List<Answer> answers) throws PersistenceException {
+        SurveyResponse updated = new SurveyResponse(
+            original.getId(),
+            original.getSurveyId(),
+            original.getUserId(),
+            LocalDateTime.now().toString(),
+            answers
+        );
+        persistence.saveResponse(updated);
+    }
 }

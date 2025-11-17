@@ -226,11 +226,12 @@ public class OneHotEncoder implements IEncoder {
 
     /**
      * Obté la llista de noms descriptius per a cada característica del vector codificat.
-     * Els noms segueixen el format: "q<questionId>_opt<optionId>" per a opcions de preguntes
-     * categòriques, "q<questionId>_val" per a valors numèrics de OpenInt, i "q<questionId>_len"
-     * per a longituds de OpenString.
-     * 
-     * @return Llista immutable de noms de característiques, en el mateix ordre que les dimensions del vector.
+     * Els noms segueixen el format {@code q<questionId>_opt<optionId>} per a opcions de preguntes
+     * categòriques, {@code q<questionId>_val} per a valors numèrics de OpenInt, i
+     * {@code q<questionId>_len} per a longituds de OpenString.
+     *
+     * @return Llista immutable de noms de característiques, en el mateix ordre que les dimensions
+     *     del vector.
      */
     @Override
     public List<String> getFeatureNames() {

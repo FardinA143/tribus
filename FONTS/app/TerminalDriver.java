@@ -14,6 +14,10 @@ import user.*;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Client en mode terminal que exposa totes les funcionalitats de gestió
+ * d'enquestes, usuaris i respostes de la plataforma.
+ */
 public class TerminalDriver {
     private final Scanner scanner = new Scanner(System.in);
     private final LocalPersistence persistence = new LocalPersistence();
@@ -23,7 +27,21 @@ public class TerminalDriver {
     private final SurveyController surveyController = new SurveyController(persistence, surveySerializer);
     private final ResponseController responseController = new ResponseController(persistence);
     private final AnalyticsController analyticsController = new AnalyticsController();
+    private static final double DEFAULT_QUESTION_WEIGHT = 1.0;
+    private static final int DEFAULT_MAX_TEXT_LENGTH = 250;
+    private static final int RECOMMENDED_TEXT_LENGTH = 50;
 
+    /**
+     * Construeix el controlador de terminal inicialitzant els serveis requerits.
+     */
+    public TerminalDriver() {
+    }
+
+    /**
+     * Punt d'entrada de la CLI.
+     *
+     * @param args paràmetres de línia d'ordres (no utilitzats).
+     */
     public static void main(String[] args) {
         new TerminalDriver().start();
     }
@@ -35,7 +53,6 @@ public class TerminalDriver {
 
         boolean exit = false;
         while (!exit) {
-            pageBreak();
             showMenu();
             String choice = prompt("Selecciona una opció");
             switch (choice) {
@@ -50,15 +67,13 @@ public class TerminalDriver {
                 case "9" -> exportResponsesToFile();
                 case "10" -> performAnalysis();
                 case "11" -> viewSurveyDetails();
-                case "12" -> viewRegisteredUsers();
-                case "13" -> viewRegisteredResponses();
-                case "14" -> editSurvey();
-                case "15" -> deleteSurvey();
+                case "12" -> viewRegisteredResponses();
+                case "13" -> editOwnResponse();
+                case "14" -> deleteOwnResponse();
+                case "15" -> editSurvey();
+                case "16" -> deleteSurvey();
                 case "0" -> exit = true;
                 default -> System.out.println("Opció no vàlida. Torna-ho a intentar.");
-            }
-            if (!exit) {
-                prompt("Prem Enter per continuar");
             }
         }
 
@@ -78,23 +93,25 @@ public class TerminalDriver {
         System.out.println("9) Exportar respostes a arxiu");
         System.out.println("10) Realitzar anàlisi");
         System.out.println("11) Veure enquesta");
-        System.out.println("12) Veure usuaris registrats");
-        System.out.println("13) Veure respostes registrades");
-        System.out.println("14) Editar enquesta");
-        System.out.println("15) Eliminar enquesta");
+        System.out.println("12) Veure respostes registrades");
+        System.out.println("13) Modificar resposta pròpia");
+        System.out.println("14) Esborrar resposta pròpia");
+        System.out.println("15) Editar enquesta");
+        System.out.println("16) Eliminar enquesta");
         System.out.println("0) Sortir");
     }
 
     private void registerUser() {
         System.out.println("\n== Registre d'usuari ==");
-        String idInput = promptOptional("ID (enter per autogenerar)", UUID.randomUUID().toString());
+        String generatedId = UUID.randomUUID().toString();
         String displayName = promptNonEmpty("Nom per mostrar");
         String username = promptNonEmpty("Nom d'usuari");
         String password = promptNonEmpty("Contrasenya");
 
-        User user = userController.register(idInput, displayName, username, password);
+        User user = userController.register(generatedId, displayName, username, password);
         if (user != null) {
-            System.out.println("Usuari registrat amb èxit: " + user.getDisplayName());
+            System.out.println("Usuari registrat amb èxit: " + user.getDisplayName() +
+                " (ID generat " + user.getId() + ")");
         } else {
             System.out.println("No s'ha pogut registrar l'usuari.");
         }
@@ -121,6 +138,10 @@ public class TerminalDriver {
             System.out.println("No hi ha cap sessió activa.");
             return;
         }
+        if (!promptBoolean("Segur que vols tancar la sessió? (s/N)", false)) {
+            System.out.println("Operació cancel·lada.");
+            return;
+        }
         userController.logout();
         System.out.println("Sessió tancada correctament.");
     }
@@ -129,7 +150,7 @@ public class TerminalDriver {
         if (!ensureSession()) return;
         System.out.println("\n== Crear enquesta ==");
         try {
-            String surveyId = promptOptional("ID d'enquesta (enter per autogenerar)", UUID.randomUUID().toString());
+            String surveyId = UUID.randomUUID().toString();
             String title = promptNonEmpty("Títol");
             String description = promptOptional("Descripció", "");
             int k = promptInt("Nombre de clústers (k)", 2);
@@ -158,7 +179,8 @@ public class TerminalDriver {
             }
 
             surveyController.saveSurvey(survey);
-            System.out.println("Enquesta guardada amb " + survey.getQuestions().size() + " preguntes.");
+            System.out.println("Enquesta guardada amb ID " + survey.getId() +
+                " i " + survey.getQuestions().size() + " preguntes.");
         } catch (InvalidSurveyException | InvalidQuestionException | PersistenceException e) {
             System.out.println("Error al crear l'enquesta: " + e.getMessage());
         }
@@ -166,17 +188,18 @@ public class TerminalDriver {
 
     private Question buildQuestion(int position) {
         System.out.println("\n-- Configuració de pregunta #" + position + " --");
-        int id = promptInt("ID intern", position);
+        int id = position;
         String text = promptNonEmpty("Text de la pregunta");
         boolean required = promptBoolean("És obligatòria? (s/n)", true);
-        double weight = promptDouble("Pes (per defecte 1.0)", 1.0);
 
         while (true) {
             String type = prompt("Tipus [text|numero|single|multi]").toLowerCase();
             switch (type) {
                 case "text" -> {
-                    int maxLength = promptInt("Longitud màxima", 280);
-                    return new OpenStringQuestion(id, text, required, position, weight, maxLength);
+                    System.out.println("Longitud màxima suportada pel sistema: " + DEFAULT_MAX_TEXT_LENGTH + " caràcters.");
+                    System.out.println("Pots establir una longitud menor (recomanat <= " + RECOMMENDED_TEXT_LENGTH + ").");
+                    int maxLength = promptBoundedInt("Longitud màxima permesa", DEFAULT_MAX_TEXT_LENGTH, 1, DEFAULT_MAX_TEXT_LENGTH);
+                    return new OpenStringQuestion(id, text, required, position, DEFAULT_QUESTION_WEIGHT, maxLength);
                 }
                 case "numero" -> {
                     int min = promptInt("Valor mínim", 0);
@@ -185,10 +208,10 @@ public class TerminalDriver {
                         System.out.println("El màxim ha de ser major o igual que el mínim.");
                         continue;
                     }
-                    return new OpenIntQuestion(id, text, required, position, weight, min, max);
+                    return new OpenIntQuestion(id, text, required, position, DEFAULT_QUESTION_WEIGHT, min, max);
                 }
                 case "single" -> {
-                    SingleChoiceQuestion sc = new SingleChoiceQuestion(id, text, required, position, weight);
+                    SingleChoiceQuestion sc = new SingleChoiceQuestion(id, text, required, position, DEFAULT_QUESTION_WEIGHT);
                     addChoiceOptions(sc.getOptions(), "opció", 2);
                     return sc;
                 }
@@ -199,7 +222,7 @@ public class TerminalDriver {
                         System.out.println("El màxim ha de ser major o igual que el mínim.");
                         continue;
                     }
-                    MultipleChoiceQuestion mc = new MultipleChoiceQuestion(id, text, required, position, weight, minChoices, maxChoices);
+                    MultipleChoiceQuestion mc = new MultipleChoiceQuestion(id, text, required, position, DEFAULT_QUESTION_WEIGHT, minChoices, maxChoices);
                     addChoiceOptions(mc.getOptions(), "opció", maxChoices);
                     return mc;
                 }
@@ -211,7 +234,7 @@ public class TerminalDriver {
     private void addChoiceOptions(List<ChoiceOption> options, String label, int minimum) {
         int count = Math.max(minimum, promptInt("Nombre d'opcions", minimum));
         for (int i = 0; i < count; i++) {
-            int optId = promptInt("  ID de " + label + " " + (i + 1), i + 1);
+            int optId = i + 1;
             String optLabel = promptNonEmpty("  Text de " + label + " " + (i + 1));
             options.add(new ChoiceOption(optId, optLabel));
         }
@@ -260,12 +283,11 @@ public class TerminalDriver {
             System.out.println("No hi ha enquestes registrades per exportar.");
             return;
         }
-        System.out.println("\nEnquestes disponibles:");
-        surveys.forEach(s -> System.out.println(" - " + s.getId() + " :: " + s.getTitle()));
-        String surveyId = promptNonEmpty("ID de l'enquesta a exportar");
+        Survey selected = selectSurvey(surveys, "l'enquesta a exportar");
+        if (selected == null) return;
         String path = promptNonEmpty("Ruta destí de l'arxiu .txt");
         try {
-            Survey survey = surveyController.loadSurvey(surveyId);
+            Survey survey = surveyController.loadSurvey(selected.getId());
             surveySerializer.toFile(survey, path);
             System.out.println("Enquesta exportada correctament a " + path);
         } catch (PersistenceException e) {
@@ -282,11 +304,10 @@ public class TerminalDriver {
             System.out.println("No hi ha enquestes registrades.");
             return;
         }
-        System.out.println("\nEnquestes disponibles:");
-        surveys.forEach(s -> System.out.println(" - " + s.getId() + " :: " + s.getTitle()));
-        String surveyId = promptNonEmpty("ID de l'enquesta les respostes de la qual vols exportar");
+        Survey selected = selectSurvey(surveys, "l'enquesta de la qual vols exportar les respostes");
+        if (selected == null) return;
         try {
-            List<SurveyResponse> responses = responseController.listResponses(surveyId);
+            List<SurveyResponse> responses = responseController.listResponses(selected.getId());
             if (responses.isEmpty()) {
                 System.out.println("L'enquesta no té respostes registrades.");
                 return;
@@ -308,11 +329,10 @@ public class TerminalDriver {
             System.out.println("No hi ha enquestes disponibles.");
             return;
         }
-        System.out.println("\nEnquestes disponibles:");
-        surveys.forEach(s -> System.out.println(" - " + s.getId() + " :: " + s.getTitle()));
-        String surveyId = promptNonEmpty("ID de l'enquesta a respondre");
+        Survey selected = selectSurvey(surveys, "l'enquesta a respondre");
+        if (selected == null) return;
         try {
-            Survey survey = surveyController.loadSurvey(surveyId);
+            Survey survey = surveyController.loadSurvey(selected.getId());
             if (survey.getQuestions().isEmpty()) {
                 System.out.println("L'enquesta no té preguntes configurades.");
                 return;
@@ -419,12 +439,11 @@ public class TerminalDriver {
             System.out.println("No hi ha enquestes registrades.");
             return;
         }
-        System.out.println("\nEnquestes disponibles:");
-        surveys.forEach(s -> System.out.println(" - " + s.getId() + " :: " + s.getTitle()));
-        String surveyId = promptNonEmpty("ID de l'enquesta a analitzar");
+        Survey selected = selectSurvey(surveys, "l'enquesta a analitzar");
+        if (selected == null) return;
         try {
-            Survey survey = surveyController.loadSurvey(surveyId);
-            List<SurveyResponse> responses = responseController.listResponses(surveyId);
+            Survey survey = surveyController.loadSurvey(selected.getId());
+            List<SurveyResponse> responses = responseController.listResponses(selected.getId());
             if (responses.size() < 2) {
                 System.out.println("Es requereixen almenys 2 respostes per analitzar.");
                 return;
@@ -452,12 +471,10 @@ public class TerminalDriver {
             System.out.println("No hi ha enquestes registrades.");
             return;
         }
-
-        System.out.println("\nEnquestes disponibles:");
-        surveys.forEach(s -> System.out.println(" - " + s.getId() + " :: " + s.getTitle()));
-        String surveyId = promptNonEmpty("ID de l'enquesta a visualitzar");
+        Survey selected = selectSurvey(surveys, "l'enquesta a visualitzar");
+        if (selected == null) return;
         try {
-            Survey survey = surveyController.loadSurvey(surveyId);
+            Survey survey = surveyController.loadSurvey(selected.getId());
             System.out.println("\n== Detall de l'enquesta ==");
             System.out.println("ID: " + survey.getId());
             System.out.println("Títol: " + survey.getTitle());
@@ -498,18 +515,6 @@ public class TerminalDriver {
         }
     }
 
-    private void viewRegisteredUsers() {
-        if (!ensureSession()) return;
-        Collection<RegisteredUser> users = userController.listRegisteredUsers();
-        if (users.isEmpty()) {
-            System.out.println("Encara no hi ha usuaris registrats.");
-            return;
-        }
-
-        System.out.println("\n== Usuaris registrats ==");
-        users.forEach(user -> System.out.println(" - ID: " + user.getId() + ", Usuari: " + user.getUsername() + ", Nom: " + user.getDisplayName()));
-    }
-
     private void viewRegisteredResponses() {
         if (!ensureSession()) return;
         List<SurveyResponse> responses = responseController.listAllResponses();
@@ -519,10 +524,14 @@ public class TerminalDriver {
         }
 
         System.out.println("\n== Respostes registrades ==");
+        Map<String, String> userNames = buildUserDisplayMap();
+        Map<String, String> surveyTitles = new HashMap<>();
         for (SurveyResponse response : responses) {
+            String surveyTitle = surveyTitles.computeIfAbsent(response.getSurveyId(), this::resolveSurveyTitle);
+            String userDisplay = userNames.getOrDefault(response.getUserId(), response.getUserId());
             System.out.println("\nResposta ID: " + response.getId());
-            System.out.println("Enquesta: " + response.getSurveyId());
-            System.out.println("Usuari: " + response.getUserId());
+            System.out.println("Enquesta: " + surveyTitle + " (" + response.getSurveyId() + ")");
+            System.out.println("Usuari: " + userDisplay + " (" + response.getUserId() + ")");
             System.out.println("Data: " + (response.getSubmittedAt() == null ? "N/A" : response.getSubmittedAt()));
             System.out.println("Respostes:");
 
@@ -538,6 +547,60 @@ public class TerminalDriver {
         }
     }
 
+    private void editOwnResponse() {
+        if (!ensureSession()) return;
+        User currentUser = userController.requireActiveUser();
+        try {
+            List<SurveyResponse> responses = responseController.listResponsesByUser(currentUser.getId());
+            if (responses.isEmpty()) {
+                System.out.println("Encara no tens respostes per modificar.");
+                return;
+            }
+            SurveyResponse selected = selectResponse(responses, "la resposta a modificar");
+            if (selected == null) return;
+            Survey survey = surveyController.loadSurvey(selected.getSurveyId());
+            System.out.println("Modificant la resposta per a l'enquesta " + survey.getTitle());
+
+            List<Answer> newAnswers = new ArrayList<>();
+            for (Question question : survey.getQuestions()) {
+                Answer answer = askAnswer(question);
+                if (answer != null) {
+                    newAnswers.add(answer);
+                }
+            }
+            if (newAnswers.isEmpty()) {
+                System.out.println("No s'han capturat respostes. Operació cancel·lada.");
+                return;
+            }
+            responseController.updateResponse(selected, newAnswers);
+            System.out.println("Resposta actualitzada correctament.");
+        } catch (PersistenceException | NullArgumentException | InvalidArgumentException e) {
+            System.out.println("No s'ha pogut modificar la resposta: " + e.getMessage());
+        }
+    }
+
+    private void deleteOwnResponse() {
+        if (!ensureSession()) return;
+        User currentUser = userController.requireActiveUser();
+        try {
+            List<SurveyResponse> responses = responseController.listResponsesByUser(currentUser.getId());
+            if (responses.isEmpty()) {
+                System.out.println("Encara no tens respostes per eliminar.");
+                return;
+            }
+            SurveyResponse selected = selectResponse(responses, "la resposta a eliminar");
+            if (selected == null) return;
+            if (!promptBoolean("Confirmes que vols eliminar la resposta? (s/n)", false)) {
+                System.out.println("Operació cancel·lada.");
+                return;
+            }
+            responseController.deleteResponse(selected.getId());
+            System.out.println("Resposta eliminada correctament.");
+        } catch (PersistenceException e) {
+            System.out.println("No s'ha pogut eliminar la resposta: " + e.getMessage());
+        }
+    }
+
     private void editSurvey() {
         if (!ensureSession()) return;
         Collection<Survey> surveys = surveyController.listSurveys();
@@ -545,11 +608,15 @@ public class TerminalDriver {
             System.out.println("No hi ha enquestes registrades per editar.");
             return;
         }
-        System.out.println("\nEnquestes disponibles:");
-        surveys.forEach(s -> System.out.println(" - " + s.getId() + " :: " + s.getTitle()));
-        String surveyId = promptNonEmpty("ID de l'enquesta a editar");
+        Survey selected = selectSurvey(surveys, "l'enquesta a editar");
+        if (selected == null) return;
         try {
-            Survey survey = surveyController.loadSurvey(surveyId);
+            Survey survey = surveyController.loadSurvey(selected.getId());
+            User currentUser = userController.requireActiveUser();
+            if (!currentUser.getId().equals(survey.getCreatedBy())) {
+                System.out.println("Només l'usuari creador pot editar aquesta enquesta.");
+                return;
+            }
             System.out.println("\n== Editant enquesta ==");
             System.out.println("Deixa en blanc per mantenir el valor actual.");
 
@@ -560,8 +627,43 @@ public class TerminalDriver {
             String newInitMethod = promptOptional("Mètode d'inicialització", survey.getInitMethod());
             String newDistance = promptOptional("Mètrica de distància", survey.getDistance());
 
-            surveyController.editSurvey(surveyId, newId, newTitle, newDescription, newK, newInitMethod, newDistance);
+            String originalId = survey.getId();
+            Survey updatedSurvey = surveyController.editSurvey(selected.getId(), newId, newTitle, newDescription, newK, newInitMethod, newDistance);
             System.out.println("Enquesta editada correctament.");
+
+            if (promptBoolean("Vols modificar preguntes? (vigila, totes les respostes seran esborrades) (s/n)", false)) {
+                try {
+                    responseController.removeResponsesBySurvey(originalId);
+                    if (!originalId.equals(updatedSurvey.getId())) {
+                        responseController.removeResponsesBySurvey(updatedSurvey.getId());
+                    }
+                } catch (PersistenceException e) {
+                    System.out.println("No s'han pogut eliminar les respostes existents: " + e.getMessage());
+                    return;
+                }
+
+                updatedSurvey.getQuestions().clear();
+                int position = 1;
+                while (promptBoolean("Vols afegir una pregunta? (s/n)", position == 1)) {
+                    Question question = buildQuestion(position);
+                    if (question == null) {
+                        continue;
+                    }
+                    try {
+                        updatedSurvey.addQuestion(question);
+                        position++;
+                    } catch (InvalidQuestionException e) {
+                        System.out.println("Pregunta rebutjada: " + e.getMessage());
+                    }
+                }
+
+                try {
+                    surveyController.saveSurvey(updatedSurvey);
+                    System.out.println("Preguntes actualitzades. Totes les respostes anteriors han estat eliminades.");
+                } catch (PersistenceException e) {
+                    System.out.println("No s'han pogut guardar les noves preguntes: " + e.getMessage());
+                }
+            }
         } catch (PersistenceException | InvalidSurveyException e) {
             System.out.println("Error en editar l'enquesta: " + e.getMessage());
         }
@@ -574,15 +676,14 @@ public class TerminalDriver {
             System.out.println("No hi ha enquestes registrades per eliminar.");
             return;
         }
-        System.out.println("\nEnquestes disponibles:");
-        surveys.forEach(s -> System.out.println(" - " + s.getId() + " :: " + s.getTitle()));
-        String surveyId = promptNonEmpty("ID de l'enquesta a eliminar");
+        Survey selected = selectSurvey(surveys, "l'enquesta a eliminar");
+        if (selected == null) return;
         if (!promptBoolean("Estàs segur que vols eliminar l'enquesta i totes les seves respostes? (s/n)", false)) {
             System.out.println("Operació cancel·lada.");
             return;
         }
         try {
-            surveyController.deleteSurvey(surveyId);
+            surveyController.deleteSurvey(selected.getId());
             System.out.println("Enquesta eliminada correctament.");
         } catch (PersistenceException e) {
             System.out.println("Error en eliminar l'enquesta: " + e.getMessage());
@@ -618,6 +719,53 @@ public class TerminalDriver {
         return answer.toString();
     }
 
+    private Map<String, String> buildUserDisplayMap() {
+        Map<String, String> names = new HashMap<>();
+        for (RegisteredUser user : userController.listRegisteredUsers()) {
+            names.put(user.getId(), user.getDisplayName());
+        }
+        return names;
+    }
+
+    private String resolveSurveyTitle(String surveyId) {
+        try {
+            Survey survey = surveyController.loadSurvey(surveyId);
+            return survey.getTitle();
+        } catch (PersistenceException e) {
+            return surveyId;
+        }
+    }
+
+    private SurveyResponse selectResponse(List<SurveyResponse> responses, String contextLabel) {
+        if (responses.isEmpty()) {
+            return null;
+        }
+        Map<String, String> surveyTitles = new HashMap<>();
+        System.out.println("\nRespostes disponibles:");
+        for (int i = 0; i < responses.size(); i++) {
+            SurveyResponse response = responses.get(i);
+            String surveyTitle = surveyTitles.computeIfAbsent(response.getSurveyId(), this::resolveSurveyTitle);
+            System.out.println(" " + (i + 1) + ") " + surveyTitle + " -> ID " + response.getId());
+        }
+        int index = promptIndex("Selecciona " + contextLabel, 1, responses.size());
+        return responses.get(index - 1);
+    }
+
+    private Survey selectSurvey(Collection<Survey> surveys, String contextLabel) {
+        if (surveys.isEmpty()) {
+            System.out.println("No hi ha enquestes registrades.");
+            return null;
+        }
+        List<Survey> ordered = new ArrayList<>(surveys);
+        System.out.println("\nEnquestes disponibles:");
+        for (int i = 0; i < ordered.size(); i++) {
+            Survey survey = ordered.get(i);
+            System.out.println(" " + (i + 1) + ") " + survey.getTitle() + " [" + survey.getId() + "]");
+        }
+        int selected = promptIndex("Selecciona " + contextLabel, 1, ordered.size());
+        return ordered.get(selected - 1);
+    }
+
     private boolean ensureSession() {
         if (!userController.hasActiveSession()) {
             System.out.println("Has d'iniciar sessió per aquesta acció.");
@@ -625,12 +773,6 @@ public class TerminalDriver {
         }
         userController.refreshSession();
         return true;
-    }
-
-    private void pageBreak() {
-        for (int i = 0; i < 40; i++) {
-            System.out.println();
-        }
     }
 
     private void showOptions(List<ChoiceOption> options) {
@@ -684,24 +826,37 @@ public class TerminalDriver {
         }
     }
 
-    private double promptDouble(String label, double defaultValue) {
+    private int promptBoundedInt(String label, int defaultValue, int minInclusive, int maxInclusive) {
         while (true) {
-            String value = prompt(label + " [" + defaultValue + "]");
-            if (value.isEmpty()) return defaultValue;
-            try {
-                return Double.parseDouble(value);
-            } catch (NumberFormatException ex) {
-                System.out.println("Introdueix un número vàlid.");
+            int value = promptInt(label, defaultValue);
+            if (value >= minInclusive && value <= maxInclusive) {
+                return value;
             }
+            System.out.println("Introdueix un valor entre " + minInclusive + " i " + maxInclusive + ".");
+        }
+    }
+
+    private int promptIndex(String label, int minInclusive, int maxInclusive) {
+        while (true) {
+            String value = prompt(label + " [" + minInclusive + "-" + maxInclusive + "]");
+            if (value.isEmpty()) return minInclusive;
+            try {
+                int parsed = Integer.parseInt(value);
+                if (parsed >= minInclusive && parsed <= maxInclusive) {
+                    return parsed;
+                }
+            } catch (NumberFormatException ignored) {
+            }
+            System.out.println("Introdueix un valor entre " + minInclusive + " i " + maxInclusive + ".");
         }
     }
 
     private boolean promptBoolean(String label, boolean defaultValue) {
         while (true) {
-            String hint = defaultValue ? "s" : "n";
-            String value = prompt(label + " [" + hint + "]").toLowerCase();
+            // String hint = defaultValue ? "s" : "n";
+            String value = prompt(label).toLowerCase();
             if (value.isEmpty()) return defaultValue;
-            if (value.startsWith("s")) return true;
+            if (value.startsWith("s") || value.startsWith("y")) return true; // s or y
             if (value.startsWith("n")) return false;
             System.out.println("Respon amb 's' o 'n'.");
         }

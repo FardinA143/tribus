@@ -29,6 +29,8 @@ public abstract class Question {
     }
 
     /**
+     * Obté l'identificador únic associat a la pregunta.
+     *
      * @return l'identificador de la pregunta
      */
     public int getId() {
@@ -45,6 +47,8 @@ public abstract class Question {
     }
 
     /**
+     * Recupera el text literal que es mostra a l'usuari.
+     *
      * @return el text que es mostra a l'usuari
      */
     public String getText() {
@@ -61,6 +65,8 @@ public abstract class Question {
     }
 
     /**
+     * Indica si la pregunta s'ha de respondre obligatòriament.
+     *
      * @return cert si la pregunta és obligatòria
      */
     public boolean isRequired() {
@@ -77,6 +83,8 @@ public abstract class Question {
     }
 
     /**
+     * Consulta la posició assolida per la pregunta dins el qüestionari.
+     *
      * @return la posició dins de l'enquesta
      */
     public int getPosition() {
@@ -86,13 +94,15 @@ public abstract class Question {
     /**
      * Actualitza la posició (ús intern quan es reordenen preguntes).
      *
-     * @param position nova posició base 1
+     * @param position nova posició base 1.
      */
     public void setPosition(int position) {
         this.position = position;
     }
 
     /**
+     * Recupera el pes estadístic que s'usa en les mètriques d'anàlisi.
+     *
      * @return el pes utilitzat per mètriques d'anàlisi
      */
     public double getWeight() {

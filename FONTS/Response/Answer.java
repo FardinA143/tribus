@@ -45,11 +45,15 @@ public abstract class Answer {
      * Enumeració que representa els diferents tipus de resposta suportats.
      */
     public enum Type {
-        TEXT, 
-        INT, 
-        MULTIPLE_CHOICE, 
+        /** Resposta basada en text lliure. */
+        TEXT,
+        /** Resposta numèrica de tipus enter. */
+        INT,
+        /** Selecció de múltiples opcions. */
+        MULTIPLE_CHOICE,
+        /** Selecció d'una única opció. */
         SINGLE_CHOICE
-    } 
+    }
 
     
     /**

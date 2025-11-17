@@ -9,6 +9,12 @@ package distance;
 public final class EuclideanDistance implements Distance {
 
     /**
+     * Crea una instància sense estat de la mètrica euclidiana.
+     */
+    public EuclideanDistance() {
+    }
+
+    /**
      * Calcula la distància Euclidiana entre dos vectors.
      *
      * @param a El primer vector (punt).

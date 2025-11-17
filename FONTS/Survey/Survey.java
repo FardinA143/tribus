@@ -52,6 +52,7 @@ public class Survey {
     /**
      * Afegeix una pregunta a l'enquesta.
      *
+        * @param question pregunta a afegir.
      * @throws InvalidQuestionException si el paràmetre és nul
      */
     public void addQuestion(Question question) throws InvalidQuestionException {
@@ -82,6 +83,7 @@ public class Survey {
     /**
      * Elimina la pregunta amb l'identificador indicat.
      *
+        * @param questionId identificador de la pregunta a eliminar.
      * @throws QuestionNotFoundException si no existeix
      */
     public void deleteQuestion(int questionId) throws QuestionNotFoundException {
@@ -93,6 +95,8 @@ public class Survey {
     // Getters and setters
 
     /**
+     * Recupera l'identificador únic de l'enquesta.
+     *
      * @return l'identificador de l'enquesta
      */
     public String getId() {
@@ -113,6 +117,8 @@ public class Survey {
     }
 
     /**
+     * Mostra el títol actual configurat.
+     *
      * @return el títol actual
      */
     public String getTitle() {
@@ -121,12 +127,16 @@ public class Survey {
 
     /**
      * Actualitza el títol mostrat de l'enquesta.
+     *
+     * @param title nou títol llegible.
      */
     public void setTitle(String title) { // used to modify too
         this.title = title;
     }
 
     /**
+     * Retorna la descripció informativa.
+     *
      * @return la descripció
      */
     public String getDescription() {
@@ -135,12 +145,16 @@ public class Survey {
 
     /**
      * Defineix una nova descripció (pot ser buida).
+     *
+     * @param description text descriptiu opcional.
      */
     public void setDescription(String description) {
         this.description = description;
     }
 
     /**
+     * Indica qui ha creat l'enquesta.
+     *
      * @return l'identificador de l'autor
      */
     public String getCreatedBy() {
@@ -148,6 +162,8 @@ public class Survey {
     } // not really necessary
 
     /**
+     * Mostra el nombre de clústers configurats.
+     *
      * @return el nombre de clústers configurat
      */
     public int getK() {
@@ -156,12 +172,16 @@ public class Survey {
 
     /**
      * Estableix un nou valor de k.
+     *
+     * @param k nombre de clústers.
      */
     public void setK(int k) {
         this.k = k;
     }
 
     /**
+     * Indica la metodologia d'inicialització actual.
+     *
      * @return la metodologia d'inicialització
      */
     public String getInitMethod() {
@@ -170,12 +190,16 @@ public class Survey {
 
     /**
      * Canvia la metodologia d'inicialització utilitzada pel clustering.
+     *
+     * @param initMethod nova metodologia.
      */
     public void setInitMethod(String initMethod) {
         this.initMethod = initMethod;
     }
 
     /**
+     * Mostra la mètrica de distància triada.
+     *
      * @return la mètrica de distància configurada
      */
     public String getDistance() {
@@ -184,12 +208,16 @@ public class Survey {
 
     /**
      * Defineix una nova mètrica de distància.
+     *
+     * @param distance identificador de la mètrica.
      */
     public void setDistance(String distance) {
         this.distance = distance;
     }
 
     /**
+     * Consulta la data de creació en format ISO.
+     *
      * @return la data de creació (ISO)
      */
     public String getCreatedAt() {
@@ -198,12 +226,16 @@ public class Survey {
 
     /**
      * Actualitza la marca temporal de creació (per imports/proves).
+     *
+     * @param createdAt nova data de creació.
      */
     public void setCreatedAt(String createdAt) {
         this.createdAt = createdAt;
     }
 
     /**
+     * Retorna la darrera data d'actualització.
+     *
      * @return la data de darrera actualització
      */
     public String getUpdatedAt() {
@@ -212,12 +244,16 @@ public class Survey {
 
     /**
      * Estableix la data de darrera modificació.
+     *
+     * @param updatedAt nova data ISO.
      */
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
     }
 
     /**
+     * Obté la col·lecció ordenada de preguntes.
+     *
      * @return la llista mutable de preguntes
      */
     public List<Question> getQuestions() {

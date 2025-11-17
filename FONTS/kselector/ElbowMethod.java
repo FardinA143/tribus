@@ -13,6 +13,12 @@ import java.util.*;
 public class ElbowMethod implements IKSelector {
 
     /**
+     * Crea un selector del mètode del colze sense dependències addicionals.
+     */
+    public ElbowMethod() {
+    }
+
+    /**
      * Suggereix el nombre òptim de clústers utilitzant el mètode del colze.
      * Prova diferents valors de k dins del rang especificat i troba el punt
      * on la reducció de la inèrcia comença a disminuir més lentament.

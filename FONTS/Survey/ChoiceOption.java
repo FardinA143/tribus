@@ -20,6 +20,8 @@ public class ChoiceOption {
     }
 
     /**
+     * Recupera l'identificador intern de l'opció.
+     *
      * @return l'identificador intern de l'opció
      */
     public int getId() {
@@ -27,6 +29,8 @@ public class ChoiceOption {
     }
 
     /**
+     * Retorna el text visible associat a l'opció.
+     *
      * @return el text visible associat a l'opció
      */
     public String getLabel() {

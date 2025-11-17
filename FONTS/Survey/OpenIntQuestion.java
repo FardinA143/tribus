@@ -25,6 +25,8 @@ public class OpenIntQuestion extends Question {
     }
 
     /**
+     * Consulta el límit inferior de l'interval permès.
+     *
      * @return el valor mínim admès
      */
     public int getMin() {
@@ -34,13 +36,15 @@ public class OpenIntQuestion extends Question {
     /**
      * Ajusta el mínim (per imports/proves).
      *
-     * @param min nou límit inferior
+     * @param min nou límit inferior.
      */
     public void setMin(int min) {
         this.min = min;
     }
 
     /**
+     * Indica el límit superior acceptat per la pregunta.
+     *
      * @return el valor màxim admès
      */
     public int getMax() {
