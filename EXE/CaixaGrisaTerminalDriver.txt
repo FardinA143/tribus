@@ -1,0 +1,40 @@
+Joc de proves del TerminalDriver
+
+----- DESCRIPCIÓ DEL JOC DE PROVA CAIXA GRISA -----
+
+Aquest joc de proves està fet amb valors de la caixa grisa i s’hi testegen tots els casos d'ús, incloent possibles excepcions que poden aparèixer. Es proven les següents funcionalitats:
+
+* Sortir del TerminalDriver
+* Registrar usuari
+* Iniciar sessió
+* Tancar sessió
+* Crear enquesta
+* Respondre enquesta
+* Importar/Exportar enquesta
+* Editar enquesta
+* Importar/Exportar resposta
+* Realitzar anàlisis
+
+L'objectiu és comprovar el funcionament general del programa, passant per totes les funcionalitats.
+
+En la primera fase, es crea un usuari amb contrasenya, s’inicia sessió i es comença a crear una enquesta amb dues preguntes i diverses respostes. Després exportem l'enquesta i les respostes. A continuació, les eliminem per poder-les importar de nou. Finalment, fem l'anàlisi de les respostes.
+
+En la segona fase, es verifiquen funcionalitats diverses, com consultar enquestes i respostes registrades, modificar respostes i esborrar-les.
+
+Durant tota l'execució dels jocs de prova es faràn varies comprobacions d'excepcions quan toqui (p.ex: Verificar si es pot iniciar sessió amb la sessió ja iniciada, veure si es pot escriure on no toca, etc)
+
+-----FITXERS DE DADES NECESSARIS-----
+
+JocsDeProvesCaixaGrisa.txt
+PlantillaJocsProves.txt 
+PlantillaEnquesta.txt
+PlantillaRespostes.txt
+TerminalDriver.java 
+
+----- DESCRIPCIÓ DE L'EXEMPLE DISPONIBLE -----
+
+Aquesta carpeta inclou un fitxer .txt amb una enquesta ja exportada (unes 20 preguntes) i un fitxer .txt amb 100 respostes corresponents a aquesta enquesta. Això permet provar més a fons l'anàlisi de perfils de comportament.
+
+També facilitem un joc de proves relacionat amb aquests exemples per agilitzar el testing.
+
+Nota: Aquest segon joc de proves és més petit i senzill, ja que la seva finalitat és únicament importar l'enquesta exemple i fer l'anàlisi. Per comprovar totes les funcionalitats, es recomana utilitzar el joc de proves de la caixa grisa.
