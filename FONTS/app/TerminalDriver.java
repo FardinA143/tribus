@@ -255,7 +255,7 @@ public class TerminalDriver {
     }
 
     private void importSurvey() {
-        if (!ensureRegisteredSession()) return;
+        if (!ensureSessionAllowGuest()) return;
         System.out.println("\n== Importar enquesta ==");
         String path = promptNonEmpty("Ruta de l'arxiu .txt");
         try {
@@ -697,7 +697,8 @@ public class TerminalDriver {
             System.out.println("No hi ha enquestes registrades per eliminar.");
             return;
         }
-        Survey selected = selectSurvey(surveys, "l'enquesta a eliminar");
+        // Use explicit selection for destructive action: do not accept Enter as default
+        Survey selected = selectSurveyExplicit(surveys, "l'enquesta a eliminar");
         if (selected == null) return;
         if (!promptBoolean("Estàs segur que vols eliminar l'enquesta i totes les seves respostes? (s/n)", false)) {
             System.out.println("Operació cancel·lada.");
@@ -786,6 +787,41 @@ public class TerminalDriver {
         }
         int selected = promptIndex("Selecciona " + contextLabel, 1, ordered.size());
         return ordered.get(selected - 1);
+    }
+
+    /**
+     * Selecciona una enquesta però requereix una entrada explícita (no admet Enter per defecte).
+     */
+    private Survey selectSurveyExplicit(Collection<Survey> surveys, String contextLabel) {
+        if (surveys.isEmpty()) {
+            System.out.println("No hi ha enquestes registrades.");
+            return null;
+        }
+        List<Survey> ordered = new ArrayList<>(surveys);
+        System.out.println("\nEnquestes disponibles:");
+        for (int i = 0; i < ordered.size(); i++) {
+            Survey survey = ordered.get(i);
+            System.out.println(" " + (i + 1) + ") " + survey.getTitle() + " [" + survey.getId() + "]");
+        }
+        int selected = promptIndexNoDefault("Selecciona " + contextLabel, 1, ordered.size());
+        return ordered.get(selected - 1);
+    }
+
+    /**
+     * Similar a promptIndex però NO admet entrada buida; l'usuari ha d'introduir un valor vàlid.
+     */
+    private int promptIndexNoDefault(String label, int minInclusive, int maxInclusive) {
+        while (true) {
+            String value = prompt(label + " [" + minInclusive + "-" + maxInclusive + "]");
+            try {
+                int parsed = Integer.parseInt(value);
+                if (parsed >= minInclusive && parsed <= maxInclusive) {
+                    return parsed;
+                }
+            } catch (NumberFormatException ignored) {
+            }
+            System.out.println("Introdueix un valor entre " + minInclusive + " i " + maxInclusive + ". (No es permet Enter per defecte)");
+        }
     }
 
     private boolean ensureSessionAllowGuest() {
