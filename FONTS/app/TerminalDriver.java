@@ -51,7 +51,7 @@ public class TerminalDriver {
     private void start() {
         System.out.println("========================================");
         System.out.println("  Sistema d'Enquestes - Interfície de Terminal");
-        System.out.println("========================================\n");
+        System.out.println("========================================");
 
         boolean exit = false;
         while (!exit) {
@@ -83,6 +83,7 @@ public class TerminalDriver {
     }
 
     private void showMenu() {
+
         System.out.println("\n-------------------");
         System.out.println("1) Registrar usuari");
         System.out.println("2) Iniciar sessió");
@@ -149,7 +150,7 @@ public class TerminalDriver {
     }
 
     private void createSurvey() {
-        if (!ensureSession()) return;
+        if (!ensureRegisteredSession()) return;
         System.out.println("\n== Crear enquesta ==");
         try {
             String surveyId = UUID.randomUUID().toString();
@@ -181,7 +182,7 @@ public class TerminalDriver {
             }
 
             surveyController.saveSurvey(survey);
-            System.out.println("Enquesta guardada amb ID " + survey.getId() +
+            System.out.println("Enquesta guardada amb títol " + survey.getTitle() +
                 " i " + survey.getQuestions().size() + " preguntes.");
         } catch (InvalidSurveyException | InvalidQuestionException | PersistenceException e) {
             System.out.println("Error al crear l'enquesta: " + e.getMessage());
@@ -195,7 +196,8 @@ public class TerminalDriver {
         boolean required = promptBoolean("És obligatòria? (s/n)", true);
 
         while (true) {
-            String type = prompt("Tipus [text|numero|single|multi]").toLowerCase();
+            List<String> allowedTypes = List.of("text", "numero", "single", "multi");
+            String type = promptFromList("Tipus", allowedTypes, "text");
             switch (type) {
                 case "text" -> {
                     System.out.println("Longitud màxima suportada pel sistema: " + DEFAULT_MAX_TEXT_LENGTH + " caràcters.");
@@ -253,7 +255,7 @@ public class TerminalDriver {
     }
 
     private void importSurvey() {
-        if (!ensureSession()) return;
+        if (!ensureRegisteredSession()) return;
         System.out.println("\n== Importar enquesta ==");
         String path = promptNonEmpty("Ruta de l'arxiu .txt");
         try {
@@ -265,7 +267,7 @@ public class TerminalDriver {
     }
 
     private void importResponsesFromFile() {
-        if (!ensureSession()) return;
+        if (!ensureSessionAllowGuest()) return;
         System.out.println("\n== Importar respostes ==");
         String path = promptNonEmpty("Ruta de l'arxiu .txt");
         try {
@@ -289,7 +291,7 @@ public class TerminalDriver {
     }
 
     private void exportSurveyToFile() {
-        if (!ensureSession()) return;
+        if (!ensureSessionAllowGuest()) return;
         Collection<Survey> surveys = surveyController.listSurveys();
         if (surveys.isEmpty()) {
             System.out.println("No hi ha enquestes registrades per exportar.");
@@ -314,7 +316,7 @@ public class TerminalDriver {
     }
 
     private void exportResponsesToFile() {
-        if (!ensureSession()) return;
+        if (!ensureSessionAllowGuest()) return;
         Collection<Survey> surveys = surveyController.listSurveys();
         if (surveys.isEmpty()) {
             System.out.println("No hi ha enquestes registrades.");
@@ -343,7 +345,7 @@ public class TerminalDriver {
     }
 
     private void answerSurvey() {
-        if (!ensureSession()) return;
+        if (!ensureSessionAllowGuest()) return;
         Collection<Survey> surveys = surveyController.listSurveys();
         if (surveys.isEmpty()) {
             System.out.println("No hi ha enquestes disponibles.");
@@ -453,7 +455,7 @@ public class TerminalDriver {
     }
 
     private void performAnalysis() {
-        if (!ensureSession()) return;
+        if (!ensureSessionAllowGuest()) return;
         Collection<Survey> surveys = surveyController.listSurveys();
         if (surveys.isEmpty()) {
             System.out.println("No hi ha enquestes registrades.");
@@ -485,7 +487,7 @@ public class TerminalDriver {
     }
 
     private void viewSurveyDetails() {
-        if (!ensureSession()) return;
+        if (!ensureSessionAllowGuest()) return;
         Collection<Survey> surveys = surveyController.listSurveys();
         if (surveys.isEmpty()) {
             System.out.println("No hi ha enquestes registrades.");
@@ -536,7 +538,7 @@ public class TerminalDriver {
     }
 
     private void viewRegisteredResponses() {
-        if (!ensureSession()) return;
+        if (!ensureRegisteredSession()) return;
         List<SurveyResponse> responses = responseController.listAllResponses();
         if (responses.isEmpty()) {
             System.out.println("No s'han registrat respostes encara.");
@@ -568,7 +570,7 @@ public class TerminalDriver {
     }
 
     private void editOwnResponse() {
-        if (!ensureSession()) return;
+        if (!ensureSessionAllowGuest()) return;
         User currentUser = userController.requireActiveUser();
         try {
             List<SurveyResponse> responses = responseController.listResponsesByUser(currentUser.getId());
@@ -600,7 +602,7 @@ public class TerminalDriver {
     }
 
     private void deleteOwnResponse() {
-        if (!ensureSession()) return;
+        if (!ensureSessionAllowGuest()) return;
         User currentUser = userController.requireActiveUser();
         try {
             List<SurveyResponse> responses = responseController.listResponsesByUser(currentUser.getId());
@@ -622,7 +624,7 @@ public class TerminalDriver {
     }
 
     private void editSurvey() {
-        if (!ensureSession()) return;
+        if (!ensureRegisteredSession()) return;
         Collection<Survey> surveys = surveyController.listSurveys();
         if (surveys.isEmpty()) {
             System.out.println("No hi ha enquestes registrades per editar.");
@@ -689,7 +691,7 @@ public class TerminalDriver {
     }
 
     private void deleteSurvey() {
-        if (!ensureSession()) return;
+        if (!ensureRegisteredSession()) return;
         Collection<Survey> surveys = surveyController.listSurveys();
         if (surveys.isEmpty()) {
             System.out.println("No hi ha enquestes registrades per eliminar.");
@@ -786,9 +788,25 @@ public class TerminalDriver {
         return ordered.get(selected - 1);
     }
 
-    private boolean ensureSession() {
+    private boolean ensureSessionAllowGuest() {
+        if (!userController.hasActiveSession()) {
+            // Create an ephemeral guest session automatically
+            Sesion s = userController.createGuestSession();
+            System.out.println("Sessió efímera creada com a convidat: " + s.getUser().getDisplayName() + " (ID " + s.getUser().getId() + ")");
+            return true;
+        }
+        userController.refreshSession();
+        return true;
+    }
+
+    private boolean ensureRegisteredSession() {
         if (!userController.hasActiveSession()) {
             System.out.println("Has d'iniciar sessió per aquesta acció.");
+            return false;
+        }
+        // require that the active user is a RegisteredUser
+        if (!(userController.getCurrentSession().getUser() instanceof RegisteredUser)) {
+            System.out.println("Només usuaris registrats poden realitzar aquesta acció. Inicia sessió o registra't.");
             return false;
         }
         userController.refreshSession();

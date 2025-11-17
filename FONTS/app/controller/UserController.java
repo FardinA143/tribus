@@ -19,6 +19,18 @@ public class UserController {
         this.authService = authService;
     }
 
+    /**
+     * Crea una sessió efímera per a un usuari convidat (guest).
+     * Retorna la sessió creada i l'estableix com a sessió actual.
+     */
+    public Sesion createGuestSession() {
+        String id = "guest-" + Long.toHexString(System.nanoTime());
+        String display = "Convidat-" + id.substring(Math.max(0, id.length() - 6));
+        user.GuestUser guest = new user.GuestUser(id, display);
+        currentSession = new Sesion(guest);
+        return currentSession;
+    }
+
     public User register(String id, String displayName, String username, String password) {
         return authService.register(id, displayName, username, password);
     }
