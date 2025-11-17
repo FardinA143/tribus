@@ -30,6 +30,8 @@ public class TerminalDriver {
     private static final double DEFAULT_QUESTION_WEIGHT = 1.0;
     private static final int DEFAULT_MAX_TEXT_LENGTH = 250;
     private static final int RECOMMENDED_TEXT_LENGTH = 50;
+    private static final List<String> VALID_INIT_METHODS = List.of("kmeans++", "random");
+    private static final List<String> VALID_DISTANCE_METRICS = List.of("euclidean");
 
     /**
      * Construeix el controlador de terminal inicialitzant els serveis requerits.
@@ -59,19 +61,19 @@ public class TerminalDriver {
                 case "1" -> registerUser();
                 case "2" -> login();
                 case "3" -> logout();
-                case "4" -> createSurvey();
-                case "5" -> answerSurvey();
-                case "6" -> importSurvey();
-                case "7" -> exportSurveyToFile();
-                case "8" -> importResponsesFromFile();
-                case "9" -> exportResponsesToFile();
-                case "10" -> performAnalysis();
-                case "11" -> viewSurveyDetails();
-                case "12" -> viewRegisteredResponses();
-                case "13" -> editOwnResponse();
-                case "14" -> deleteOwnResponse();
-                case "15" -> editSurvey();
-                case "16" -> deleteSurvey();
+                case "4" -> viewSurveyDetails();
+                case "5" -> createSurvey();
+                case "6" -> editSurvey();
+                case "7" -> deleteSurvey();
+                case "8" -> answerSurvey();
+                case "9" -> viewRegisteredResponses();
+                case "10" -> editOwnResponse();
+                case "11" -> deleteOwnResponse();
+                case "12" -> performAnalysis();
+                case "13" -> importSurvey();
+                case "14" -> importResponsesFromFile();
+                case "15" -> exportSurveyToFile();
+                case "16" -> exportResponsesToFile();
                 case "0" -> exit = true;
                 default -> System.out.println("Opció no vàlida. Torna-ho a intentar.");
             }
@@ -85,19 +87,19 @@ public class TerminalDriver {
         System.out.println("1) Registrar usuari");
         System.out.println("2) Iniciar sessió");
         System.out.println("3) Tancar sessió");
-        System.out.println("4) Crear enquesta");
-        System.out.println("5) Respondre enquesta");
-        System.out.println("6) Importar enquesta des d'arxiu");
-        System.out.println("7) Exportar enquesta a arxiu");
-        System.out.println("8) Importar respostes des d'arxiu");
-        System.out.println("9) Exportar respostes a arxiu");
-        System.out.println("10) Realitzar anàlisi");
-        System.out.println("11) Veure enquesta");
-        System.out.println("12) Veure respostes registrades");
-        System.out.println("13) Modificar resposta pròpia");
-        System.out.println("14) Esborrar resposta pròpia");
-        System.out.println("15) Editar enquesta");
-        System.out.println("16) Eliminar enquesta");
+        System.out.println("4) Veure enquesta");
+        System.out.println("5) Crear enquesta");
+        System.out.println("6) Editar enquesta");
+        System.out.println("7) Eliminar enquesta");
+        System.out.println("8) Respondre enquesta");
+        System.out.println("9) Veure respostes");
+        System.out.println("10) Modificar resposta pròpia");
+        System.out.println("11) Esborrar resposta pròpia");
+        System.out.println("12) Realitzar anàlisi");
+        System.out.println("13) Importar enquesta");
+        System.out.println("14) Importar respostes");
+        System.out.println("15) Exportar enquesta");
+        System.out.println("16) Exportar respostes");
         System.out.println("0) Sortir");
     }
 
@@ -154,8 +156,8 @@ public class TerminalDriver {
             String title = promptNonEmpty("Títol");
             String description = promptOptional("Descripció", "");
             int k = promptInt("Nombre de clústers (k)", 2);
-            String initMethod = promptOptional("Mètode d'inicialització", "kmeans++");
-            String distance = promptOptional("Mètrica de distància", "euclidean");
+            String initMethod = promptFromList("Mètode d'inicialització", VALID_INIT_METHODS, "kmeans++");
+            String distance = promptFromList("Mètrica de distància", VALID_DISTANCE_METRICS, "euclidean");
             User owner = userController.requireActiveUser();
 
             Survey survey = surveyController.createSurvey(
@@ -212,7 +214,7 @@ public class TerminalDriver {
                 }
                 case "single" -> {
                     SingleChoiceQuestion sc = new SingleChoiceQuestion(id, text, required, position, DEFAULT_QUESTION_WEIGHT);
-                    addChoiceOptions(sc.getOptions(), "opció", 2);
+                    addChoiceOptions(sc.getOptions(), "opció", 2, 8);
                     return sc;
                 }
                 case "multi" -> {
@@ -223,7 +225,8 @@ public class TerminalDriver {
                         continue;
                     }
                     MultipleChoiceQuestion mc = new MultipleChoiceQuestion(id, text, required, position, DEFAULT_QUESTION_WEIGHT, minChoices, maxChoices);
-                    addChoiceOptions(mc.getOptions(), "opció", maxChoices);
+                    int requiredOptions = Math.max(2, maxChoices);
+                    addChoiceOptions(mc.getOptions(), "opció", requiredOptions, 8);
                     return mc;
                 }
                 default -> System.out.println("Tipus no reconegut. Torna-ho a intentar.");
@@ -231,8 +234,17 @@ public class TerminalDriver {
         }
     }
 
-    private void addChoiceOptions(List<ChoiceOption> options, String label, int minimum) {
-        int count = Math.max(minimum, promptInt("Nombre d'opcions", minimum));
+    private void addChoiceOptions(List<ChoiceOption> options, String label, int minOptions, int maxOptions) {
+        int minAllowed = Math.max(2, minOptions);
+        int maxAllowed = Math.max(minAllowed, maxOptions);
+        if (maxAllowed > 8) {
+            maxAllowed = 8;
+        }
+        if (minAllowed > maxAllowed) {
+            minAllowed = maxAllowed;
+        }
+        int defaultValue = Math.min(Math.max(minAllowed, minOptions), maxAllowed);
+        int count = promptBoundedInt("Nombre d'opcions", defaultValue, minAllowed, maxAllowed);
         for (int i = 0; i < count; i++) {
             int optId = i + 1;
             String optLabel = promptNonEmpty("  Text de " + label + " " + (i + 1));
@@ -622,13 +634,12 @@ public class TerminalDriver {
 
             String newTitle = promptOptional("Nou títol", survey.getTitle());
             String newDescription = promptOptional("Nova descripció", survey.getDescription());
-            String newId = promptOptional("Nou ID (enter per mantenir)", survey.getId());
             int newK = promptInt("Nombre de clústers (k)", survey.getK());
-            String newInitMethod = promptOptional("Mètode d'inicialització", survey.getInitMethod());
-            String newDistance = promptOptional("Mètrica de distància", survey.getDistance());
+            String newInitMethod = promptFromList("Mètode d'inicialització", VALID_INIT_METHODS, survey.getInitMethod());
+            String newDistance = promptFromList("Mètrica de distància", VALID_DISTANCE_METRICS, survey.getDistance());
 
             String originalId = survey.getId();
-            Survey updatedSurvey = surveyController.editSurvey(selected.getId(), newId, newTitle, newDescription, newK, newInitMethod, newDistance);
+            Survey updatedSurvey = surveyController.editSurvey(selected.getId(), selected.getId(), newTitle, newDescription, newK, newInitMethod, newDistance);
             System.out.println("Enquesta editada correctament.");
 
             if (promptBoolean("Vols modificar preguntes? (vigila, totes les respostes seran esborrades) (s/n)", false)) {
@@ -745,7 +756,8 @@ public class TerminalDriver {
         for (int i = 0; i < responses.size(); i++) {
             SurveyResponse response = responses.get(i);
             String surveyTitle = surveyTitles.computeIfAbsent(response.getSurveyId(), this::resolveSurveyTitle);
-            System.out.println(" " + (i + 1) + ") " + surveyTitle + " -> ID " + response.getId());
+            String submittedAt = response.getSubmittedAt() == null ? "N/A" : response.getSubmittedAt();
+            System.out.println(" " + (i + 1) + ") " + surveyTitle + " | " + submittedAt + " -> ID " + response.getId());
         }
         int index = promptIndex("Selecciona " + contextLabel, 1, responses.size());
         return responses.get(index - 1);
@@ -836,6 +848,32 @@ public class TerminalDriver {
         }
     }
 
+    private String promptFromList(String label, List<String> allowed, String defaultValue) {
+        String normalizedDefault = normalizeOption(defaultValue);
+        if (!allowed.contains(normalizedDefault)) {
+            normalizedDefault = allowed.get(0);
+        }
+        String options = String.join(", ", allowed);
+        while (true) {
+            String value = prompt(label + " [" + normalizedDefault + "] (opcions: " + options + ")");
+            if (value.isEmpty()) {
+                return normalizedDefault;
+            }
+            String normalized = normalizeOption(value);
+            if (allowed.contains(normalized)) {
+                return normalized;
+            }
+            System.out.println("Opció no vàlida. Valides: " + options + ".");
+        }
+    }
+
+    private String normalizeOption(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.trim().toLowerCase(Locale.ROOT);
+    }
+
     private int promptIndex(String label, int minInclusive, int maxInclusive) {
         while (true) {
             String value = prompt(label + " [" + minInclusive + "-" + maxInclusive + "]");
@@ -853,11 +891,14 @@ public class TerminalDriver {
 
     private boolean promptBoolean(String label, boolean defaultValue) {
         while (true) {
-            // String hint = defaultValue ? "s" : "n";
-            String value = prompt(label).toLowerCase();
+            String value = prompt(label).trim().toLowerCase(Locale.ROOT);
             if (value.isEmpty()) return defaultValue;
-            if (value.startsWith("s") || value.startsWith("y")) return true; // s or y
-            if (value.startsWith("n")) return false;
+            if (value.equals("s") || value.equals("si") || value.equals("sí") || value.equals("y") || value.equals("yes")) {
+                return true;
+            }
+            if (value.equals("n") || value.equals("no")) {
+                return false;
+            }
             System.out.println("Respon amb 's' o 'n'.");
         }
     }
