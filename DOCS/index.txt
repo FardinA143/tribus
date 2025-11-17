@@ -1,0 +1,12 @@
+
+Directori: DOCS/
+
+Proposit:
+- Conté artefactes de documentacio, diagrames i fitxers XML relacionats amb el disseny i casos d'usu.
+
+Contingut principal:
+- `Cas d'us.xml` : Fitxer de casos d'usu.
+- `Cas d'us-Casos.png` : Diagrama/imatge relacionada amb casos d'usu.
+
+Notes:
+- No es codi font; fitxers per consulta i entrega.

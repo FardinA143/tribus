@@ -1,0 +1,8 @@
+
+Directori: FONTS/kmeans/
+
+Proposit:
+- Implementacions de l'algorisme K-Means i variants (KMeansPlusPlus) i models de cluster.
+
+Contingut:
+- `KMeans.java`, `KMeansPlusPlus.java`, `ClusterModel.java`, `IClusteringAlgorithm.java`.

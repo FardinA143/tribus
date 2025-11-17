@@ -1,0 +1,8 @@
+
+Directori: EXE/
+
+Proposito:
+- Destinacio de sortida de la compilacio. Contindra classes compilades (`.class`) i l'arxiu jar executable (`app.jar`).
+
+Estat actual:
+- Pot estar buit fins que s'executi `make -C FONTS jar` o `make -C FONTS compile`.

@@ -1,0 +1,8 @@
+
+Directori: FONTS/Survey/
+
+Proposit:
+- Models i persistencia relacionats amb enquestes i preguntes.
+
+Contingut:
+- `Survey.java`, `Question.java`, `SingleChoiceQuestion.java`, `MultipleChoiceQuestion.java`, `OpenStringQuestion.java`, `OpenIntQuestion.java`, `ChoiceOption.java`, `LocalPersistence.java`.

@@ -17,7 +17,8 @@ help:
 	@echo "  make test       - Compila i executa els tests JUnit (requereix ../libs/junit-4.13.2.jar)"
 	@echo "  make clean      - Elimina fitxers compilats i jars sota $(EXE_DIR)" 
 	@echo "  make cleandocs  - Elimina el directori de documentació (../javadocs/)" 
-	@echo "  make docs       - Genera documentació Javadoc (a ../javadocs/)" 
+	@echo "  make cleandocs  - Elimina el directori de documentació (../DOCS/DescripcioClasses/)" 
+	@echo "  make docs       - Genera documentació Javadoc (a ../DOCS/DescripcioClasses/)" 
 	@echo "  make help       - Mostra aquest missatge d'ajuda"
 	@echo ""
 
@@ -79,10 +80,11 @@ clean:
 
 cleandocs:
 	@echo "[*] Netejant documentació..."
-	@rm -rf ../javadocs
-	@echo "[✓] Directori javadocs/ eliminat"
+	@rm -rf ../DOCS/DescripcioClasses
+	@echo "[✓] Javadocs eliminats eliminat"
 
 docs:
 	@echo "[*] Generant documentació Javadoc..."
-	@javadoc -sourcepath $(FONTS_DIR) -d ../javadocs app distance Encoder Exceptions importexport kmeans kselector Response Survey user validation
-	@echo "[✓] Documentació generada a ../javadocs/"
+	@mkdir -p ../DOCS/DescripcioClasses
+	@javadoc -sourcepath $(FONTS_DIR) -d ../DOCS/DescripcioClasses app distance Encoder Exceptions importexport kmeans kselector Response Survey user validation
+	@echo "[✓] Documentació generada a ../DOCS/DescripcioClasses/"

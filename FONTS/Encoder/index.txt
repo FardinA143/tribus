@@ -1,0 +1,9 @@
+
+Directori: FONTS/Encoder/
+
+Proposit:
+- Conté codificadors per convertir preguntes/respostes a vectors (per exemple One-Hot encoding).
+
+Contingut:
+- `IEncoder.java` : Interficie de codificador.
+- `OneHotEncoder.java` : Implementacio de codificacio one-hot.

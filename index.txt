@@ -1,0 +1,15 @@
+
+Projecte: EXTRACTOR DE PROTOTIPUS DE COMPORTAMENT O PERFILS
+
+Descripcio del directori arrel:
+- Conte la documentacio principal (`README.md`), les dependencies a `libs/`, el codi a `FONTS/` i documentacio de disseny a `DOCS/`.
+
+Subdirectoris principals:
+- `FONTS/`: Codi font Java i Makefile per compilar i generar el jar.
+- `DOCS/`: Artefactes de documentacio i diagrames.
+- `libs/`: Llibreries externes (JARs) usades per compilar i fer tests.
+- `EXE/`: Sortida de compilacio; conte classes compilades i el jar executable.
+
+Us recomandat:
+- Canvia a `FONTS/` i executa `make jar` o `make run` per compilar/execucio.
+- Consulta `README.md` per instruccions detallades d'instalacio i execucio.

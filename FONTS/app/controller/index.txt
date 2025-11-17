@@ -1,0 +1,11 @@
+
+Directori: FONTS/app/controller/
+
+Proposit:
+- Implementa la logica del negoci i les operacions sobre enquestes, respostes, usuaris i analisi.
+
+Classes principals:
+- `SurveyController.java` : Crear, editar, carregar i guardar enquestes.
+- `ResponseController.java` : Construir, guardar, llistar i eliminar respostes.
+- `UserController.java` : Gestio de sessions i usuaris (interactua amb `user.AuthService`).
+- `AnalyticsController.java` : Encapsula el flux d'analisi/clustering.

@@ -1,0 +1,17 @@
+
+Directori: FONTS/
+
+Proposit:
+- Conte tot el codi font Java del projecte i el Makefile per compilar i empaquetar l'aplicacio.
+
+Subdirectoriss principals:
+- `app/` : Driver de terminal i controladors (TerminalDriver, controller/).
+- `Encoder/` : Codificadors (OneHotEncoder, IEncoder).
+- `Exceptions/` : Excepcions del domini.
+- `importexport/` : Serialitzadors per enquestes i respostes.
+- `Junit/` : Tests unitaris.
+- `kmeans/`, `kselector/`, `distance/` : Algoritmes i utilitats de clustering.
+- `Response/`, `Survey/`, `user/` : Models de respostes, enquestes (amb la corresponent Pregunta) i usuaris.
+
+Us:
+- Executa `make -C FONTS jar` des de l'arrel o `cd FONTS && make jar` per compilar i generar `../EXE/app.jar`.

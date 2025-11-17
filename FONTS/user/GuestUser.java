@@ -10,6 +10,12 @@ public class GuestUser extends User {
     /** Data d'expiració opcional per a la sessió convidat (ISO-8601). */
     private String expiresAt;
 
+    /**
+     * Crea un `GuestUser` sense data d'expiracio.
+     *
+     * @param id Identificador temporal de l'usuari
+     * @param displayName Nom visible de l'usuari
+     */
     public GuestUser(String id, String displayName) {
         super(id, displayName);
         this.expiresAt = null;
@@ -26,10 +32,21 @@ public class GuestUser extends User {
         this.expiresAt = expiresAt;
     }
 
+    /**
+     * Indica si aquesta instancia representa un usuari convidat.
+     *
+     * @return `true` sempre per a `GuestUser`
+     */
     public boolean isGuest() {
         return guest;
     }
 
+    /**
+     * Retorna la data d'expiracio de la sessio del guest en format ISO-8601,
+     * o `null` si no s'ha establert.
+     *
+     * @return Data d'expiracio (ISO-8601) o `null`
+     */
     public String getExpiresAt() {
         return expiresAt;
     }

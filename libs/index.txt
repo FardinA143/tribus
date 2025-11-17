@@ -1,0 +1,11 @@
+
+Directori: libs/
+
+Proposit:
+- Conte les llibreries externes (JARs) necessaries per compilar i executar tests.
+
+Contingut tipic:
+- `junit-4.13.2.jar` (o versions similars) per proves unitaries. Aquest Junit té el seu corresponent `hamcrest-core-1.3.jar` a dins (JAR Bundle)
+
+Notes:
+- No modificar aquests JARs si no sabeu com actualitzar les dependencies del projecte.

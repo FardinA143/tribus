@@ -1,0 +1,8 @@
+
+Directori: FONTS/validation/
+
+Proposit:
+- Validacions i metriques per evaluar la qualitat de clusters (p. ex. Silhouette).
+
+Contingut:
+- `IClusterValidation.java`, `Silhouette.java`.

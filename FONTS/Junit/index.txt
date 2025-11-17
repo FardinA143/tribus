@@ -1,0 +1,11 @@
+
+Directori: FONTS/Junit/
+
+Proposit:
+- Tests unitaris JUnit per validar el comportament de classes i la logica del negoci.
+
+Contingut:
+- Multiples proves: `TestAuthService`, `TestGuestUser`, `TestKMeans`, `TxtSurveySerializerTest`, etc.
+
+Notes:
+- Executa `make -C FONTS test` per compilar i executar aquestes proves.

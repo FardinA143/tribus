@@ -1,0 +1,9 @@
+
+Directori: FONTS/Response/
+
+Proposit:
+- Models que representen les respostes a preguntes d'enquestes.
+
+Contingut:
+- `Answer.java`, `TextAnswer.java`, `IntAnswer.java`, `SingleChoiceAnswer.java`, `MultipleChoiceAnswer.java`, `SurveyResponse.java`.
+

@@ -1,0 +1,8 @@
+
+Directori: FONTS/user/
+
+Proposit:
+- Classes relacionades amb usuaris, autenticacio i sessions.
+
+Contingut:
+- `User.java` (base), `RegisteredUser.java`, `GuestUser.java`, `AuthService.java`, `Sesion.java`.
