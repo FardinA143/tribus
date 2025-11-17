@@ -11,6 +11,7 @@ import app.controller.*;
 import importexport.*;
 import user.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -30,8 +31,7 @@ public class TerminalDriver {
     private static final double DEFAULT_QUESTION_WEIGHT = 1.0;
     private static final int DEFAULT_MAX_TEXT_LENGTH = 250;
     private static final int RECOMMENDED_TEXT_LENGTH = 50;
-    private static final List<String> VALID_INIT_METHODS = List.of("kmeans++", "random");
-    private static final List<String> VALID_DISTANCE_METRICS = List.of("euclidean");
+    private static final List<String> VALID_INIT_METHODS = List.of("kmeans++", "kmeans");
 
     /**
      * Construeix el controlador de terminal inicialitzant els serveis requerits.
@@ -157,7 +157,7 @@ public class TerminalDriver {
             String description = promptOptional("Descripció", "");
             int k = promptInt("Nombre de clústers (k)", 2);
             String initMethod = promptFromList("Mètode d'inicialització", VALID_INIT_METHODS, "kmeans++");
-            String distance = promptFromList("Mètrica de distància", VALID_DISTANCE_METRICS, "euclidean");
+            String distance = "euclidean"; // Only Euclidean distance is supported for now
             User owner = userController.requireActiveUser();
 
             Survey survey = surveyController.createSurvey(
@@ -298,6 +298,10 @@ public class TerminalDriver {
         Survey selected = selectSurvey(surveys, "l'enquesta a exportar");
         if (selected == null) return;
         String path = promptNonEmpty("Ruta destí de l'arxiu .txt");
+        if (!confirmOverwrite(path)) {
+            System.out.println("Exportació cancel·lada per preservar l'arxiu existent.");
+            return;
+        }
         try {
             Survey survey = surveyController.loadSurvey(selected.getId());
             surveySerializer.toFile(survey, path);
@@ -325,6 +329,10 @@ public class TerminalDriver {
                 return;
             }
             String path = promptNonEmpty("Ruta destí de l'arxiu .txt");
+            if (!confirmOverwrite(path)) {
+                System.out.println("Exportació cancel·lada per preservar l'arxiu existent.");
+                return;
+            }
             responseSerializer.toFile(responses, path);
             System.out.println("Respostes exportades correctament a " + path);
         } catch (PersistenceException e) {
@@ -636,7 +644,7 @@ public class TerminalDriver {
             String newDescription = promptOptional("Nova descripció", survey.getDescription());
             int newK = promptInt("Nombre de clústers (k)", survey.getK());
             String newInitMethod = promptFromList("Mètode d'inicialització", VALID_INIT_METHODS, survey.getInitMethod());
-            String newDistance = promptFromList("Mètrica de distància", VALID_DISTANCE_METRICS, survey.getDistance());
+            String newDistance = "euclidean"; // Fixed to Euclidean
 
             String originalId = survey.getId();
             Survey updatedSurvey = surveyController.editSurvey(selected.getId(), selected.getId(), newTitle, newDescription, newK, newInitMethod, newDistance);
@@ -901,5 +909,13 @@ public class TerminalDriver {
             }
             System.out.println("Respon amb 's' o 'n'.");
         }
+    }
+
+    private boolean confirmOverwrite(String path) {
+        File file = new File(path);
+        if (!file.exists()) {
+            return true;
+        }
+        return promptBoolean("L'arxiu ja existeix. Vols sobreescriure'l? (s/n)", false);
     }
 }
