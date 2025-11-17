@@ -26,7 +26,7 @@ Durant tota l'execució dels jocs de prova es faràn varies comprobacions d'exce
 
 ----- DESCRIPCIÓ DE L'EXEMPLE DISPONIBLE -----
 
-Aquesta carpeta inclou un fitxer .txt amb una enquesta ja exportada (unes 50 preguntes) i un fitxer .txt amb 150 respostes corresponents a aquesta enquesta. Això permet provar més a fons l'anàlisi de perfils de comportament.
+Aquesta carpeta inclou un fitxer .txt amb una enquesta ja exportada (unes 20 preguntes) i un fitxer .txt amb 100 respostes corresponents a aquesta enquesta. Això permet provar més a fons l'anàlisi de perfils de comportament.
 
 També facilitem un joc de proves relacionat amb aquests exemples per agilitzar el testing.
 
