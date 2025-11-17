@@ -1,0 +1,21 @@
+4c959173-44b7-49f5-85d2-da4fade25cc0,Enquesta servei biblioteca,Sondatge sobre lus i satisfaccio del servei de biblioteca,256944fa-28c5-473e-9f08-877787416a51,2,kmeans++,euclidean,2025-11-17T15:21:10.774734459,2025-11-17T15:21:10.774734459
+1,Com valoreu facilitat duso del servei?,true,1,1.0,os,150
+2,Quin es el vostre tipus de lectura preferit?,true,2,1.0,os,150
+3,Quins millores suggeriu per la biblioteca?,true,3,1.0,os,150
+4,Quin servei trobeu mes util (breu comentari)?,true,4,1.0,os,150
+5,Comentaris generals sobre horaris i acces,true,5,1.0,os,150
+6,Quants llibres heu prestat aquest any?,true,6,1.0,oi,0,200
+7,Quantes visites a la biblioteca per mes?,true,7,1.0,oi,0,100
+8,Quants actes o tallers heu fet servir?,true,8,1.0,oi,0,20
+9,Quantes reserves online feu al mes?,true,9,1.0,oi,0,50
+10,Quants dies a lany veniu a estudiar?,true,10,1.0,oi,0,365
+11,Estas satisfet amb el servei de prestec?,true,11,1.0,sc,1:U2k=|2:Tm8=|3:Tm8gc2U=
+12,Recomanaries la biblioteca a amics?,true,12,1.0,sc,1:U2VndXI=|2:UG90c2Vy|3:Tm8=
+13,Amb que paraula identifiqueu el servei?,true,13,1.0,sc,1:RXhjZWxlbnQ=|2:Qm8=|3:UmVndWxhcg==|4:RG9sZW50
+14,Cada quant visiteu la biblioteca?,true,14,1.0,sc,1:RGlhcmk=|2:U2V0bWFuYWw=|3:TWVuc3VhbA==|4:UmFyYW1lbnQ=
+15,Preferiu serveis presencials o online?,true,15,1.0,sc,1:UHJlc2VuY2lhbA==|2:T25saW5l|3:QW1iZGVscw==
+16,Quins serveis feu servir (trieu tots que corresponguin)?,true,16,1.0,mc,1,3,1:UHJlc3RlYw==|2:Q29uc3VsdGEgc2FsYQ==|3:UmVzZXJ2YSBvbmxpbmU=|4:QWN0aXZpdGF0cw==
+17,Per quins canals obteniu informacio?,true,17,1.0,mc,1,3,1:V2Vi|2:QXBw|3:RW1haWw=|4:WGFyeGVzIHNvY2lhbHM=
+18,Quins tipus de materials utilitzeu?,true,18,1.0,mc,1,3,1:TGxpYnJlcw==|2:UmV2aXN0ZXM=|3:RWJvb2tz|4:QXVkaW92aXN1YWxz
+19,Quines activitats us interessen?,true,19,1.0,mc,1,3,1:VGFsbGVycw==|2:UHJlc2VudGFjaW9ucw==|3:Rm9ybWFjaW8=|4:RXhwb3NpY2lvbnM=
+20,Quins espais utilitzeu?,true,20,1.0,mc,1,3,1:U2FsYSBlc3R1ZGk=|2:U2FsYSBpbmZhbnRpbA==|3:QXVkaXRvcmk=|4:RXNwYWkgY29tdW5pdGFyaQ==

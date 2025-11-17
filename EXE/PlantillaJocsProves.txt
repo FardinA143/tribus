@@ -1,0 +1,15 @@
+1
+Prova
+Prova
+Prova1
+2
+Prova
+Prova1
+6
+out/PlantillaEnquesta.txt
+8
+out/PlantillaRespostes.txt
+11
+12
+10
+0
