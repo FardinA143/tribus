@@ -9,10 +9,10 @@ i analitzar perfils de semblança entre respostes d'enquestes.
 
 ## **PARTICIPANTS**
 
-    - Wenqiang He : wenqiang.he@estudiantat.upc.edu
-    - Mateus Grandolfi: mateus.grandolfi@estudiantat.upc.edu
-    - Pol Gay: pol.gay@estudiantat.upc.edu
-    - Fardin Arafat: fardin.arafat.mia@estudiantat.upc.edu
+    - He, Wenqiang: wenqiang.he@estudiantat.upc.edu
+    - Gay, Pol: pol.gay@estudiantat.upc.edu
+    - Grandolfi, Mateus Grandolfi: mateus.grandolfi@estudiantat.upc.edu
+    - Mia, Fardin Arafat: fardin.arafat.mia@estudiantat.upc.edu
 
 ## Executar el driver de terminal
 
@@ -36,8 +36,6 @@ make clean             # Eliminar artifacts de compilació
 make cleandocs          # Eliminar documentació generada
 make help              # Mostra aquest missatge d'ajuda
 ```
-
-
 
 ## Estructura de carpetes
 
