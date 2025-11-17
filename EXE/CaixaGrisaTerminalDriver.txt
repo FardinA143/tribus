@@ -23,6 +23,13 @@ En la segona fase, es verifiquen funcionalitats diverses, com consultar enqueste
 
 Durant tota l'execució dels jocs de prova es faràn varies comprobacions d'excepcions quan toqui (p.ex: Verificar si es pot iniciar sessió amb la sessió ja iniciada, veure si es pot escriure on no toca, etc)
 
+-----FITXERS DE DADES NECESSARIS-----
+
+JocsDeProvesCaixaGrisa.txt
+PlantillaJocsProves.txt 
+PlantillaEnquesta.txt
+PlantillaRespostes.txt
+TerminalDriver.java 
 
 ----- DESCRIPCIÓ DE L'EXEMPLE DISPONIBLE -----
 
