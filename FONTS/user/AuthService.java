@@ -39,7 +39,7 @@ public class AuthService {
      */
     public RegisteredUser register(String id, String displayName, String username, String password) {
         if (registeredUsers.values().stream().anyMatch(u -> u.getUsername().equals(username))) {
-            System.out.println("Username already taken");
+            // System.out.println("Username already taken");
             return null;
         }
         String passwordHash = hashPassword(password);
@@ -70,7 +70,7 @@ public class AuthService {
                 return sess;
             }
         }
-        System.out.println("Invalid credentials");
+        // System.out.println("Invalid credentials");
         return null;
     }
 

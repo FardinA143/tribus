@@ -3,7 +3,7 @@
 # Directories (Makefile located inside FONTS/)
 FONTS_DIR = .
 EXE_DIR = ../EXE
-MAIN_CLASS = app.TerminalDriver
+MAIN_CLASS = app.ElectronDriver
 
 help:
 	@echo "=========================================="
