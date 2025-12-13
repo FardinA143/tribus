@@ -89,4 +89,59 @@ public class TestAuthService {
         authService.logout(sesion);
         assertFalse("La sesión debería estar inactiva después del logout", sesion.isActive());
     }
+
+    /**
+     * Comprova que es pot actualitzar un usuari existent i que les noves
+     * credencials funcionen.
+     */
+    @Test
+    public void UpdateUserSuccessfulTest() {
+        RegisteredUser user = authService.register("u1", "User 1", "user_login", "pass123");
+        String oldHash = user.getPasswordHash();
+
+        RegisteredUser updated = authService.updateUser("u1", "User 1 Updated", "user_login_new", "pass456");
+        assertNotNull("La actualización debería devolver el usuario", updated);
+        assertEquals("El ID debe mantenerse", "u1", updated.getId());
+        assertEquals("El displayName debe actualizarse", "User 1 Updated", updated.getDisplayName());
+        assertEquals("El username debe actualizarse", "user_login_new", updated.getUsername());
+        assertNotEquals("El hash de contraseña debe cambiar", oldHash, updated.getPasswordHash());
+        assertNotEquals("No se debe guardar la contraseña en texto plano", "pass456", updated.getPasswordHash());
+
+        // El login ha de funcionar amb les noves credencials i fallar amb les antigues
+        assertNull("El login antic no hauria de funcionar", authService.login("user_login", "pass123"));
+        assertNotNull("El login amb les credencials noves hauria de funcionar", authService.login("user_login_new", "pass456"));
+    }
+
+    /**
+     * Comprova que no es permet actualitzar un usuari amb un username ja en ús.
+     */
+    @Test
+    public void UpdateUserUsernameTakenTest() {
+        authService.register("u1", "User 1", "user1", "pass1");
+        authService.register("u2", "User 2", "user2", "pass2");
+
+        RegisteredUser result = authService.updateUser("u1", "User 1", "user2", "pass1new");
+        assertNull("L'actualització ha de fallar per username duplicat", result);
+
+        // Les dades originals es mantenen
+        Sesion session = authService.login("user1", "pass1");
+        assertNotNull("El login original ha de continuar funcionant", session);
+    }
+
+    /**
+     * Comprova que eliminar un usuari l'elimina del registre i tanca la sessió associada.
+     */
+    @Test
+    public void DeleteUserRemovesAndClosesSessionTest() {
+        authService.register("u1", "User 1", "user_del", "pass123");
+        Sesion sesion = authService.login("user_del", "pass123");
+        assertNotNull(sesion);
+        assertTrue(sesion.isActive());
+
+        boolean deleted = authService.deleteUser("u1");
+        assertTrue("S'hauria d'eliminar l'usuari", deleted);
+        assertFalse("La sessió ha de quedar tancada", sesion.isActive());
+        assertEquals("No haurien de quedar usuaris registrats", 0, authService.listRegisteredUsers().size());
+        assertNull("No s'hauria de poder fer login amb l'usuari eliminat", authService.login("user_del", "pass123"));
+    }
 }

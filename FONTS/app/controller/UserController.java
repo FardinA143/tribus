@@ -72,4 +72,18 @@ public class UserController {
     public Collection<RegisteredUser> listRegisteredUsers() {
         return authService.listRegisteredUsers();
     }
+
+    /**
+     * Actualitza un usuari existent.
+     */
+    public RegisteredUser updateUser(String id, String displayName, String username, String password) {
+        return authService.updateUser(id, displayName, username, password);
+    }
+
+    /**
+     * Elimina un usuari pel seu identificador.
+     */
+    public boolean deleteUser(String id) {
+        return authService.deleteUser(id);
+    }
 }
