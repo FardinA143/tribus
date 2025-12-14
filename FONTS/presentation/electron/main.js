@@ -26,7 +26,6 @@ function createWindow() {
 app.whenReady().then(() => {
   createWindow();
 
-  // Path al JAR o a tus clases — ajusta según tu empaquetado
   const jarPath = path.join(__dirname, '../../../EXE/app.jar');
 
   // Ejecutar la clase app.ElectronDriver

@@ -1,6 +1,6 @@
   import React from 'react';
-import { useApp } from '../store';
-import { LogIn, Sun, Moon, User, ChevronDown, List, MessageSquare, LogOut, Trash2 } from 'lucide-react';
+import { useApp } from '../store'; // 
+import { LogIn, Sun, Moon, User, ChevronDown, List, MessageSquare, LogOut, Trash2 } from 'lucide-react'; // Iconos
 import {
   DropdownMenu,
   DropdownMenuContent,
