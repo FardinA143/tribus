@@ -7,6 +7,7 @@ import Response.Answer;
 import Response.SurveyResponse;
 import Survey.LocalPersistence;
 import Survey.Survey;
+import app.DomainDriver;
 import user.User;
 
 import java.time.LocalDateTime;
@@ -15,8 +16,14 @@ import java.util.UUID;
 
 public class ResponseController {
     private final LocalPersistence persistence;
+    private final DomainDriver domainDriver;
 
-    public ResponseController(LocalPersistence persistence) {
+    public ResponseController(DomainDriver domainDriver) {
+        this(domainDriver, new LocalPersistence());
+    }
+
+    public ResponseController(DomainDriver domainDriver, LocalPersistence persistence) {
+        this.domainDriver = domainDriver;
         this.persistence = persistence;
     }
 

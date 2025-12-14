@@ -6,6 +6,7 @@ import Survey.LocalPersistence;
 import Survey.Survey;
 import importexport.SurveySerializer;
 import importexport.TxtSurveySerializer;
+import app.DomainDriver;
 import user.User;
 
 import java.io.IOException;
@@ -15,12 +16,14 @@ import java.util.Collection;
 public class SurveyController {
     private final LocalPersistence persistence;
     private final SurveySerializer serializer;
+    private final DomainDriver domainDriver;
 
-    public SurveyController() {
-        this(new LocalPersistence(), new TxtSurveySerializer());
+    public SurveyController(DomainDriver domainDriver) {
+        this(domainDriver, new LocalPersistence(), new TxtSurveySerializer());
     }
 
-    public SurveyController(LocalPersistence persistence, SurveySerializer serializer) {
+    public SurveyController(DomainDriver domainDriver, LocalPersistence persistence, SurveySerializer serializer) {
+        this.domainDriver = domainDriver;
         this.persistence = persistence;
         this.serializer = serializer;
     }

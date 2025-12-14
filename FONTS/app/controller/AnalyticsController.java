@@ -3,6 +3,7 @@ package app.controller;
 import Encoder.OneHotEncoder;
 import Response.SurveyResponse;
 import Survey.Survey;
+import app.DomainDriver;
 import distance.EuclideanDistance;
 import kmeans.ClusterModel;
 import kmeans.KMeans;
@@ -16,12 +17,14 @@ import java.util.Map;
 public class AnalyticsController {
     private final KMeans kMeans;
     private final Silhouette silhouette;
+    private final DomainDriver domainDriver;
 
-    public AnalyticsController() {
-        this(new KMeans(), new Silhouette());
+    public AnalyticsController(DomainDriver domainDriver) {
+        this(domainDriver, new KMeans(), new Silhouette());
     }
 
-    public AnalyticsController(KMeans kMeans, Silhouette silhouette) {
+    public AnalyticsController(DomainDriver domainDriver, KMeans kMeans, Silhouette silhouette) {
+        this.domainDriver = domainDriver;
         this.kMeans = kMeans;
         this.silhouette = silhouette;
     }
