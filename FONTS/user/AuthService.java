@@ -2,35 +2,34 @@ package user;
 
 import Exceptions.NullArgumentException;
 import Exceptions.PersistenceException;
+import Survey.LocalPersistence;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import persistence.UserPersistence;
 
 /**
  * Servicio encargado de gestionar el registro, autenticación y sesiones activas
  * de los usuarios del sistema.
  * 
  * <p>Proporciona operaciones para registrar nuevos usuarios, iniciar sesión,
- * cerrar sesión y realizar validaciones básicas de credenciales. Utiliza un 
- * almacenamiento en memoria basado en {@code HashMap}.</p>
+ * cerrar sesión y realizar validaciones básicas de credenciales. Utiliza
+ * {@code LocalPersistence} como cache en memoria.</p>
  */
 public class AuthService {
 
     /**
-     * Crea un servei d'autenticació amb emmagatzematge en memòria i
-     * persistència de dades en fitxer.
+     * Crea un servei d'autenticació amb cache en memòria.
      */
     public AuthService() {
-        this(new UserPersistence());
+        this(new LocalPersistence());
     }
 
     /**
-     * Permet injectar una implementació de persistència.
+     * Permet injectar una implementació de persistència (cache).
      */
-    public AuthService(UserPersistence userPersistence) {
-        this.userPersistence = userPersistence;
+    public AuthService(LocalPersistence persistence) {
+        this.persistence = persistence;
     }
 
     /** Mapa de usuarios registrados, indexados por su ID. */
@@ -39,8 +38,8 @@ public class AuthService {
     /** Mapa de sesiones activas, indexadas por su ID de sesión. */
     private Map<String, Sesion> activeSessions = new HashMap<>(); 
 
-    /** Gestor de persistència d'usuaris registrats. */
-    private final UserPersistence userPersistence;
+    /** Cache (LocalPersistence) para almacenamiento en memoria. */
+    private final LocalPersistence persistence;
 
     /**
      * Registra un nuevo usuario en el sistema.
@@ -66,11 +65,6 @@ public class AuthService {
                 passwordHash
         );
         registeredUsers.put(id, newUser);
-        try {
-            userPersistence.persistUser(newUser);
-        } catch (NullArgumentException | PersistenceException e) {
-            System.err.println("No se pudo persistir el usuario: " + e.getMessage());
-        }
         return newUser;
     }
 
@@ -141,12 +135,6 @@ public class AuthService {
         existing.changeUsername(username);
         existing.changePassword(hashPassword(password));
 
-        try {
-            userPersistence.persistAllUsers(registeredUsers.values());
-        } catch (NullArgumentException | PersistenceException e) {
-            System.err.println("No se pudo persistir la actualización: " + e.getMessage());
-        }
-
         return existing;
     }
 
@@ -174,12 +162,6 @@ public class AuthService {
             }
             return false;
         });
-
-        try {
-            userPersistence.persistAllUsers(registeredUsers.values());
-        } catch (NullArgumentException | PersistenceException e) {
-            System.err.println("No se pudo persistir la eliminación: " + e.getMessage());
-        }
 
         return true;
     }
