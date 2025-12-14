@@ -2,12 +2,20 @@ package app.controller;
 
 import Exceptions.InvalidSurveyException;
 import Exceptions.PersistenceException;
-import Response.*;
+import Response.Answer;
+import Response.IntAnswer;
+import Response.MultipleChoiceAnswer;
+import Response.SingleChoiceAnswer;
+import Response.TextAnswer;
 import Survey.LocalPersistence;
 import Survey.Survey;
+import Survey.Question;
+import Survey.OpenStringQuestion;
+import Survey.OpenIntQuestion;
+import Survey.SingleChoiceQuestion;
+import Survey.MultipleChoiceQuestion;
 import importexport.SurveySerializer;
 import importexport.TxtSurveySerializer;
-import app.DomainDriver;
 import user.User;
 
 import java.io.IOException;
@@ -19,14 +27,12 @@ import java.util.List;
 public class SurveyController {
     private final LocalPersistence persistence;
     private final SurveySerializer serializer;
-    private final DomainDriver domainDriver;
 
-    public SurveyController(DomainDriver domainDriver) {
-        this(domainDriver, new LocalPersistence(), new TxtSurveySerializer());
+    public SurveyController() {
+        this(new LocalPersistence(), new TxtSurveySerializer());
     }
 
-    public SurveyController(DomainDriver domainDriver, LocalPersistence persistence, SurveySerializer serializer) {
-        this.domainDriver = domainDriver;
+    public SurveyController(LocalPersistence persistence, SurveySerializer serializer) {
         this.persistence = persistence;
         this.serializer = serializer;
     }

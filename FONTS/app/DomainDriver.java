@@ -30,7 +30,7 @@ public class DomainDriver {
 
     public DomainDriver() {
         this.userController = new UserController(this);
-        this.surveyController = new SurveyController(this, persistence, surveySerializer);
+        this.surveyController = new SurveyController(persistence, surveySerializer);
         this.responseController = new ResponseController(this, persistence);
         this.analyticsController = new AnalyticsController(this);
     }
