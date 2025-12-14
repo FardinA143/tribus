@@ -1,5 +1,8 @@
 package user;
 
+import Exceptions.NullArgumentException;
+import Exceptions.PersistenceException;
+import Survey.LocalPersistence;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -10,15 +13,23 @@ import java.util.Map;
  * de los usuarios del sistema.
  * 
  * <p>Proporciona operaciones para registrar nuevos usuarios, iniciar sesión,
- * cerrar sesión y realizar validaciones básicas de credenciales. Utiliza un 
- * almacenamiento en memoria basado en {@code HashMap}.</p>
+ * cerrar sesión y realizar validaciones básicas de credenciales. Utiliza
+ * {@code LocalPersistence} como cache en memoria.</p>
  */
 public class AuthService {
 
     /**
-     * Crea un servei d'autenticació amb emmagatzematge en memòria.
+     * Crea un servei d'autenticació amb cache en memòria.
      */
     public AuthService() {
+        this(new LocalPersistence());
+    }
+
+    /**
+     * Permet injectar una implementació de persistència (cache).
+     */
+    public AuthService(LocalPersistence persistence) {
+        this.persistence = persistence;
     }
 
     /** Mapa de usuarios registrados, indexados por su ID. */
@@ -26,6 +37,9 @@ public class AuthService {
 
     /** Mapa de sesiones activas, indexadas por su ID de sesión. */
     private Map<String, Sesion> activeSessions = new HashMap<>(); 
+
+    /** Cache (LocalPersistence) para almacenamiento en memoria. */
+    private final LocalPersistence persistence;
 
     /**
      * Registra un nuevo usuario en el sistema.
@@ -39,7 +53,7 @@ public class AuthService {
      */
     public RegisteredUser register(String id, String displayName, String username, String password) {
         if (registeredUsers.values().stream().anyMatch(u -> u.getUsername().equals(username))) {
-            // System.out.println("Username already taken");
+            System.out.println("Username already taken");
             return null;
         }
         String passwordHash = hashPassword(password);
@@ -70,7 +84,7 @@ public class AuthService {
                 return sess;
             }
         }
-        // System.out.println("Invalid credentials");
+        System.out.println("Invalid credentials");
         return null;
     }
 
@@ -91,6 +105,65 @@ public class AuthService {
      */
     public Collection<RegisteredUser> listRegisteredUsers() {
         return Collections.unmodifiableCollection(registeredUsers.values());
+    }
+
+    /**
+     * Actualitza un usuari existent amb nous valors. Retorna l'usuari
+     * actualitzat o {@code null} si no existeix o si el nom d'usuari ja
+     * està en ús per un altre compte.
+     */
+    public RegisteredUser updateUser(String id, String displayName, String username, String password) {
+        if (id == null || displayName == null || username == null || password == null) {
+            System.out.println("Parámetros inválidos para actualizar usuario");
+            return null;
+        }
+
+        RegisteredUser existing = registeredUsers.get(id);
+        if (existing == null) {
+            System.out.println("Usuario no encontrado");
+            return null;
+        }
+
+        boolean usernameTaken = registeredUsers.values().stream()
+                .anyMatch(u -> !u.getId().equals(id) && u.getUsername().equals(username));
+        if (usernameTaken) {
+            System.out.println("Username already taken");
+            return null;
+        }
+
+        existing.changeDisplayName(displayName);
+        existing.changeUsername(username);
+        existing.changePassword(hashPassword(password));
+
+        return existing;
+    }
+
+    /**
+     * Elimina un usuari pel seu identificador. Retorna {@code true} si
+     * s'ha eliminat, {@code false} en cas contrari.
+     */
+    public boolean deleteUser(String id) {
+        if (id == null) {
+            System.out.println("ID inválido para eliminar usuario");
+            return false;
+        }
+
+        RegisteredUser removed = registeredUsers.remove(id);
+        if (removed == null) {
+            System.out.println("Usuario no encontrado");
+            return false;
+        }
+
+        // Tanca i elimina sessions actives d'aquest usuari
+        activeSessions.values().removeIf(sess -> {
+            if (sess.getUser().getId().equals(id)) {
+                sess.close();
+                return true;
+            }
+            return false;
+        });
+
+        return true;
     }
 
     // ======================

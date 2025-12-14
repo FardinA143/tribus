@@ -201,7 +201,7 @@ public class DomainDriver {
             ensureSessionAllowGuest();
             Survey survey = surveyController.loadSurvey(surveyId);
             User respondent = userController.requireActiveUser();
-            List<Answer> answers = parseAnswers(answersStr, survey);
+            List<Answer> answers = surveyController.parseAnswers(answersStr, survey);
             if (answers.isEmpty()) {
                 emitError("No hay respuestas válidas");
                 return;
@@ -224,7 +224,7 @@ public class DomainDriver {
             User current = userController.requireActiveUser();
             if (!current.getId().equals(original.getUserId())) { emitError("No autorizado a editar esta respuesta"); return; }
             Survey survey = surveyController.loadSurvey(original.getSurveyId());
-            List<Answer> answers = parseAnswers(answersStr, survey);
+            List<Answer> answers = surveyController.parseAnswers(answersStr, survey);
             responseController.updateResponse(original, answers);
             System.out.println("{\"status\":\"ok\"}");
         } catch (Exception e) {
@@ -309,8 +309,9 @@ public class DomainDriver {
         if (parts.length < 2) { emitError("PERFORM_ANALYSIS requiere surveyId"); return; }
         String surveyId = parts[1];
         try {
+            Survey survey = surveyController.loadSurvey(surveyId);
             List<SurveyResponse> responses = responseController.listResponses(surveyId);
-            AnalyticsResult result = analyticsController.performAnalysis(surveyId, responses);
+            AnalyticsResult result = analyticsController.analyzeSurvey(survey, responses);
             System.out.println(analyticsToJson(result));
         } catch (Exception e) {
             emitError(e.getMessage());
@@ -373,20 +374,6 @@ public class DomainDriver {
 
     private void emitError(String message) {
         System.out.println("{\"error\":\"" + message + "\"}");
-    }
-
-    private List<Answer> parseAnswers(String answersStr, Survey survey) {
-        List<Answer> answers = new ArrayList<>();
-        if (answersStr == null || answersStr.isBlank()) return answers;
-        
-        String[] pairs = answersStr.split(";");
-        for (String pair : pairs) {
-            String[] kv = pair.split(":");
-            if (kv.length == 2) {
-                answers.add(new Answer(kv[0].trim(), kv[1].trim()));
-            }
-        }
-        return answers;
     }
 
     // ==================== GETTERS ====================
