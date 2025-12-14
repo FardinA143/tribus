@@ -1,238 +1,269 @@
 package Encoder;
 
-import Exceptions.*;
 import Survey.*;
 import Response.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Implementació d'un codificador One-Hot per transformar respostes d'enquestes en vectors numèrics.
- * Aquesta classe implementa la interfície IEncoder i proporciona funcionalitat per codificar diferents tipus
- * de preguntes: SingleChoice utilitzant One-Hot Encoding, MultipleChoice utilitzant Multi-Hot Encoding,
- * preguntes numèriques (OpenInt) normalitzades al rang [0, 1], i preguntes de text (OpenString)
- * codificades segons la seva longitud normalitzada.
- * 
- * El codificador ha de ser entrenat (fit) amb una enquesta i les seves respostes abans de poder
- * transformar noves respostes en vectors numèrics.
+ * Implementació refactoritzada d'un codificador per transformar respostes en vectors.
+ * Incorpora estratègia "Bag of Words" per a text i estructura modular per evitar disseny monolític.
  */
 public class OneHotEncoder implements IEncoder {
-    
-    /**
-     * Llista de noms descriptius per a cada característica/dimensió del vector codificat.
-     */
+
+    // Metadata general
     private List<String> featureNames;
-    
-    /**
-     * Llista ordenada de preguntes de l'enquesta, ordenades per posició.
-     */
     private List<Question> orderedQuestions;
-    
-    /**
-     * Mapatge de vocabulari per a preguntes categòriques (SingleChoice i MultipleChoice).
-     * La clau externa és l'ID de la pregunta, i el mapa intern associa cada ID d'opció
-     * amb el seu índex en el vector de característiques.
-     */
-    private Map<Integer, Map<Integer, Integer>> categoricalVocab; 
-    
-    /**
-     * Mapatge de preguntes numèriques (OpenInt i OpenString) al seu índex en el vector de característiques.
-     */
-    private Map<Integer, Integer> numericFeatureMap;
-
-    /**
-     * Mapatge de dominis per a preguntes numèriques. 
-     * Emmagatzema els valors [mínim, màxim] observats per a cada pregunta numèrica durant el fit.
-     */
-    private Map<Integer, double[]> numericDomains;
-
-    /**
-     * Nombre total de dimensions/característiques en el vector codificat.
-     */
     private int totalDims;
 
-    /**
-     * Constructor per defecte que inicialitza totes les estructures de dades internes.
-     */
+    // Estructures específiques per tipus de dada (Separem la lògica)
+    private Map<Integer, Map<Integer, Integer>> categoricalVocab; // ID Pregunta -> (ID Opció -> Índex Vector)
+    private Map<Integer, Integer> numericIndexMap;                // ID Pregunta -> Índex Vector
+    private Map<Integer, double[]> numericDomains;                // ID Pregunta -> [min, max]
+    
+    // NOU: Estructures per a text (Bag of Words)
+    // ID Pregunta -> (Paraula -> Índex relatiu dins la secció de text d'aquesta pregunta)
+    private Map<Integer, Map<String, Integer>> textVocab; 
+    // ID Pregunta -> Índex d'inici en el vector global
+    private Map<Integer, Integer> textIndexStartMap;
+
     public OneHotEncoder() {
         this.featureNames = new ArrayList<>();
         this.orderedQuestions = new ArrayList<>();
         this.categoricalVocab = new HashMap<>();
-        this.numericFeatureMap = new HashMap<>();
+        this.numericIndexMap = new HashMap<>();
         this.numericDomains = new HashMap<>();
+        this.textVocab = new HashMap<>();
+        this.textIndexStartMap = new HashMap<>();
         this.totalDims = 0;
     }
 
-    /**
-     * Entrena el codificador amb una enquesta i les seves respostes.
-     * Analitza l'estructura de l'enquesta i les respostes per crear el vocabulari
-     * d'opcions per a preguntes categòriques, calcular els rangs [min, max] per a
-     * preguntes numèriques, i assignar índexs a cada característica en el vector resultant.
-     * Després de cridar aquest mètode, el codificador està preparat per transformar respostes.
-     * 
-     * @param survey L'enquesta que defineix l'estructura de les preguntes.
-     * @param allResponses Llista de totes les respostes a l'enquesta, utilitzades per calcular
-     * els dominis de les preguntes obertes.
-     */
     @Override
     public void fit(Survey survey, List<SurveyResponse> allResponses) {
-        featureNames.clear();
-        orderedQuestions.clear();
-        categoricalVocab.clear();
-        numericFeatureMap.clear();
-        numericDomains.clear();
-        totalDims = 0;
-
+        resetState();
+        
+        // Ordenem preguntes per mantenir consistència
         this.orderedQuestions = survey.getQuestions().stream()
                 .sorted(Comparator.comparingInt(Question::getPosition))
                 .collect(Collectors.toList());
 
         for (Question q : this.orderedQuestions) {
-            
-            if (q instanceof SingleChoiceQuestion scq) {
-                Map<Integer, Integer> optionMap = new HashMap<>();
-                for (ChoiceOption opt : scq.getOptions()) {
-                    optionMap.put(opt.getId(), totalDims);
-                    featureNames.add("q" + q.getId() + "_opt" + opt.getId());
-                    totalDims++;
-                }
-                categoricalVocab.put(q.getId(), optionMap);
-            
-            }
-            else if (q instanceof MultipleChoiceQuestion mcq) {
-                Map<Integer, Integer> optionMap = new HashMap<>();
-                for (ChoiceOption opt : mcq.getOptions()) {
-                    optionMap.put(opt.getId(), totalDims);
-                    featureNames.add("q" + q.getId() + "_opt" + opt.getId());
-                    totalDims++;
-                }
-                categoricalVocab.put(q.getId(), optionMap);
-
-            }
-            else if (q instanceof OpenIntQuestion oiq) {
-                double min = Double.POSITIVE_INFINITY;
-                double max = Double.NEGATIVE_INFINITY;
-                for (SurveyResponse res : allResponses) {
-                    for (Answer ans : res.getAnswers()) { 
-                        if (ans.getQuestionId() == q.getId() && ans instanceof IntAnswer ia) {
-                            if (ia.getValue() < min) min = ia.getValue();
-                            if (ia.getValue() > max) max = ia.getValue();
-                        }
-                    }
-                }
-                if (min > max) { min = 0; max = 0; } 
-                numericDomains.put(q.getId(), new double[]{min, max});
-
-                numericFeatureMap.put(q.getId(), totalDims);
-                featureNames.add("q" + q.getId() + "_val");
-                totalDims++;
-
-            }
-            else if (q instanceof OpenStringQuestion) {
-                double maxLen = 280;
-                numericDomains.put(q.getId(), new double[]{0, maxLen});
-                
-                numericFeatureMap.put(q.getId(), totalDims);
-                featureNames.add("q" + q.getId() + "_len");
-                totalDims++;
+            if (q instanceof SingleChoiceQuestion) {
+                fitCategorical((SingleChoiceQuestion) q);
+            } else if (q instanceof MultipleChoiceQuestion) {
+                fitCategorical((MultipleChoiceQuestion) q);
+            } else if (q instanceof OpenIntQuestion) {
+                fitNumeric((OpenIntQuestion) q, allResponses);
+            } else if (q instanceof OpenStringQuestion) {
+                fitText((OpenStringQuestion) q, allResponses);
             }
         }
     }
 
-    /**
-     * Transforma una llista de respostes a enquesta en una matriu de vectors numèrics.
-     * Cada resposta es converteix en un vector de dimensió totalDims. Les preguntes SingleChoice
-     * generen un 1.0 a la posició de l'opció triada, les MultipleChoice generen un 1.0 a cada
-     * posició de les opcions triades, les OpenInt es normalitzen al rang [0, 1] segons el domini
-     * observat en fit, i les OpenString es codifiquen segons la seva longitud normalitzada.
-     * Les respostes buides o nul·les es codifiquen com 0.0 en totes les seves dimensions.
-     * 
-     * @param responsesToTransform Llista de respostes a transformar.
-     * @return Matriu on cada fila és el vector codificat d'una resposta.
-     * @throws IllegalStateException si el codificador no ha estat entrenat prèviament amb fit().
-     */
     @Override
     public double[][] transform(List<SurveyResponse> responsesToTransform) {
-        if (totalDims == 0) {
+        if (totalDims == 0 && !orderedQuestions.isEmpty()) {
             throw new IllegalStateException("Encoder has not been fitted. Call fit() first.");
         }
 
         double[][] X = new double[responsesToTransform.size()][totalDims];
-        
+
         for (int i = 0; i < responsesToTransform.size(); i++) {
             SurveyResponse res = responsesToTransform.get(i);
-            
-            Map<Integer, Answer> answerMap = res.getAnswers().stream()
-                    .collect(Collectors.toMap(Answer::getQuestionId, ans -> ans));
-            
+            Map<Integer, Answer> answerMap = mapAnswers(res);
+
             for (Question q : this.orderedQuestions) {
                 Answer ans = answerMap.get(q.getId());
-                
-                if (ans == null || ans.isEmpty()) { 
-                    continue;
-                }
+                if (ans == null || ans.isEmpty()) continue;
 
                 if (q instanceof SingleChoiceQuestion) {
-                    Map<Integer, Integer> optionMap = categoricalVocab.get(q.getId());
-                    if (optionMap != null && ans instanceof SingleChoiceAnswer sca) {
-                        Integer featureIndex = optionMap.get(sca.getOptionId());
-                        if (featureIndex != null) {
-                            X[i][featureIndex] = 1.0;
-                        }
-                    }
-                }
-                else if (q instanceof MultipleChoiceQuestion) {
-                    Map<Integer, Integer> optionMap = categoricalVocab.get(q.getId());
-                    if (optionMap != null && ans instanceof MultipleChoiceAnswer mca) {
-                        for (int optId : mca.getOptionIds()) { 
-                            Integer featureIndex = optionMap.get(optId);
-                            if (featureIndex != null) {
-                                X[i][featureIndex] = 1.0;
-                            }
-                        }
-                    }
-                }
-                else if (q instanceof OpenIntQuestion) {
-                    Integer featureIndex = numericFeatureMap.get(q.getId());
-                    if (featureIndex != null && ans instanceof IntAnswer ia) {
-                        double[] domain = numericDomains.get(q.getId());
-                        double min = domain[0];
-                        double max = domain[1];
-                        double range = (max - min);
-                        
-                        if (range <= 1e-9) {
-                            X[i][featureIndex] = (ia.getValue() >= min) ? 1.0 : 0.0;
-                        }
-                        else {
-                            double normalized = (ia.getValue() - min) / range;
-                            X[i][featureIndex] = Math.max(0.0, Math.min(1.0, normalized));
-                        }
-                    }
-                }
-                else if (q instanceof OpenStringQuestion) {
-                    Integer featureIndex = numericFeatureMap.get(q.getId());
-                    if (featureIndex != null && ans instanceof TextAnswer ta) {
-                        double[] domain = numericDomains.get(q.getId());
-                        double maxLen = domain[1];
-                        if (maxLen > 0) {
-                            double normalized = ta.getValue().length() / maxLen;
-                            X[i][featureIndex] = Math.min(normalized, 1.0);
-                        }
-                    }
+                    encodeSingleChoice(X[i], (SingleChoiceQuestion) q, (SingleChoiceAnswer) ans);
+                } else if (q instanceof MultipleChoiceQuestion) {
+                    encodeMultiChoice(X[i], (MultipleChoiceQuestion) q, (MultipleChoiceAnswer) ans);
+                } else if (q instanceof OpenIntQuestion) {
+                    encodeNumeric(X[i], (OpenIntQuestion) q, (IntAnswer) ans);
+                } else if (q instanceof OpenStringQuestion) {
+                    encodeText(X[i], (OpenStringQuestion) q, (TextAnswer) ans);
                 }
             }
         }
         return X;
     }
 
+    // ----------------------------------------------------------------
+    // MÈTODES PRIVATS D'AJUDA (FIT) - Trenquem el monolito
+    // ----------------------------------------------------------------
+
+    private void fitCategorical(Question q) {
+        Map<Integer, Integer> optionMap = new HashMap<>();
+        Collection<ChoiceOption> options = (q instanceof SingleChoiceQuestion) 
+            ? ((SingleChoiceQuestion) q).getOptions() 
+            : ((MultipleChoiceQuestion) q).getOptions();
+
+        for (ChoiceOption opt : options) {
+            optionMap.put(opt.getId(), totalDims);
+            featureNames.add("q" + q.getId() + "_opt" + opt.getId());
+            totalDims++;
+        }
+        categoricalVocab.put(q.getId(), optionMap);
+    }
+
+    private void fitNumeric(OpenIntQuestion q, List<SurveyResponse> responses) {
+        double min = Double.POSITIVE_INFINITY;
+        double max = Double.NEGATIVE_INFINITY;
+        boolean found = false;
+
+        for (SurveyResponse res : responses) {
+            Answer ans = getAnswerForQuestion(res, q.getId());
+            if (ans instanceof IntAnswer ia) {
+                double val = ia.getValue();
+                if (val < min) min = val;
+                if (val > max) max = val;
+                found = true;
+            }
+        }
+        if (!found || min > max) { min = 0; max = 1; } // Evitar divisió per zero
+
+        numericDomains.put(q.getId(), new double[]{min, max});
+        numericIndexMap.put(q.getId(), totalDims);
+        featureNames.add("q" + q.getId() + "_num");
+        totalDims++;
+    }
+
+    private void fitText(OpenStringQuestion q, List<SurveyResponse> responses) {
+        // 1. Recopilar totes les paraules úniques (Vocabulari) d'aquesta pregunta
+        Set<String> uniqueWords = new HashSet<>();
+        
+        for (SurveyResponse res : responses) {
+            Answer ans = getAnswerForQuestion(res, q.getId());
+            if (ans instanceof TextAnswer ta) {
+                String[] words = tokenize(ta.getValue());
+                Collections.addAll(uniqueWords, words);
+            }
+        }
+
+        // 2. Mapejar paraula -> index relatiu
+        Map<String, Integer> wordMap = new HashMap<>();
+        int relativeIdx = 0;
+        // Ordenem per tenir determinisme
+        List<String> sortedWords = new ArrayList<>(uniqueWords);
+        Collections.sort(sortedWords);
+
+        textIndexStartMap.put(q.getId(), totalDims);
+
+        for (String word : sortedWords) {
+            wordMap.put(word, relativeIdx);
+            featureNames.add("q" + q.getId() + "_word_" + word);
+            relativeIdx++;
+            totalDims++;
+        }
+        textVocab.put(q.getId(), wordMap);
+    }
+
+    // ----------------------------------------------------------------
+    // MÈTODES PRIVATS D'AJUDA (TRANSFORM)
+    // ----------------------------------------------------------------
+
+    private void encodeSingleChoice(double[] row, SingleChoiceQuestion q, SingleChoiceAnswer ans) {
+        Map<Integer, Integer> map = categoricalVocab.get(q.getId());
+        if (map != null && map.containsKey(ans.getOptionId())) {
+            row[map.get(ans.getOptionId())] = 1.0;
+        }
+    }
+
+    private void encodeMultiChoice(double[] row, MultipleChoiceQuestion q, MultipleChoiceAnswer ans) {
+        Map<Integer, Integer> map = categoricalVocab.get(q.getId());
+        if (map != null) {
+            for (int optId : ans.getOptionIds()) {
+                if (map.containsKey(optId)) {
+                    row[map.get(optId)] = 1.0;
+                }
+            }
+        }
+    }
+
+    private void encodeNumeric(double[] row, OpenIntQuestion q, IntAnswer ans) {
+        Integer idx = numericIndexMap.get(q.getId());
+        if (idx != null) {
+            double[] range = numericDomains.get(q.getId());
+            double min = range[0];
+            double max = range[1];
+            double dist = max - min;
+            double val = (dist < 1e-9) ? 0.0 : (ans.getValue() - min) / dist;
+            row[idx] = Math.max(0.0, Math.min(1.0, val));
+        }
+    }
+
+    private void encodeText(double[] row, OpenStringQuestion q, TextAnswer ans) {
+        // Implementació Bag of Words Normalitzada
+        Map<String, Integer> wordMap = textVocab.get(q.getId());
+        Integer startIndex = textIndexStartMap.get(q.getId());
+
+        if (wordMap == null || startIndex == null) return;
+
+        String[] words = tokenize(ans.getValue());
+        if (words.length == 0) return;
+
+        // Comptem freqüència de paraules en aquesta resposta
+        Map<Integer, Double> tempCounts = new HashMap<>();
+        for (String w : words) {
+            if (wordMap.containsKey(w)) {
+                int absIndex = startIndex + wordMap.get(w);
+                tempCounts.put(absIndex, tempCounts.getOrDefault(absIndex, 0.0) + 1.0);
+            }
+        }
+
+        // Normalització (perquè textos llargs no pesin més que curts)
+        // Dividim cada recompte pel total de paraules vàlides trobades (Term Frequency)
+        double totalValidWords = 0;
+        for(double c : tempCounts.values()) totalValidWords += c;
+
+        if (totalValidWords > 0) {
+            for (Map.Entry<Integer, Double> entry : tempCounts.entrySet()) {
+                row[entry.getKey()] = entry.getValue() / totalValidWords;
+            }
+        }
+    }
+
+    // ----------------------------------------------------------------
+    // UTILITATS
+    // ----------------------------------------------------------------
+
+    private void resetState() {
+        featureNames.clear();
+        orderedQuestions.clear();
+        categoricalVocab.clear();
+        numericIndexMap.clear();
+        numericDomains.clear();
+        textVocab.clear();
+        textIndexStartMap.clear();
+        totalDims = 0;
+    }
+
+    private Map<Integer, Answer> mapAnswers(SurveyResponse res) {
+        return res.getAnswers().stream()
+                .collect(Collectors.toMap(Answer::getQuestionId, a -> a));
+    }
+
+    private Answer getAnswerForQuestion(SurveyResponse res, int qId) {
+        return res.getAnswers().stream()
+                .filter(a -> a.getQuestionId() == qId)
+                .findFirst()
+                .orElse(null);
+    }
+
     /**
-     * Obté la llista de noms descriptius per a cada característica del vector codificat.
-     * Els noms segueixen el format: "q<questionId>_opt<optionId>" per a opcions de preguntes
-     * categòriques, "q<questionId>_val" per a valors numèrics de OpenInt, i "q<questionId>_len"
-     * per a longituds de OpenString.
-     * 
-     * @return Llista immutable de noms de característiques, en el mateix ordre que les dimensions del vector.
+     * Tokenitzador simple: minúscules, elimina puntuació bàsica i divideix per espais.
      */
+    private String[] tokenize(String text) {
+        if (text == null) return new String[0];
+        // Normalització bàsica: minúscules i reemplaçar tot el que no sigui lletra/número per espai
+        String clean = text.toLowerCase().replaceAll("[^a-z0-9à-úñç]", " ");
+        return Arrays.stream(clean.split("\\s+"))
+                .filter(s -> !s.isEmpty() && s.length() > 2) // Opcional: Ignorar paraules molt curtes (stop words cutres)
+                .toArray(String[]::new);
+    }
+
     @Override
     public List<String> getFeatureNames() {
         return Collections.unmodifiableList(featureNames);
