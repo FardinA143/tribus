@@ -1,5 +1,11 @@
+<<<<<<< HEAD
 /FONTS/Survey/InvalidSurveyException.java
 /.idea/
 /FONTS/presentation/node_modules/
 FONTS/presentation/package-lock.json
 FONTS/presentation/build
+=======
+/FONTS/presentation/node_modules/
+FONTS/presentation/package-lock.json
+FONTS/presentation/build
+>>>>>>> DataPersistence
