@@ -1,5 +1,4 @@
 package Encoder;
-
 import java.util.List;
 import Survey.Survey;
 import Response.SurveyResponse;

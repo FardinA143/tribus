@@ -1,0 +1,17 @@
+1
+Prova
+Prova
+Prova1
+2
+Prova
+Prova1
+13
+../EXE/PlantillaEnquesta.txt
+14
+../EXE/PlantillaRespostes.txt
+4
+1
+9
+12
+1
+0

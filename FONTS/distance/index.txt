@@ -1,0 +1,8 @@
+
+Directori: FONTS/distance/
+
+Proposit:
+- Implementacions de metricas de distancia usades per algoritmes de clustering.
+
+Contingut:
+- `Distance.java` (interficie), `EuclideanDistance.java` (implementacio actual).

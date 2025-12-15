@@ -1,6 +1,5 @@
 package distance;
 
-
 /**
  * Defineix la interfície per a una estratègia de càlcul de distància.
  * Permet calcular la distància entre dos punts (vectors) en un espai n-dimensional.

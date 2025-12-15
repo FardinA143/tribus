@@ -1,0 +1,8 @@
+
+Directori: FONTS/kselector/
+
+Proposit:
+- Metodes per seleccionar el numero apropiat de clusters (k), per exemple Elbow Method.
+
+Contingut:
+- `ElbowMethod.java`, `IKSelector.java`.

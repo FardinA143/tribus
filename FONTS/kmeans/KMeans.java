@@ -2,7 +2,6 @@ package kmeans;
 
 import distance.Distance;
 import distance.EuclideanDistance;
-import Exceptions.*;
 import java.util.*;
 
 /**
@@ -13,6 +12,12 @@ import java.util.*;
  * buits reassignant punts llunyans.
  */
 public class KMeans implements IClusteringAlgorithm {
+
+    /**
+     * Crea un nou algorisme K-Means sense estat compartit.
+     */
+    public KMeans() {
+    }
 
     /**
      * Executa l'algorisme K-Means sobre un conjunt de dades.

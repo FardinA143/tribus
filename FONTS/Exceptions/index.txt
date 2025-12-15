@@ -1,0 +1,9 @@
+
+Directori: FONTS/Exceptions/
+
+Proposit:
+- Definicio de excepcions especificas del domini usades per controladors i models.
+
+Exemples de classes:
+- `InvalidSurveyException`, `InvalidQuestionException`, `PersistenceException`, `NullArgumentException`, etc.
+

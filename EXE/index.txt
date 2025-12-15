@@ -1,0 +1,19 @@
+
+Directori: EXE/
+
+Proposit:
+- Destinacio de sortida de la compilacio. Conte classes compilades (`.class`),
+  el jar executable (`app.jar`) i fitxers auxiliars (per ex. `manifest.txt`).
+
+Arxius habituals:
+- `classes/` : estructura de paquets amb fitxers `.class` generats per la compilacio.
+- `app.jar`  : jar executable creat pel target `jar` del `Makefile` (ubicat a `FONTS/`).
+- `manifest.txt` : manifest temporal usat en el procés d'empaquetat.
+- altres fitxers generats o dades de prova que l'equip utilitzi per execucions locals.
+
+Comandes utiles:
+- `make -C FONTS compile` : compila el codi i deixa les `.class` a `EXE/classes/`.
+- `make -C FONTS jar`     : crea `EXE/app.jar` (genera `manifest.txt` abans d'empaquetar).
+- `make -C FONTS clean`   : elimina els `.class` i el directori `EXE/classes/`, deixant altres actius.
+
+

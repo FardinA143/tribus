@@ -15,6 +15,12 @@ import distance.EuclideanDistance;
 public class Silhouette implements IClusterValidation {
 
     /**
+     * Crea un calculador del coeficient de Silhouette sense estat compartit.
+     */
+    public Silhouette() {
+    }
+
+    /**
      * Calcula el coeficient de Silhouette per a cada punt de dades.
      * Per a cada punt i, calcula a(i) com la distància mitjana als altres punts
      * del seu clúster, i b(i) com la mínima distància mitjana als punts d'altres clústers.

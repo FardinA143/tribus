@@ -13,6 +13,13 @@ import distance.EuclideanDistance;
  * la convergència.
  */
 public class KMeansPlusPlus extends KMeans {
+
+    /**
+     * Crea una variant K-Means++ utilitzant la implementació base de {@link KMeans}.
+     */
+    public KMeansPlusPlus() {
+        super();
+    }
     
     /**
      * Executa l'algorisme K-Means++ sobre un conjunt de dades.

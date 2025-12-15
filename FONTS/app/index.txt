@@ -1,0 +1,11 @@
+
+Directori: FONTS/app/
+
+Proposit:
+- Interficie de linia de comandes i punt d'entrada: `TerminalDriver`.
+
+Contingut:
+- `TerminalDriver.java` : UI de terminal amb menus i flux principal.
+- `TestSuiteRunner.java` : Invocador de tests.
+- `controller/` : Controladors de l'aplicacio (SurveyController, ResponseController, UserController, AnalyticsController).
+

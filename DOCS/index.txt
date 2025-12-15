@@ -1,0 +1,15 @@
+
+Directori: DOCS/
+
+Proposit:
+- Conte la documentacio generada i recursos del projecte.
+
+Subdirectoris i contingut clau:
+- `DescripcioClasses/` : Javadoc generat pel projecte (HTML amb la descripcio de paquets i classes).
+- Documentacio adicional: diagrames, exemples i documentacio manual
+
+Us util:
+- Per regenerar la documentacio Javadoc: `make -C FONTS docs` (genera `DescripcioClasses/`).
+- Per eliminar la documentacio generada: `make -C FONTS cleandocs`.
+
+

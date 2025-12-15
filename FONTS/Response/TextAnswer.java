@@ -1,45 +1,56 @@
-package Response; 
+package Response;
 
-import Exceptions.InvalidArgumentException.java;
-import Exceptions.NullArgumentException.java;
+import Exceptions.NullArgumentException;
 
+
+
+/**
+ * Representa una resposta a una pregunta de tipus text lliure.
+ */
 public final class TextAnswer extends Answer {
-    private final String value; 
+    /** El valor de text lliure respost. */
+    private final String value;
 
-    public TextAnswer(int questionId, String value) {
-        super(questionId); 
-        //no pot ser null 
+    /**
+     * Constructor per a TextAnswer.
+     * @param questionId ID de la pregunta.
+     * @param value El valor de text lliure.
+     * @throws NullArgumentException si el valor de text és null.
+     */
+    public TextAnswer(int questionId, String value) throws NullArgumentException {
+        super(questionId);
+        //value no pot ser null 
         if (value == null) {
             throw new NullArgumentException("Text answer cannot be null");
         }
-        if (value.TYPE != String) {
-            throw new InvalidArgumentException("Text answer must be a string");
-        }
-
-        this.value = value; 
+        this.value = value;
     }
 
+    /**
+     * Retorna el valor de text respost.
+     * @return El valor de text.
+     */
 
-    //gets the value 
     public String getValue() {
-        return value; 
+        return value;
     }
 
-    //returns the type of the answer
+    /**
+     * Retorna el tipus de resposta TEXT.
+     * @return Type.TEXT.
+     */
     @Override
     public Type getType() {
         return Type.TEXT;
     }
 
-    //returns if the answer is empty
+    /**
+     * Indica si la resposta és buida (string buit o només espais en blanc).
+     * @return Cert si el valor és buit o conté només espais en blanc.
+     */
+
     @Override
     public boolean isEmpty() {
         return value.trim().isEmpty();
-    }
-
-    //string representation of the object
-    @Override 
-    public String toString() { 
-        return "TextAnswer{q=" + getQuestionId() + ", value=\"" + value + "\"}"; 
     }
 }

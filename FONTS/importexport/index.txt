@@ -1,0 +1,10 @@
+
+Directori: FONTS/importexport/
+
+Proposit:
+- Serialitzacio i import/export d'enquestes i respostes a/desde fitxers de text.
+
+Contingut:
+- `SurveySerializer.java`, `ResponseSerializer.java` : Interficies de serialitzacio.
+- `TxtSurveySerializer.java`, `TxtResponseSerializer.java` : Implementacions per format .txt.
+- `surveytest.txt` : Exemple de fitxer d'enquesta per a importacio.
