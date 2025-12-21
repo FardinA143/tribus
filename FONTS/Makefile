@@ -35,7 +35,7 @@ jar: compile
 	@jar cfm $(EXE_DIR)/app.jar $(EXE_DIR)/manifest.txt -C $(EXE_DIR)/classes .
 	@echo "[✓] Jar creat a $(EXE_DIR)/app.jar"
 
-run-dev: 
+run-dev: jar
 	@echo "[*] Preparant entorn dev..."
 	@cd presentation && npm install
 	@echo "[*] Executant aplicació en mode desenvolupament..."
