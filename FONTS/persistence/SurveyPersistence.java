@@ -17,7 +17,21 @@ public class SurveyPersistence {
 	private final SurveySerializer serializer;
 
 	public SurveyPersistence() {
-		this(Path.of("..", "DATA", "surveys"), new TxtSurveySerializer());
+		this(resolveDefaultSurveysDir(), new TxtSurveySerializer());
+	}
+
+	private static Path resolveDefaultSurveysDir() {
+		// When running from `FONTS` (CLI/make), ../DATA points to repo DATA/.
+		// When running from `FONTS/presentation` (Electron), we need ../../DATA.
+		Path p1 = Path.of("..", "DATA", "surveys");
+		try {
+			if (Files.exists(p1) || Files.exists(p1.getParent())) {
+				return p1;
+			}
+		} catch (Exception ignored) {
+			// fall through
+		}
+		return Path.of("..", "..", "DATA", "surveys");
 	}
 
 	public SurveyPersistence(Path surveysDir, SurveySerializer serializer) {

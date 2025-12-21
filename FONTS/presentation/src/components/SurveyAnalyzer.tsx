@@ -1,6 +1,7 @@
-import React, { useState, useMemo } from 'react';
-import { useApp, Survey } from '../store';
-import { analyzeSurveyData, ClusterResult } from '../utils/analysis';
+import React, { useEffect, useState } from 'react';
+import { useApp } from '../store';
+import controller from '../domain/controller';
+
 import { ArrowLeft, Table as TableIcon, Activity } from 'lucide-react';
 import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
@@ -12,16 +13,17 @@ interface SurveyAnalyzerProps {
 const COLORS = ['#008DCD', '#CD004D', '#00CD80', '#CD8D00', '#8D00CD', '#00CDCD'];
 
 export const SurveyAnalyzer: React.FC<SurveyAnalyzerProps> = ({ surveyId, onClose }) => {
-  const { surveys, responses } = useApp();
+  const { surveys, responses, analyses } = useApp();
   const [tab, setTab] = useState<'responses' | 'analysis'>('responses');
+
+  useEffect(() => {
+    controller.requestResponses(surveyId);
+    controller.requestAnalysis(surveyId);
+  }, [surveyId]);
 
   const survey = surveys.find(s => s.id === surveyId);
   const surveyResponses = responses.filter(r => r.surveyId === surveyId);
-
-  const analysis: ClusterResult = useMemo(() => {
-    if (!survey || !surveyResponses.length) return { centroids: [], points: [] };
-    return analyzeSurveyData(survey, surveyResponses);
-  }, [survey, surveyResponses]);
+  const analysis = analyses[surveyId];
 
   if (!survey) return <div>Encuesta no encontrada</div>;
 
@@ -35,67 +37,47 @@ export const SurveyAnalyzer: React.FC<SurveyAnalyzerProps> = ({ surveyId, onClos
       );
     }
 
+    if (!analysis) {
+      return (
+        <div className="flex flex-col items-center justify-center h-64 opacity-50">
+          <Activity size={48} className="mb-4" />
+          <p className="uppercase font-bold">Cargando análisis...</p>
+        </div>
+      );
+    }
+
     return (
       <div className="grid lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 bg-white dark:bg-zinc-900 border-2 border-black dark:border-white p-4 h-[500px]">
-          <h3 className="text-xl font-bold uppercase mb-4 text-[#008DCD]">Visualización de Grupos</h3>
-          <ResponsiveContainer width="100%" height="90%">
-            <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-              <XAxis type="number" dataKey="x" name="X" hide />
-              <YAxis type="number" dataKey="y" name="Y" hide />
-              <ZAxis range={[60, 400]} />
-              <Tooltip 
-                cursor={{ strokeDasharray: '3 3' }} 
-                content={({ active, payload }) => {
-                  if (active && payload && payload.length) {
-                    const data = payload[0].payload;
-                    const isCentroid = data.clusterId !== undefined;
-                    return (
-                      <div className="bg-white dark:bg-black border-2 border-black dark:border-white p-3 shadow-none">
-                        <p className="font-bold uppercase mb-1">{isCentroid ? `Centro del Grupo ${data.clusterId + 1}` : 'Respuesta'}</p>
-                        {!isCentroid && (
-                           <div className="text-xs">
-                             {Object.entries(data.original.answers).slice(0, 3).map(([k, v]) => (
-                               <div key={k}>{v}</div>
-                             ))}
-                           </div>
-                        )}
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              {/* Points */}
-              <Scatter name="Respuestas" data={analysis.points} shape="circle">
-                {analysis.points.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[entry.cluster % COLORS.length]} />
-                ))}
-              </Scatter>
-              {/* Centroids */}
-              <Scatter name="Centros" data={analysis.centroids} shape="star">
-                {analysis.centroids.map((entry, index) => (
-                  <Cell key={`cent-${index}`} fill={COLORS[entry.clusterId % COLORS.length]} stroke="#000" strokeWidth={2} />
-                ))}
-              </Scatter>
-            </ScatterChart>
-          </ResponsiveContainer>
+        <div className="lg:col-span-2 bg-white dark:bg-zinc-900 border-2 border-black dark:border-white p-4">
+          <h3 className="text-xl font-bold uppercase mb-4">Resultado del análisis</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="border-2 border-black/10 dark:border-white/10 p-4">
+              <div className="uppercase font-bold text-xs opacity-60">Clusters</div>
+              <div className="text-2xl font-black">{analysis.clusters}</div>
+            </div>
+            <div className="border-2 border-black/10 dark:border-white/10 p-4">
+              <div className="uppercase font-bold text-xs opacity-60">Inercia</div>
+              <div className="text-2xl font-black">{Number(analysis.inertia).toFixed(2)}</div>
+            </div>
+            <div className="border-2 border-black/10 dark:border-white/10 p-4">
+              <div className="uppercase font-bold text-xs opacity-60">Silhouette</div>
+              <div className="text-2xl font-black">{Number(analysis.averageSilhouette).toFixed(3)}</div>
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-col gap-4">
-          <h3 className="text-xl font-bold uppercase mb-2">Resultados de Grupos</h3>
-          {analysis.centroids.map((c, i) => {
-            const clusterPoints = analysis.points.filter(p => p.cluster === c.clusterId);
-            return (
-              <div key={i} className="border-l-4 p-4 bg-white dark:bg-zinc-900 border-2 border-r-2 border-b-2 border-t-2" style={{ borderColor: COLORS[i % COLORS.length] }}>
-                <h4 className="font-bold uppercase text-lg mb-2" style={{ color: COLORS[i % COLORS.length] }}>Grupo {i + 1}</h4>
-                <p className="text-sm font-bold opacity-70 mb-2">{clusterPoints.length} Respuestas</p>
-                <div className="text-xs opacity-60">
-                   Este grupo representa el {Math.round((clusterPoints.length / surveyResponses.length) * 100)}% de las respuestas totales.
-                </div>
-              </div>
-            );
-          })}
+          <h3 className="text-xl font-bold uppercase mb-2">Distribución por cluster</h3>
+          {Object.entries(analysis.clusterCounts || {}).map(([clusterId, count], i) => (
+            <div
+              key={clusterId}
+              className="border-l-4 p-4 bg-white dark:bg-zinc-900 border-2"
+              style={{ borderColor: COLORS[i % COLORS.length] }}
+            >
+              <div className="font-bold uppercase">Grupo {Number(clusterId) + 1}</div>
+              <div className="opacity-70 text-sm">{count} respuestas</div>
+            </div>
+          ))}
         </div>
       </div>
     );

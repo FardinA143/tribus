@@ -3,7 +3,7 @@
 # Directories (Makefile located inside FONTS/)
 FONTS_DIR = .
 EXE_DIR = ../EXE
-MAIN_CLASS = app.ElectronDriver
+MAIN_CLASS = app.DomainDriver
 
 help:
 	@echo "=========================================="
@@ -13,7 +13,7 @@ help:
 	@echo "Comandes disponibles:"
 	@echo "  make compile    - Compila tots els fonts Java a $(EXE_DIR)/classes" 
 	@echo "  make jar        - Empaqueta les classes a $(EXE_DIR)/app.jar" 
-	@echo "  make run        - Executa el jar generat" 
+	@echo "  make run-dev    - Executa el codi en mode desenvolupament" 
 	@echo "  make test       - Compila i executa els tests JUnit (requereix ../libs/junit-4.13.2.jar)"
 	@echo "  make clean      - Elimina fitxers compilats i jars sota $(EXE_DIR)" 
 	@echo "  make cleandocs  - Elimina el directori de documentació (../javadocs/)" 
@@ -25,7 +25,7 @@ help:
 compile:
 	@echo "[*] Compilant fonts Java..."
 	@mkdir -p $(EXE_DIR)/classes
-	@find $(FONTS_DIR) -path "$(FONTS_DIR)/Junit" -prune -o -name "*.java" -print | xargs javac -d $(EXE_DIR)/classes -encoding UTF-8
+	@find $(FONTS_DIR) -path "$(FONTS_DIR)/domain/Junit" -prune -o -name "*.java" -print | xargs javac -d $(EXE_DIR)/classes -encoding UTF-8
 	@echo "[✓] Compilació completada a $(EXE_DIR)/classes"
 
 jar: compile
@@ -35,10 +35,11 @@ jar: compile
 	@jar cfm $(EXE_DIR)/app.jar $(EXE_DIR)/manifest.txt -C $(EXE_DIR)/classes .
 	@echo "[✓] Jar creat a $(EXE_DIR)/app.jar"
 
-run: jar
-	@echo "[*] Iniciant driver de terminal..."
-	
-	@java -jar $(EXE_DIR)/app.jar
+run-dev: 
+	@echo "[*] Preparant entorn dev..."
+	@cd presentation && npm install
+	@echo "[*] Executant aplicació en mode desenvolupament..."
+	@cd ./presentation && npm run electron:dev
 
 test: compile
 	@echo "[*] Compilant tests..."

@@ -20,7 +20,21 @@ public class ResponsePersistance {
 	private final ResponseSerializer serializer;
 
 	public ResponsePersistance() {
-		this(Path.of("..", "DATA", "responses"), new TxtResponseSerializer());
+		this(resolveDefaultResponsesDir(), new TxtResponseSerializer());
+	}
+
+	private static Path resolveDefaultResponsesDir() {
+		// When running from `FONTS` (CLI/make), ../DATA points to repo DATA/.
+		// When running from `FONTS/presentation` (Electron), we need ../../DATA.
+		Path p1 = Path.of("..", "DATA", "responses");
+		try {
+			if (Files.exists(p1) || Files.exists(p1.getParent())) {
+				return p1;
+			}
+		} catch (Exception ignored) {
+			// fall through
+		}
+		return Path.of("..", "..", "DATA", "responses");
 	}
 
 	public ResponsePersistance(Path responsesDir, ResponseSerializer serializer) {

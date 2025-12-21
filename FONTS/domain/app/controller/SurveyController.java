@@ -7,7 +7,6 @@ import Response.IntAnswer;
 import Response.MultipleChoiceAnswer;
 import Response.SingleChoiceAnswer;
 import Response.TextAnswer;
-import Survey.LocalPersistence;
 import Survey.Survey;
 import Survey.Question;
 import Survey.OpenStringQuestion;
@@ -16,6 +15,7 @@ import Survey.SingleChoiceQuestion;
 import Survey.MultipleChoiceQuestion;
 import importexport.SurveySerializer;
 import importexport.TxtSurveySerializer;
+import persistence.PersistenceDriver;
 import user.User;
 
 import java.io.IOException;
@@ -25,14 +25,14 @@ import java.util.Collection;
 import java.util.List;
 
 public class SurveyController {
-    private final LocalPersistence persistence;
+    private final PersistenceDriver persistence;
     private final SurveySerializer serializer;
 
     public SurveyController() {
-        this(new LocalPersistence(), new TxtSurveySerializer());
+        this(new PersistenceDriver(), new TxtSurveySerializer());
     }
 
-    public SurveyController(LocalPersistence persistence, SurveySerializer serializer) {
+    public SurveyController(PersistenceDriver persistence, SurveySerializer serializer) {
         this.persistence = persistence;
         this.serializer = serializer;
     }
@@ -61,12 +61,20 @@ public class SurveyController {
     }
 
     public void saveSurvey(Survey survey) throws PersistenceException {
-        persistence.saveSurvey(survey);
+
+        try {
+            persistence.saveSurvey(survey);
+        } catch (Exceptions.NullArgumentException e) {
+            throw new PersistenceException(e.getMessage());
+        }
     }
 
     public void deleteSurvey(String id) throws PersistenceException {
-        persistence.removeSurvey(id);
-        persistence.removeResponsesBySurvey(id);
+        try {
+            persistence.deleteSurvey(id);
+        } catch (Exceptions.NullArgumentException e) {
+            throw new PersistenceException(e.getMessage());
+        }
     }
 
     public Survey editSurvey(String originalId,
@@ -76,11 +84,20 @@ public class SurveyController {
                              int k,
                              String initMethod,
                              String distance) throws PersistenceException, InvalidSurveyException {
-        Survey survey = persistence.loadSurvey(originalId);
+        Survey survey;
+        try {
+            survey = persistence.loadSurvey(originalId);
+        } catch (Exceptions.NullArgumentException e) {
+            throw new PersistenceException(e.getMessage());
+        }
         String effectiveId = (newId == null || newId.isBlank()) ? originalId : newId;
 
         if (!originalId.equals(effectiveId)) {
-            persistence.removeSurvey(originalId);
+            try {
+                persistence.deleteSurvey(originalId);
+            } catch (Exceptions.NullArgumentException e) {
+                throw new PersistenceException(e.getMessage());
+            }
             survey.setId(effectiveId);
         }
 
@@ -91,30 +108,44 @@ public class SurveyController {
         survey.setDistance(distance);
         survey.setUpdatedAt(LocalDateTime.now().toString());
 
-        persistence.saveSurvey(survey);
+        try {
+            persistence.saveSurvey(survey);
+        } catch (Exceptions.NullArgumentException e) {
+            throw new PersistenceException(e.getMessage());
+        }
         return survey;
     }
 
     public Survey importSurvey(String path) throws IOException, PersistenceException {
         Survey survey = serializer.fromFile(path);
-        persistence.saveSurvey(survey);
+
+        try {
+            persistence.saveSurvey(survey);
+        } catch (Exceptions.NullArgumentException e) {
+            throw new PersistenceException(e.getMessage());
+        }
         return survey;
     }
 
-    public Collection<Survey> listSurveys() {
-        return persistence.listAllSurveys();
+    public Collection<Survey> listSurveys() throws PersistenceException {
+        try {
+            return persistence.loadAllSurveys();
+        } catch (Exceptions.PersistenceException e) {
+            throw new PersistenceException(e.getMessage());
+        }
     }
 
     public Survey loadSurvey(String id) throws PersistenceException {
-        return persistence.loadSurvey(id);
+
+        try {
+            return persistence.loadSurvey(id);
+        } catch (Exceptions.NullArgumentException e) {
+            throw new PersistenceException(e.getMessage());
+        }
     }
 
     public SurveySerializer getSerializer() {
         return serializer;
-    }
-
-    public LocalPersistence getPersistence() {
-        return persistence;
     }
 
     /**

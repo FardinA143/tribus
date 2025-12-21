@@ -16,7 +16,22 @@ public class UserPersistence {
 	private final Path userDataPath;
 
 	public UserPersistence() {
-		this(Path.of("..", "DATA", "userdata.json"));
+		this(resolveDefaultUserDataPath());
+	}
+
+	private static Path resolveDefaultUserDataPath() {
+		// When running from `FONTS` (CLI/make), ../DATA points to repo DATA/.
+		// When running from `FONTS/presentation` (Electron), we need ../../DATA.
+		Path p1 = Path.of("..", "DATA", "userdata.json");
+		try {
+			Path parent1 = p1.getParent();
+			if (Files.exists(p1) || (parent1 != null && Files.exists(parent1))) {
+				return p1;
+			}
+		} catch (Exception ignored) {
+			// fall through
+		}
+		return Path.of("..", "..", "DATA", "userdata.json");
 	}
 
 	public UserPersistence(Path userDataPath) {
@@ -95,6 +110,122 @@ public class UserPersistence {
 		} catch (IOException io) {
 			throw new PersistenceException("userdata.json", io.getMessage());
 		}
+	}
+
+	/**
+	 * Carrega tots els usuaris registrats des del fitxer JSON.
+	 * Si el fitxer no existeix, retorna una llista buida.
+	 */
+	public synchronized java.util.List<RegisteredUser> loadAllUsers() throws PersistenceException {
+		try {
+			if (!Files.exists(userDataPath)) {
+				return new java.util.ArrayList<>();
+			}
+			String content = Files.readString(userDataPath, StandardCharsets.UTF_8);
+			if (content == null || content.trim().isEmpty()) {
+				return new java.util.ArrayList<>();
+			}
+			String trimmed = content.trim();
+			if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) {
+				throw new PersistenceException("userdata.json", "Formato JSON no válido");
+			}
+
+			java.util.List<String> objects = extractJsonObjects(trimmed);
+			java.util.LinkedHashMap<String, RegisteredUser> byId = new java.util.LinkedHashMap<>();
+			String now = java.time.LocalDateTime.now().toString();
+			for (String obj : objects) {
+				String id = readStringField(obj, "id");
+				if (id == null || id.isBlank()) continue;
+				String displayName = readStringField(obj, "displayName");
+				String username = readStringField(obj, "username");
+				String passwordHash = readStringField(obj, "passwordHash");
+				RegisteredUser user = new RegisteredUser(
+						id,
+						displayName == null ? "" : displayName,
+						now,
+						username == null ? "" : username,
+						passwordHash == null ? "" : passwordHash
+				);
+				// If duplicates exist, last one wins.
+				byId.put(id, user);
+			}
+			return new java.util.ArrayList<>(byId.values());
+		} catch (IOException io) {
+			throw new PersistenceException("userdata.json", io.getMessage());
+		}
+	}
+
+	private java.util.List<String> extractJsonObjects(String jsonArray) {
+		java.util.List<String> objs = new java.util.ArrayList<>();
+		int start = -1;
+		int depth = 0;
+		boolean inString = false;
+		boolean escape = false;
+		for (int i = 0; i < jsonArray.length(); i++) {
+			char c = jsonArray.charAt(i);
+			if (escape) { escape = false; continue; }
+			if (inString) {
+				if (c == '\\') { escape = true; continue; }
+				if (c == '"') { inString = false; }
+				continue;
+			}
+			if (c == '"') { inString = true; continue; }
+			if (c == '{') {
+				if (depth == 0) start = i;
+				depth++;
+			} else if (c == '}') {
+				depth--;
+				if (depth == 0 && start != -1) {
+					objs.add(jsonArray.substring(start, i + 1));
+					start = -1;
+				}
+			}
+		}
+		return objs;
+	}
+
+	private String readStringField(String objJson, String key) {
+		if (objJson == null || key == null) return null;
+		String needle = "\"" + key + "\"";
+		int k = objJson.indexOf(needle);
+		if (k < 0) return null;
+		int colon = objJson.indexOf(':', k + needle.length());
+		if (colon < 0) return null;
+		int i = colon + 1;
+		while (i < objJson.length() && Character.isWhitespace(objJson.charAt(i))) i++;
+		if (i >= objJson.length() || objJson.charAt(i) != '"') return null;
+		i++;
+		StringBuilder sb = new StringBuilder();
+		boolean esc = false;
+		for (; i < objJson.length(); i++) {
+			char c = objJson.charAt(i);
+			if (esc) {
+				switch (c) {
+					case '"' -> sb.append('"');
+					case '\\' -> sb.append('\\');
+					case '/' -> sb.append('/');
+					case 'b' -> sb.append('\b');
+					case 'f' -> sb.append('\f');
+					case 'n' -> sb.append('\n');
+					case 'r' -> sb.append('\r');
+					case 't' -> sb.append('\t');
+					case 'u' -> {
+						if (i + 4 < objJson.length()) {
+							String hex = objJson.substring(i + 1, i + 5);
+							try { sb.append((char) Integer.parseInt(hex, 16)); } catch (Exception ignored) {}
+							i += 4;
+						}
+					}
+					default -> sb.append(c);
+				}
+				esc = false;
+				continue;
+			}
+			if (c == '\\') { esc = true; continue; }
+			if (c == '"') break;
+			sb.append(c);
+		}
+		return sb.toString();
 	}
 
 	private String wrapAsArray(String userJson) {

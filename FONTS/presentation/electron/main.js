@@ -5,6 +5,23 @@ const path = require('path');
 let javaProcess = null;
 let win = null;
 
+// Buffer stdout/stderr so we can emit exactly one line at a time.
+// Node streams may chunk multiple lines together; the frontend expects one JSON per message.
+let stdoutBuffer = '';
+let stderrBuffer = '';
+
+function emitLines(buffer, chunk, emit) {
+  buffer += chunk.toString();
+  const lines = buffer.split(/\r?\n/);
+  buffer = lines.pop() ?? '';
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    emit(trimmed);
+  }
+  return buffer;
+}
+
 function createWindow() {
   win = new BrowserWindow({
     width: 1200,
@@ -17,10 +34,10 @@ function createWindow() {
   });
 
   // En desarrollo Vite por defecto
-  const devUrl = process.env.ELECTRON_DEV_URL || 'http://localhost:3000';
-  // win.loadURL(devUrl);
+  const devUrl = 'http://localhost:3000';
+  win.loadURL(devUrl);
   // production
-  win.loadFile(path.join(__dirname, '../build/index.html'));
+  // win.loadFile(path.join(__dirname, '../build/index.html'));
 }
 
 app.whenReady().then(() => {
@@ -30,16 +47,16 @@ app.whenReady().then(() => {
 
   // Ejecutar la clase app.ElectronDriver
   try {
-    javaProcess = spawn('java', ['-cp', jarPath, 'app.ElectronDriver'], { cwd: path.join(__dirname, '..') });
+    javaProcess = spawn('java', ['-cp', jarPath, 'app.DomainDriver'], { cwd: path.join(__dirname, '..') });
 
     javaProcess.stdout.on('data', (data) => {
-      const str = data.toString().trim();
-      if (win && !win.isDestroyed()) win.webContents.send('java-response', str);
+      if (!win || win.isDestroyed()) return;
+      stdoutBuffer = emitLines(stdoutBuffer, data, (line) => win.webContents.send('java-response', line));
     });
 
     javaProcess.stderr.on('data', (data) => {
-      const str = data.toString().trim();
-      if (win && !win.isDestroyed()) win.webContents.send('java-error', str);
+      if (!win || win.isDestroyed()) return;
+      stderrBuffer = emitLines(stderrBuffer, data, (line) => win.webContents.send('java-error', line));
     });
 
     javaProcess.on('exit', (code) => {

@@ -5,12 +5,17 @@ import controller from './domain/controller';
 
 export type QuestionType = 'text' | 'integer' | 'single' | 'multiple';
 
+export interface ChoiceOption {
+  id: number;
+  label: string;
+}
+
 export interface Question {
   id: string;
   title: string;
   type: QuestionType;
   mandatory: boolean;
-  options?: string[]; // For single/multiple choice
+  options?: ChoiceOption[]; // For single/multiple choice
 }
 
 export interface Survey {
@@ -32,6 +37,13 @@ export interface Response {
   timestamp: number;
 }
 
+export interface AnalysisPayload {
+  clusters: number;
+  inertia: number;
+  averageSilhouette: number;
+  clusterCounts: Record<string, number>;
+}
+
 export interface User {
   id: string;
   username: string; // The login handle
@@ -46,6 +58,7 @@ interface AppState {
   currentUser: User | null;
   surveys: Survey[];
   responses: Response[];
+  analyses: Record<string, AnalysisPayload>;
   theme: 'light' | 'dark';
 }
 
@@ -73,9 +86,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [responses, setResponses] = useState<Response[]>([]);
+  const [analyses, setAnalyses] = useState<Record<string, AnalysisPayload>>({});
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [loaded, setLoaded] = useState(false);
   const unsubscribeRef = useRef<(() => void) | null>(null);
+
+  const isDev = typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.DEV;
 
   const isElectron = controller.isElectron;
 
@@ -83,6 +99,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     // Siempre intentar comunicarse con Java para obtener datos iniciales.
     const unsubscribe = controller.onResponse((data: any) => {
+      if (isDev) {
+        // Debug only: inspect what the Java backend is actually sending.
+        console.debug('[Store] java-response', { data });
+      }
       // The Java backend may return different payloads. Here we react to known patterns.
       if (Array.isArray(data)) {
         // assume surveys array
@@ -93,6 +113,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setUsers(data.payload || []);
       } else if (data && data.type === 'responses') {
         setResponses(data.payload || []);
+      } else if (data && data.type === 'analysis') {
+        const surveyId = String(data.surveyId || '');
+        if (surveyId) {
+          setAnalyses(prev => ({ ...prev, [surveyId]: data.payload as AnalysisPayload }));
+        }
       } else if (data && data.status === 'ok') {
         // refresh lists after successful mutating ops
         controller.requestSurveys();
@@ -116,7 +141,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         unsubscribeRef.current = null;
       }
     };
-  }, []);
+  }, [isDev]);
 
   // Ya no usamos localStorage: todas las operaciones de persistencia se delegan a Java.
 
@@ -125,7 +150,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addSurvey = (survey: Survey) => {
-    controller.createSurvey(survey.title, survey.description, survey.clusterSize);
+    controller.createSurvey(survey);
   };
   
   const updateSurvey = (updated: Survey) => {
@@ -185,7 +210,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <AppContext.Provider value={{
-      users, currentUser, surveys, responses, theme,
+      users, currentUser, surveys, responses, analyses, theme,
       setCurrentUser, addUser, addSurvey, updateSurvey, deleteSurvey, addResponse, deleteUser, updateUser, toggleTheme, importSurveys
     }}>
       {children}

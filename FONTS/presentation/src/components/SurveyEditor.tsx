@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useApp, Survey, Question, QuestionType } from '../store';
+import { useApp, Survey, Question, QuestionType, ChoiceOption } from '../store';
 import { ArrowLeft, Save, Plus, Trash2, GripVertical } from 'lucide-react';
 
 interface SurveyEditorProps {
@@ -72,7 +72,8 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
 
   const handleOptionsChange = (qIdx: number, val: string) => {
     // Expect comma separated or newline separated? Let's say one option per line for text area
-    const opts = val.split('\n').map(s => s.trim()).filter(Boolean);
+    const labels = val.split('\n').map(s => s.trim()).filter(Boolean);
+    const opts: ChoiceOption[] = labels.map((label, i) => ({ id: i + 1, label }));
     updateQuestion(qIdx, { options: opts });
   };
 
@@ -182,7 +183,7 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
                           <textarea 
                              className="w-full bg-zinc-50 dark:bg-zinc-800 border-2 border-black/10 p-2 text-sm" 
                              rows={4}
-                             value={q.options?.join('\n') || ''}
+                              value={(q.options || []).map(o => o.label).join('\n')}
                              onChange={e => handleOptionsChange(idx, e.target.value)}
                              placeholder="Opción 1&#10;Opción 2&#10;Opción 3"
                           />

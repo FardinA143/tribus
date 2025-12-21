@@ -10,6 +10,7 @@ import java.util.Collection;
 
 public class UserController {
     private final AuthService authService;
+    @SuppressWarnings("unused")
     private final DomainDriver domainDriver;
     private Sesion currentSession;
 
@@ -70,6 +71,13 @@ public class UserController {
 
     public Collection<RegisteredUser> listRegisteredUsers() {
         return authService.listRegisteredUsers();
+    }
+
+    /**
+     * Carga usuarios registrados en memoria (usado al arrancar desde persistencia).
+     */
+    public void loadRegisteredUsers(Collection<RegisteredUser> users) {
+        authService.loadRegisteredUsers(users);
     }
 
     /**

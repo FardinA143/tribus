@@ -1,5 +1,6 @@
 {
-      "name": "Tribus Survey App",
+      "name": "tribus-survey-app",
+      "productName": "Tribus Survey App",
       "version": "0.1.0",
       "private": true,
       "main": "electron/main.js",
@@ -54,13 +55,29 @@
             "concurrently": "^9.2.1",
             "cross-env": "^10.1.0",
             "electron": "^39.2.6",
+            "electron-builder": "^24.6.0",
             "vite": "6.3.5",
             "wait-on": "^9.0.3"
       },
       "scripts": {
             "dev": "vite",
             "build": "vite build",
-	    "electron": "electron .",
-            "electron:dev": "concurrently -k \"cross-env BROWSER=none npm run dev\" \"wait-on http://localhost:3000 && electron .\""
+            "electron": "electron .",
+            "electron:dev": "concurrently -k \"cross-env BROWSER=none npm run dev\" \"wait-on http://localhost:3000 && electron .\"",
+            "package": "npm run build && electron-builder"
+      },
+      "build": {
+            "appId": "com.tribus.surveyapp",
+            "files": [
+                  "build/**/*",
+                  "electron/main.js",
+                  "electron/preload.js",
+                  "EXE/**",
+                  "!**/node_modules",
+                  "!**/src/**"
+            ],
+            "directories": {
+                  "buildResources": "assets"
+            }
       }
 }

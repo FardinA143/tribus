@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useApp, User } from '../store';
 import controller from '../domain/controller';
 import { ArrowLeft } from 'lucide-react';
@@ -12,6 +12,13 @@ interface AuthProps {
 export const Auth: React.FC<AuthProps> = ({ onSuccess, onCancel }) => {
   const { setCurrentUser } = useApp();
   const [mode, setMode] = useState<'login' | 'register'>('login');
+
+  const isDev = typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.DEV;
+
+  const onSuccessRef = useRef(onSuccess);
+  useEffect(() => {
+    onSuccessRef.current = onSuccess;
+  }, [onSuccess]);
   
   // Form State
   const [username, setUsername] = useState('');
@@ -21,17 +28,41 @@ export const Auth: React.FC<AuthProps> = ({ onSuccess, onCancel }) => {
 
   useEffect(() => {
     const handleAuthResponse = (data: any) => {
+      if (isDev) {
+        // Debug only: inspect what the Java backend is actually sending.
+        console.debug('[Auth] java-response', { mode, data });
+      }
       if (data.error) {
         setError(data.error);
-      } else if (data.id && data.username && data.name) {
-        setCurrentUser(data as User);
-        onSuccess();
+        return;
+      }
+
+      // Backend variant: some drivers confirm auth as { status: 'ok', userId: '...' }
+      if (data && data.status === 'ok' && data.userId) {
+        const normalizedUser: User = {
+          id: String(data.userId),
+          username: username || 'user',
+          name: (mode === 'register' ? name : '') || username || 'user',
+        };
+        setCurrentUser(normalizedUser);
+        setError('');
+        onSuccessRef.current();
+        return;
+      } else if (data && data.id && (data.username || data.userName) && (data.name || data.displayName)) {
+        const normalizedUser: User = {
+          id: String(data.id),
+          username: String(data.username ?? data.userName),
+          name: String(data.name ?? data.displayName),
+        };
+        setCurrentUser(normalizedUser);
+        setError('');
+        onSuccessRef.current();
       }
     };
 
     const unsubscribe = controller.onResponse(handleAuthResponse);
     return () => unsubscribe();
-  }, [setCurrentUser, onSuccess]);
+  }, [setCurrentUser, mode, isDev, username, name]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();

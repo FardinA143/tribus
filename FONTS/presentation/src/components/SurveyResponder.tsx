@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useApp, Survey, Response } from '../store';
+import { useApp } from '../store';
+import controller from '../domain/controller';
 import { ArrowLeft, CheckCircle } from 'lucide-react';
 
 interface SurveyResponderProps {
@@ -8,7 +9,7 @@ interface SurveyResponderProps {
 }
 
 export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onClose }) => {
-  const { surveys, addResponse, currentUser } = useApp();
+  const { surveys, currentUser } = useApp();
   const survey = surveys.find(s => s.id === surveyId);
 
   const [answers, setAnswers] = useState<Record<string, any>>({});
@@ -20,15 +21,34 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
     setAnswers(prev => ({ ...prev, [qId]: value }));
   };
 
-  const handleCheckboxChange = (qId: string, option: string, checked: boolean) => {
+  const handleCheckboxChange = (qId: string, optionId: number, checked: boolean) => {
     setAnswers(prev => {
-      const current = (prev[qId] as string[]) || [];
+      const current = (prev[qId] as number[]) || [];
       if (checked) {
-        return { ...prev, [qId]: [...current, option] };
+        return { ...prev, [qId]: [...current, optionId] };
       } else {
-        return { ...prev, [qId]: current.filter(o => o !== option) };
+        return { ...prev, [qId]: current.filter(o => o !== optionId) };
       }
     });
+  };
+
+  const buildAnswersString = () => {
+    // Backend format: "qid:val;qid:val1,val2" where qid/val are numeric for choices.
+    const parts: string[] = [];
+    for (const q of survey.questions) {
+      const qid = String(q.id);
+      const val = answers[q.id];
+      if (val === undefined || val === null || val === '') continue;
+
+      if (q.type === 'multiple') {
+        const arr = Array.isArray(val) ? (val as number[]) : [];
+        if (arr.length === 0) continue;
+        parts.push(`${qid}:${arr.join(',')}`);
+      } else {
+        parts.push(`${qid}:${String(val)}`);
+      }
+    }
+    return parts.join(';');
   };
 
   const handleSubmit = () => {
@@ -43,15 +63,8 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
       }
     }
 
-    const response: Response = {
-      id: Math.random().toString(36).substr(2, 9),
-      surveyId: survey.id,
-      respondentId: currentUser ? currentUser.id : 'anon',
-      answers,
-      timestamp: Date.now()
-    };
-
-    addResponse(response);
+    const answersStr = buildAnswersString();
+    controller.answerSurvey(survey.id, answersStr);
     setSubmitted(true);
   };
 
@@ -104,16 +117,16 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
 
             {q.type === 'single' && (
               <div className="flex flex-col gap-2">
-                {q.options?.map(opt => (
-                  <label key={opt} className="flex items-center gap-3 p-3 border-2 border-transparent hover:border-black/10 dark:hover:border-white/10 cursor-pointer transition-colors">
+                {(q.options || []).map(opt => (
+                  <label key={opt.id} className="flex items-center gap-3 p-3 border-2 border-transparent hover:border-black/10 dark:hover:border-white/10 cursor-pointer transition-colors">
                     <input 
                       type="radio" 
                       name={q.id} 
-                      value={opt}
-                      onChange={e => handleInputChange(q.id, e.target.value)}
+                      value={opt.id}
+                      onChange={e => handleInputChange(q.id, Number(e.target.value))}
                       className="w-5 h-5 accent-[#008DCD]"
                     />
-                    <span className="text-lg">{opt}</span>
+                    <span className="text-lg">{opt.label}</span>
                   </label>
                 ))}
               </div>
@@ -121,14 +134,14 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
 
             {q.type === 'multiple' && (
               <div className="flex flex-col gap-2">
-                {q.options?.map(opt => (
-                  <label key={opt} className="flex items-center gap-3 p-3 border-2 border-transparent hover:border-black/10 dark:hover:border-white/10 cursor-pointer transition-colors">
+                {(q.options || []).map(opt => (
+                  <label key={opt.id} className="flex items-center gap-3 p-3 border-2 border-transparent hover:border-black/10 dark:hover:border-white/10 cursor-pointer transition-colors">
                     <input 
                       type="checkbox" 
-                      onChange={e => handleCheckboxChange(q.id, opt, e.target.checked)}
+                      onChange={e => handleCheckboxChange(q.id, opt.id, e.target.checked)}
                       className="w-5 h-5 accent-[#008DCD]"
                     />
-                    <span className="text-lg">{opt}</span>
+                    <span className="text-lg">{opt.label}</span>
                   </label>
                 ))}
               </div>

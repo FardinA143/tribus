@@ -19,10 +19,9 @@ import java.util.Map;
 public class AnalyticsController {
     private final IClusteringAlgorithm defaultAlgorithm;
     private final Silhouette silhouette;
-    private final DomainDriver domainDriver;
 
-    public AnalyticsController(DomainDriver domainDriver) {
-        this(domainDriver, new KMeans(), new Silhouette());
+    public AnalyticsController() {
+        this(new KMeans(), new Silhouette());
     }
 
     public AnalyticsController(IClusteringAlgorithm algorithm, Silhouette silhouette) {

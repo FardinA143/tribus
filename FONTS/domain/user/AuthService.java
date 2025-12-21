@@ -1,7 +1,5 @@
 package user;
 
-import Exceptions.NullArgumentException;
-import Exceptions.PersistenceException;
 import Survey.LocalPersistence;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,6 +37,7 @@ public class AuthService {
     private Map<String, Sesion> activeSessions = new HashMap<>(); 
 
     /** Cache (LocalPersistence) para almacenamiento en memoria. */
+    @SuppressWarnings("unused")
     private final LocalPersistence persistence;
 
     /**
@@ -105,6 +104,19 @@ public class AuthService {
      */
     public Collection<RegisteredUser> listRegisteredUsers() {
         return Collections.unmodifiableCollection(registeredUsers.values());
+    }
+
+    /**
+     * Reemplaza el conjunto de usuarios registrados desde persistencia.
+     * Si existen duplicados, el último por ID prevalece.
+     */
+    public void loadRegisteredUsers(Collection<RegisteredUser> users) {
+        registeredUsers = new HashMap<>();
+        if (users == null) return;
+        for (RegisteredUser u : users) {
+            if (u == null || u.getId() == null) continue;
+            registeredUsers.put(u.getId(), u);
+        }
     }
 
     /**

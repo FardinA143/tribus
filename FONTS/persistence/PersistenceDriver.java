@@ -57,6 +57,13 @@ public class PersistenceDriver {
             throws NullArgumentException, PersistenceException {
         userPersistence.persistAllUsers(users);
     }
+
+    /**
+     * Carrega tots els usuaris registrats des de persistència.
+     */
+    public List<RegisteredUser> loadAllUsers() throws PersistenceException {
+        return userPersistence.loadAllUsers();
+    }
     
     // ==================== SURVEY PERSISTENCE ====================
     
