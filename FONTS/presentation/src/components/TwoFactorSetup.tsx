@@ -1,4 +1,4 @@
-// TwoFactorSetup deshabilitado: exportar un stub para evitar que la UI intente usar 2FA.
+// TwoFactorSetup deshabilitat: exportem un stub per evitar que la UI intenti usar 2FA.
 import React from 'react';
 
 interface TwoFactorSetupProps {

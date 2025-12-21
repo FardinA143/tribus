@@ -52,28 +52,28 @@ export const NavBar: React.FC<NavBarProps> = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 border-2 border-black rounded-none p-0 mt-2 bg-white dark:bg-zinc-900 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
               <DropdownMenuLabel className="p-3 bg-gray-100 dark:bg-zinc-800 border-b-2 border-black dark:border-zinc-700">
-                 Mi Cuenta
+                 El meu compte
               </DropdownMenuLabel>
               <DropdownMenuItem onClick={onNavigateMySurveys} className="p-3 cursor-pointer hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors rounded-none flex items-center gap-2 font-medium">
-                <List size={16} /> Ver mis encuestas
+                <List size={16} /> Veure les meves enquestes
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onNavigateMyResponses} className="p-3 cursor-pointer hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors rounded-none flex items-center gap-2 font-medium">
-                <MessageSquare size={16} /> Ver mis respuestas
+                <MessageSquare size={16} /> Veure les meves respostes
               </DropdownMenuItem>
               {/* Seguridad (2FA) deshabilitado */}
               <DropdownMenuSeparator className="bg-black dark:bg-zinc-700 h-0.5 m-0" />
               <DropdownMenuItem onClick={() => setCurrentUser(null)} className="p-3 cursor-pointer hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors rounded-none flex items-center gap-2 font-medium">
-                <LogOut size={16} /> Cerrar sesión
+                <LogOut size={16} /> Tanca la sessió
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => {
-                   if(window.confirm('¿Estás seguro de que quieres eliminar tu cuenta? Esta acción no se puede deshacer.')) {
+                   if(window.confirm("Segur que vols esborrar el teu compte? Aquesta acció no es pot desfer.")) {
                      onDeleteAccount();
                    }
                 }} 
                 className="p-3 cursor-pointer hover:bg-red-600 hover:text-white transition-colors rounded-none flex items-center gap-2 font-medium text-red-600"
               >
-                <Trash2 size={16} /> Eliminar cuenta
+                <Trash2 size={16} /> Esborra el compte
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -83,7 +83,7 @@ export const NavBar: React.FC<NavBarProps> = ({
             className="flex items-center gap-2 px-4 py-2 border-2 border-black dark:border-white hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-all font-bold text-sm uppercase bg-white text-black"
           >
             <LogIn size={16} />
-            Iniciar Sesión / Registrarse
+            Inicia sessió / Registra't
           </button>
         )}
       </div>

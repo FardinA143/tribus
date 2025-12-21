@@ -42,6 +42,8 @@ export interface AnalysisPayload {
   inertia: number;
   averageSilhouette: number;
   clusterCounts: Record<string, number>;
+  points?: Array<{ id: string; x: number; y: number; cluster: number }>;
+  centroids?: Array<{ clusterId: number; x: number; y: number }>;
 }
 
 export interface User {
@@ -95,7 +97,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const isElectron = controller.isElectron;
 
-  // Load initial data (local fallback) and wire Electron listener if available
+  // Carregar dades inicials i connectar listener d'Electron/Java.
   useEffect(() => {
     // Siempre intentar comunicarse con Java para obtener datos iniciales.
     const unsubscribe = controller.onResponse((data: any) => {
@@ -119,10 +121,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setAnalyses(prev => ({ ...prev, [surveyId]: data.payload as AnalysisPayload }));
         }
       } else if (data && data.status === 'ok') {
-        // refresh lists after successful mutating ops
+        // Refrescar llistes després d'operacions mutadores.
+        if (data.refresh === 'responses' && data.surveyId) {
+          controller.requestResponses(String(data.surveyId));
+        }
+        // Per defecte, mantenim el llistat d'enquestes sincronitzat.
         controller.requestSurveys();
-        // controller.requestUsers();
-        // controller.requestResponses();
       } else if (data && data.error) {
         console.error('Java error:', data.error);
       }
@@ -143,7 +147,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, [isDev]);
 
-  // Ya no usamos localStorage: todas las operaciones de persistencia se delegan a Java.
+  // No fem servir localStorage: tota la persistència es delega a Java.
 
   const addUser = (user: User) => {
     controller.createUser(user);
@@ -183,14 +187,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
   const importSurveys = (data: any) => {
-    // Delegar la importación a Java. `data.path` contiene la ruta a importar.
+    // Delegar la importació a Java. `data.path` conté la ruta a importar.
     if (data && data.path) {
       if (data.type === 'responses') controller.importResponsesFile(data.path);
       else controller.importSurveyFile(data.path);
       return;
     }
 
-    // Si recibimos payload directo (por ejemplo desde un archivo arrastrado), enviar a Java para procesarlo.
+    // Compatibilitat: si rebem payload directe (per exemple drag&drop), enviar-lo a Java.
     if (data.surveys || data.responses) {
       controller.sendCommand(`IMPORT_PAYLOAD|${encodeURIComponent(JSON.stringify(data))}`);
     }

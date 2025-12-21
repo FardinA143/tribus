@@ -89,7 +89,7 @@ public class DomainDriver {
                 case "IMPORT_RESPONSES" -> handleImportResponses(parts);
                 case "EXPORT_RESPONSES" -> handleExportResponses(parts);
                 case "PERFORM_ANALYSIS" -> handlePerformAnalysis(parts);
-                default -> emitError("Comando desconocido: " + action);
+                default -> emitError("Ordre desconeguda: " + action);
             }
         } catch (Exception e) {
             emitError(e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage());
@@ -109,7 +109,7 @@ public class DomainDriver {
 
     private void handleGetSurvey(String[] parts) {
         if (parts.length < 2) {
-            emitError("GET_SURVEY requiere ID");
+            emitError("GET_SURVEY requereix ID");
             return;
         }
         String id = parts[1];
@@ -123,7 +123,7 @@ public class DomainDriver {
 
     private void handleCreateSurvey(String[] parts) {
         if (parts.length < 4) {
-            emitError("CREATE_SURVEY requiere title|description|k");
+            emitError("CREATE_SURVEY requereix title|description|k");
             return;
         }
         try {
@@ -147,7 +147,7 @@ public class DomainDriver {
      */
     private void handleCreateSurveyFull(String[] parts) {
         if (parts.length < 6) {
-            emitError("CREATE_SURVEY_FULL requiere title|description|k|analysisMethod|questions");
+            emitError("CREATE_SURVEY_FULL requereix title|description|k|analysisMethod|questions");
             return;
         }
         try {
@@ -175,12 +175,12 @@ public class DomainDriver {
      */
     private void handleUpdateSurveyFull(String[] parts) {
         if (parts.length < 7) {
-            emitError("UPDATE_SURVEY_FULL requiere id|title|description|k|analysisMethod|questions");
+            emitError("UPDATE_SURVEY_FULL requereix id|title|description|k|analysisMethod|questions");
             return;
         }
         try {
             if (!ensureRegisteredSession()) {
-                emitError("Requiere sesión registrada");
+                emitError("Cal una sessió registrada");
                 return;
             }
 
@@ -203,27 +203,36 @@ public class DomainDriver {
             importQuestionsFromPayload(survey, questionsPayload);
 
             surveyController.saveSurvey(survey);
-            System.out.println("{\"status\":\"ok\"}");
+            System.out.println("{\"status\":\"ok\",\"refresh\":\"surveys\"}");
         } catch (Exception e) {
             emitError(e.getMessage());
         }
     }
 
     private void handleDeleteSurvey(String[] parts) {
-        if (parts.length < 2) { emitError("DELETE_SURVEY requiere ID"); return; }
+        if (parts.length < 2) { emitError("DELETE_SURVEY requereix ID"); return; }
         String id = parts[1];
         try {
-            if (!ensureRegisteredSession()) { emitError("Requiere sesión registrada"); return; }
+            if (!ensureRegisteredSession()) { emitError("Cal una sessió registrada"); return; }
+
+            User current = userController.requireActiveUser();
+            Survey survey = surveyController.loadSurvey(id);
+            if (survey == null) { emitError("Enquesta no trobada"); return; }
+            if (!current.getId().equals(survey.getCreatedBy())) {
+                emitError("No tens permís per esborrar aquesta enquesta");
+                return;
+            }
+
             surveyController.deleteSurvey(id);
             responseController.removeResponsesBySurvey(id);
-            System.out.println("{\"status\":\"ok\"}");
+            System.out.println("{\"status\":\"ok\",\"refresh\":\"surveys\"}");
         } catch (PersistenceException e) {
             emitError(e.getMessage());
         }
     }
 
     private void handleListResponses(String[] parts) {
-        if (parts.length < 2) { emitError("LIST_RESPONSES requiere surveyId"); return; }
+        if (parts.length < 2) { emitError("LIST_RESPONSES requereix surveyId"); return; }
         String surveyId = parts[1];
         try {
             List<SurveyResponse> responses = responseController.listResponses(surveyId);
@@ -236,12 +245,12 @@ public class DomainDriver {
     // ==================== AUTH ====================
 
     private void handleLogin(String[] parts) {
-        if (parts.length < 3) { emitError("LOGIN requiere usuario|password"); return; }
+        if (parts.length < 3) { emitError("LOGIN requereix usuari|contrasenya"); return; }
         String username = parts[1];
         String password = parts[2];
         Sesion sesion = userController.login(username, password);
         if (sesion == null) {
-            emitError("Credenciales inválidas");
+            emitError("Credencials invàlides");
             return;
         }
         System.out.println(userToJson(sesion.getUser()));
@@ -249,7 +258,7 @@ public class DomainDriver {
 
     private void handleLogout() {
         if (!userController.hasActiveSession()) {
-            emitError("No hay sesión activa");
+            emitError("No hi ha cap sessió activa");
             return;
         }
         userController.logout();
@@ -257,7 +266,7 @@ public class DomainDriver {
     }
 
     private void handleRegister(String[] parts) {
-        if (parts.length < 4) { emitError("REGISTER requiere username|name|password"); return; }
+        if (parts.length < 4) { emitError("REGISTER requereix username|name|password"); return; }
         try {
             String id = UUID.randomUUID().toString();
             String username = parts[1];
@@ -266,7 +275,7 @@ public class DomainDriver {
 
             User user = userController.register(id, displayName, username, password);
             if (user == null) {
-                emitError("No se pudo registrar el usuario. El nombre de usuario ya podría existir.");
+                emitError("No s'ha pogut registrar l'usuari. Potser el nom d'usuari ja existeix.");
                 return;
             }
 
@@ -281,7 +290,7 @@ public class DomainDriver {
                 }
                 System.out.println(userToJson(sesion.getUser()));
             } else {
-                emitError("Error al iniciar sesión automáticamente después del registro.");
+                emitError("Error en iniciar sessió automàticament després del registre.");
             }
         } catch (Exception e) {
             emitError(e.getMessage());
@@ -289,12 +298,12 @@ public class DomainDriver {
     }
 
     private void handleDeleteUser(String[] parts) {
-        if (parts.length < 2) { emitError("DELETE_USER requiere id"); return; }
+        if (parts.length < 2) { emitError("DELETE_USER requereix id"); return; }
         try {
-            if (!ensureRegisteredSession()) { emitError("Requiere sesión registrada"); return; }
+            if (!ensureRegisteredSession()) { emitError("Cal una sessió registrada"); return; }
             String id = parts[1];
             boolean ok = userController.deleteUser(id);
-            if (!ok) { emitError("Usuario no encontrado"); return; }
+            if (!ok) { emitError("Usuari no trobat"); return; }
             try {
                 persistenceDriver.persistAllUsers(userController.listRegisteredUsers());
             } catch (Exception ignored) {
@@ -308,7 +317,7 @@ public class DomainDriver {
     private void handleUpdateUser(String[] parts) {
         // UPDATE_USER|<urlencoded json> (frontend legacy) OR UPDATE_USER|id|displayName|username|password
         try {
-            if (!ensureRegisteredSession()) { emitError("Requiere sesión registrada"); return; }
+            if (!ensureRegisteredSession()) { emitError("Cal una sessió registrada"); return; }
             RegisteredUser updated = null;
             if (parts.length == 2) {
                 // Best-effort minimal JSON field extraction (no external JSON lib allowed)
@@ -321,10 +330,10 @@ public class DomainDriver {
             } else if (parts.length >= 5) {
                 updated = userController.updateUser(parts[1], parts[2], parts[3], parts[4]);
             } else {
-                emitError("UPDATE_USER requiere payload");
+                emitError("UPDATE_USER requereix payload");
                 return;
             }
-            if (updated == null) { emitError("No se pudo actualizar el usuario"); return; }
+            if (updated == null) { emitError("No s'ha pogut actualitzar l'usuari"); return; }
             try {
                 persistenceDriver.persistAllUsers(userController.listRegisteredUsers());
             } catch (Exception ignored) {
@@ -338,7 +347,7 @@ public class DomainDriver {
     // ==================== RESPONSES ====================
 
     private void handleAnswerSurvey(String[] parts) {
-        if (parts.length < 3) { emitError("ANSWER_SURVEY requiere surveyId|answers"); return; }
+        if (parts.length < 3) { emitError("ANSWER_SURVEY requereix surveyId|answers"); return; }
         String surveyId = parts[1];
         String answersStr = parts[2];
         try {
@@ -347,45 +356,45 @@ public class DomainDriver {
             User respondent = userController.requireActiveUser();
             List<Answer> answers = surveyController.parseAnswers(answersStr, survey);
             if (answers.isEmpty()) {
-                emitError("No hay respuestas válidas");
+                emitError("No hi ha respostes vàlides");
                 return;
             }
             SurveyResponse response = responseController.buildResponse(survey, respondent, answers);
             responseController.saveResponse(response);
-            System.out.println("{\"status\":\"ok\",\"responseId\":\"" + response.getId() + "\"}");
+            System.out.println("{\"status\":\"ok\",\"refresh\":\"responses\",\"surveyId\":\"" + escapeJson(response.getSurveyId()) + "\",\"responseId\":\"" + escapeJson(response.getId()) + "\"}");
         } catch (Exception e) {
             emitError(e.getMessage());
         }
     }
 
     private void handleEditResponse(String[] parts) {
-        if (parts.length < 3) { emitError("EDIT_RESPONSE requiere responseId|answers"); return; }
+        if (parts.length < 3) { emitError("EDIT_RESPONSE requereix responseId|answers"); return; }
         String responseId = parts[1];
         String answersStr = parts[2];
         try {
-            if (!ensureRegisteredSession()) { emitError("Se requiere sesión registrada"); return; }
+            if (!ensureRegisteredSession()) { emitError("Cal una sessió registrada"); return; }
             SurveyResponse original = responseController.loadResponse(responseId);
             User current = userController.requireActiveUser();
-            if (!current.getId().equals(original.getUserId())) { emitError("No autorizado a editar esta respuesta"); return; }
+            if (!current.getId().equals(original.getUserId())) { emitError("No estàs autoritzat per editar aquesta resposta"); return; }
             Survey survey = surveyController.loadSurvey(original.getSurveyId());
             List<Answer> answers = surveyController.parseAnswers(answersStr, survey);
             responseController.updateResponse(original, answers);
-            System.out.println("{\"status\":\"ok\"}");
+            System.out.println("{\"status\":\"ok\",\"refresh\":\"responses\",\"surveyId\":\"" + escapeJson(original.getSurveyId()) + "\"}");
         } catch (Exception e) {
             emitError(e.getMessage());
         }
     }
 
     private void handleDeleteResponse(String[] parts) {
-        if (parts.length < 2) { emitError("DELETE_RESPONSE requiere responseId"); return; }
+        if (parts.length < 2) { emitError("DELETE_RESPONSE requereix responseId"); return; }
         String responseId = parts[1];
         try {
-            if (!ensureRegisteredSession()) { emitError("Se requiere sesión registrada"); return; }
+            if (!ensureRegisteredSession()) { emitError("Cal una sessió registrada"); return; }
             SurveyResponse resp = responseController.loadResponse(responseId);
             User current = userController.requireActiveUser();
-            if (!current.getId().equals(resp.getUserId())) { emitError("No autorizado a eliminar esta respuesta"); return; }
+            if (!current.getId().equals(resp.getUserId())) { emitError("No estàs autoritzat per esborrar aquesta resposta"); return; }
             responseController.deleteResponse(responseId);
-            System.out.println("{\"status\":\"ok\"}");
+            System.out.println("{\"status\":\"ok\",\"refresh\":\"responses\",\"surveyId\":\"" + escapeJson(resp.getSurveyId()) + "\"}");
         } catch (Exception e) {
             emitError(e.getMessage());
         }
@@ -394,18 +403,18 @@ public class DomainDriver {
     // ==================== IMPORT/EXPORT ====================
 
     private void handleImportSurvey(String[] parts) {
-        if (parts.length < 2) { emitError("IMPORT_SURVEY requiere ruta"); return; }
+        if (parts.length < 2) { emitError("IMPORT_SURVEY requereix ruta"); return; }
         String path = parts[1];
         try {
             Survey s = surveyController.importSurvey(path);
-            System.out.println("{\"status\":\"ok\",\"id\":\"" + s.getId() + "\"}");
+            System.out.println("{\"status\":\"ok\",\"refresh\":\"surveys\",\"id\":\"" + escapeJson(s.getId()) + "\"}");
         } catch (IOException | PersistenceException e) {
             emitError(e.getMessage());
         }
     }
 
     private void handleExportSurvey(String[] parts) {
-        if (parts.length < 3) { emitError("EXPORT_SURVEY requiere surveyId|path"); return; }
+        if (parts.length < 3) { emitError("EXPORT_SURVEY requereix surveyId|path"); return; }
         String id = parts[1];
         String path = parts[2];
         try {
@@ -418,7 +427,7 @@ public class DomainDriver {
     }
 
     private void handleImportResponses(String[] parts) {
-        if (parts.length < 2) { emitError("IMPORT_RESPONSES requiere path"); return; }
+        if (parts.length < 2) { emitError("IMPORT_RESPONSES requereix path"); return; }
         String path = parts[1];
         try {
             List<SurveyResponse> responses = responseSerializer.fromFile(path);
@@ -428,14 +437,14 @@ public class DomainDriver {
                 responseController.saveResponse(r);
                 imported++;
             }
-            System.out.println("{\"status\":\"ok\",\"imported\":" + imported + "}");
+            System.out.println("{\"status\":\"ok\",\"refresh\":\"surveys\",\"imported\":" + imported + "}");
         } catch (Exception e) {
             emitError(e.getMessage());
         }
     }
 
     private void handleExportResponses(String[] parts) {
-        if (parts.length < 3) { emitError("EXPORT_RESPONSES requiere surveyId|path"); return; }
+        if (parts.length < 3) { emitError("EXPORT_RESPONSES requereix surveyId|path"); return; }
         String surveyId = parts[1];
         String path = parts[2];
         try {
@@ -450,7 +459,7 @@ public class DomainDriver {
     // ==================== ANALYTICS ====================
 
     private void handlePerformAnalysis(String[] parts) {
-        if (parts.length < 2) { emitError("PERFORM_ANALYSIS requiere surveyId"); return; }
+        if (parts.length < 2) { emitError("PERFORM_ANALYSIS requereix surveyId"); return; }
         String surveyId = parts[1];
         try {
             Survey survey = surveyController.loadSurvey(surveyId);
@@ -638,12 +647,79 @@ public class DomainDriver {
             first = false;
         }
         sb.append("}");
+
+        // Optional visualization payload
+        sb.append(",\"points\":[");
+        double[][] pts = result.getPoints2d();
+        int[] labels = result.getLabels();
+        String[] ids = result.getResponseIds();
+        if (pts != null && labels != null) {
+            for (int i = 0; i < pts.length && i < labels.length; i++) {
+                if (i > 0) sb.append(',');
+                String rid = (ids != null && i < ids.length) ? ids[i] : "";
+                sb.append("{\"id\":\"").append(escapeJson(rid)).append("\"");
+                sb.append(",\"x\":").append(pts[i] != null && pts[i].length > 0 ? pts[i][0] : 0.0);
+                sb.append(",\"y\":").append(pts[i] != null && pts[i].length > 1 ? pts[i][1] : 0.0);
+                sb.append(",\"cluster\":").append(labels[i]);
+                sb.append('}');
+            }
+        }
+        sb.append(']');
+
+        sb.append(",\"centroids\":[");
+        double[][] cents = result.getCentroids2d();
+        if (cents != null) {
+            for (int i = 0; i < cents.length; i++) {
+                if (i > 0) sb.append(',');
+                sb.append("{\"clusterId\":").append(i);
+                sb.append(",\"x\":").append(cents[i] != null && cents[i].length > 0 ? cents[i][0] : 0.0);
+                sb.append(",\"y\":").append(cents[i] != null && cents[i].length > 1 ? cents[i][1] : 0.0);
+                sb.append('}');
+            }
+        }
+        sb.append(']');
+
         sb.append("}}");
         return sb.toString();
     }
 
     private void emitError(String message) {
-        System.out.println("{\"error\":\"" + message + "\"}");
+        String msg = translateError(message);
+        System.out.println("{\"error\":\"" + escapeJson(msg) + "\"}");
+    }
+
+    private String translateError(String message) {
+        if (message == null) return "S'ha produït un error";
+        String m = message.trim();
+        if (m.isEmpty()) return "S'ha produït un error";
+        String lower = m.toLowerCase(Locale.ROOT);
+
+        // Auth / sessions
+        if (lower.contains("credenciales") || lower.contains("invalid credentials")) return "Credencials invàlides";
+        if (lower.contains("no hay sesión activa") || lower.contains("no hi ha sessió activa")) return "No hi ha cap sessió activa";
+        if (lower.contains("requiere sesión registrada") || lower.contains("se requiere sesión registrada") || lower.contains("cal una sessió registrada")) {
+            return "Cal una sessió registrada";
+        }
+        if (lower.contains("usuario no encontrado") || lower.contains("usuari no trobat")) return "Usuari no trobat";
+        if (lower.contains("username already taken") || lower.contains("ya podría existir") || lower.contains("ja existeix")) {
+            return "El nom d'usuari ja existeix";
+        }
+
+        // Authorization
+        if (lower.contains("no autorizado") || lower.contains("no estàs autoritzat") || lower.contains("no autoritzat")) {
+            // Keep the specific message if it is already Catalan.
+            if (lower.contains("autoritzat")) return m;
+            return "No estàs autoritzat";
+        }
+
+        // File / import-export
+        if (lower.equals("file is empty")) return "El fitxer és buit";
+        if (lower.contains("invalid header format")) return "Format de capçalera invàlid";
+        if (lower.contains("error reading file")) return "Error en llegir el fitxer";
+
+        // Generic fallbacks
+        if (lower.contains("comando desconocido") || lower.contains("ordre desconeguda")) return "Ordre desconeguda";
+        return m;
     }
 
     // ==================== HELPERS ====================

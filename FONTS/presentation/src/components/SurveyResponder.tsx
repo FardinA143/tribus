@@ -15,7 +15,7 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
   const [answers, setAnswers] = useState<Record<string, any>>({});
   const [submitted, setSubmitted] = useState(false);
 
-  if (!survey) return <div>Survey not found</div>;
+  if (!survey) return <div>Enquesta no trobada</div>;
 
   const handleInputChange = (qId: string, value: any) => {
     setAnswers(prev => ({ ...prev, [qId]: value }));
@@ -57,7 +57,7 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
       if (q.mandatory) {
         const val = answers[q.id];
         if (val === undefined || val === '' || (Array.isArray(val) && val.length === 0)) {
-          alert(`La pregunta "${q.title}" es obligatoria.`);
+          alert(`La pregunta "${q.title}" és obligatòria.`);
           return;
         }
       }
@@ -72,10 +72,10 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 animate-in fade-in zoom-in duration-500">
         <CheckCircle size={80} className="text-[#008DCD] mb-6" />
-        <h2 className="text-4xl font-black uppercase mb-4">¡Gracias!</h2>
-        <p className="text-lg opacity-70 mb-8 max-w-md">Tu respuesta ha sido guardada. Puedes analizar los resultados o tomar otra encuesta.</p>
+        <h2 className="text-4xl font-black uppercase mb-4">Gràcies!</h2>
+        <p className="text-lg opacity-70 mb-8 max-w-md">La teva resposta s'ha desat. Pots analitzar els resultats o respondre una altra enquesta.</p>
         <button onClick={onClose} className="px-8 py-3 border-2 border-black dark:border-white font-bold uppercase hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors">
-          Volver al Inicio
+          Tornar a l'inici
         </button>
       </div>
     );
@@ -84,7 +84,7 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
   return (
     <div className="max-w-3xl mx-auto p-6 min-h-screen">
       <button onClick={onClose} className="flex items-center gap-2 mb-8 opacity-60 hover:opacity-100 transition-opacity">
-        <ArrowLeft size={20} /> Cancelar
+        <ArrowLeft size={20} /> Cancel·la
       </button>
 
       <div className="mb-10 border-b-2 border-black dark:border-white pb-6">
@@ -154,7 +154,7 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
         onClick={handleSubmit}
         className="mt-12 w-full bg-[#008DCD] text-white py-4 font-black uppercase text-lg border-2 border-black dark:border-white hover:brightness-110 shadow-xl mb-12"
       >
-        Enviar Respuesta
+        Envia la resposta
       </button>
     </div>
   );

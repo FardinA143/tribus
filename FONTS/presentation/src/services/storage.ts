@@ -1,8 +1,8 @@
-// El servicio de almacenamiento local fue deshabilitado por seguridad.
-// Cualquier intento de importarlo lanzará un error en tiempo de ejecución
-// para evitar el uso accidental de almacenamiento local desde la UI.
+// El servei d'emmagatzematge local està deshabilitat per seguretat.
+// Qualsevol intent d'importar-lo llençarà un error en temps d'execució
+// per evitar l'ús accidental d'emmagatzematge local des de la UI.
 
-const message = 'El uso de almacenamiento local no está permitido. Use el backend via controller.';
+const message = "L'ús d'emmagatzematge local no està permès. Usa el backend via controller.";
 throw new Error(message);
 
 export {};

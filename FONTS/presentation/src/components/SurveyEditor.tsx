@@ -15,6 +15,7 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
   const [clusterSize, setClusterSize] = useState(3);
   const [analysisMethod, setAnalysisMethod] = useState<'kmeans' | 'kmeans++'>('kmeans');
   const [questions, setQuestions] = useState<Question[]>([]);
+  const [optionsDraftByQuestionId, setOptionsDraftByQuestionId] = useState<Record<string, string>>({});
 
   // Load existing if modifying
   useEffect(() => {
@@ -31,8 +32,8 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
   }, [surveyId, surveys]);
 
   const handleSave = () => {
-    if (!title) return alert('El título es obligatorio');
-    if (!currentUser) return alert('Debes iniciar sesión');
+    if (!title) return alert("El títol és obligatori");
+    if (!currentUser) return alert("Has d'iniciar sessió");
 
     const newSurvey: Survey = {
       id: surveyId || Math.random().toString(36).substr(2, 9),
@@ -56,7 +57,7 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
   const addQuestion = () => {
     setQuestions([
       ...questions,
-      { id: Math.random().toString(36).substr(2, 9), title: 'Nueva Pregunta', type: 'text', mandatory: false, options: [] }
+      { id: Math.random().toString(36).substr(2, 9), title: '', type: 'text', mandatory: false, options: [] }
     ]);
   };
 
@@ -70,37 +71,44 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
     setQuestions(questions.filter((_, i) => i !== idx));
   };
 
-  const handleOptionsChange = (qIdx: number, val: string) => {
-    // Expect comma separated or newline separated? Let's say one option per line for text area
-    const labels = val.split('\n').map(s => s.trim()).filter(Boolean);
-    const opts: ChoiceOption[] = labels.map((label, i) => ({ id: i + 1, label }));
-    updateQuestion(qIdx, { options: opts });
+  const parseChoiceOptions = (val: string): ChoiceOption[] => {
+    const lines = val.split(/\r?\n/);
+    const labels = lines.map((s) => s.trim()).filter((s) => s.length > 0);
+    return labels.map((label, i) => ({ id: i + 1, label }));
+  };
+
+  const handleOptionsChange = (qId: string, qIdx: number, val: string) => {
+    // IMPORTANT: mantenim el text cru en estat local perquè l'usuari pugui
+    // escriure salts de línia i espais (incloent línies buides temporals).
+    // A partir del text cru, generem el `options[]` sense línies buides.
+    setOptionsDraftByQuestionId((prev) => ({ ...prev, [qId]: val }));
+    updateQuestion(qIdx, { options: parseChoiceOptions(val) });
   };
 
   return (
     <div className="p-6 max-w-4xl mx-auto min-h-screen pb-24">
       <button onClick={onClose} className="flex items-center gap-2 mb-6 opacity-60 hover:opacity-100 transition-opacity">
-        <ArrowLeft size={20} /> Volver a Encuestas
+        <ArrowLeft size={20} /> Tornar a enquestes
       </button>
 
-      <h1 className="text-4xl font-black uppercase text-[#008DCD] mb-8">{surveyId ? 'Modificar Encuesta' : 'Crear Encuesta'}</h1>
+      <h1 className="text-4xl font-black uppercase text-[#008DCD] mb-8">{surveyId ? 'Modificar enquesta' : 'Crear enquesta'}</h1>
 
       <div className="grid gap-6">
         
         {/* Basic Info */}
         <section className="bg-white dark:bg-zinc-900 border-2 border-black dark:border-white p-6 flex flex-col gap-4">
-          <h2 className="text-xl font-bold uppercase border-b-2 border-black/10 dark:border-white/10 pb-2">Detalles</h2>
+          <h2 className="text-xl font-bold uppercase border-b-2 border-black/10 dark:border-white/10 pb-2">Detalls</h2>
           
           <div>
-            <label className="block text-xs font-bold uppercase mb-1">Título de la Encuesta</label>
+            <label className="block text-xs font-bold uppercase mb-1">Títol de l'enquesta</label>
             <input 
               className="w-full bg-transparent border-2 border-black dark:border-white p-2 font-bold text-lg" 
-              value={title} onChange={e => setTitle(e.target.value)} placeholder="Mi Encuesta Increíble"
+              value={title} onChange={e => setTitle(e.target.value)} placeholder="La meva enquesta"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase mb-1">Descripción</label>
+            <label className="block text-xs font-bold uppercase mb-1">Descripció</label>
             <textarea 
               className="w-full bg-transparent border-2 border-black dark:border-white p-2" 
               value={description} onChange={e => setDescription(e.target.value)} rows={3}
@@ -109,7 +117,7 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold uppercase mb-1">Tamaño del Grupo</label>
+              <label className="block text-xs font-bold uppercase mb-1">Nombre de clústers</label>
               <input 
                 type="number" min={2} max={10}
                 className="w-full bg-transparent border-2 border-black dark:border-white p-2" 
@@ -117,7 +125,7 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
               />
             </div>
             <div>
-              <label className="block text-xs font-bold uppercase mb-1">Método de Análisis</label>
+              <label className="block text-xs font-bold uppercase mb-1">Mètode d'anàlisi</label>
               <select 
                 className="w-full bg-transparent border-2 border-black dark:border-white p-2" 
                 value={analysisMethod} onChange={e => setAnalysisMethod(e.target.value as any)}
@@ -132,9 +140,9 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
         {/* Questions */}
         <section className="flex flex-col gap-4">
            <h2 className="text-xl font-bold uppercase flex justify-between items-center">
-             <span>Preguntas</span>
+             <span>Preguntes</span>
              <button onClick={addQuestion} className="bg-black text-white dark:bg-white dark:text-black px-3 py-1 text-sm flex items-center gap-2 hover:bg-[#008DCD] dark:hover:bg-[#008DCD] hover:text-white transition-colors">
-               <Plus size={14} /> Añadir Pregunta
+               <Plus size={14} /> Afegeix pregunta
              </button>
            </h2>
 
@@ -152,7 +160,7 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
                     <div className="flex-1 grid gap-4">
                       <input 
                         className="w-full bg-transparent border-b-2 border-black/20 focus:border-[#008DCD] p-2 font-bold text-lg outline-none" 
-                        value={q.title} onChange={e => updateQuestion(idx, { title: e.target.value })} placeholder="Título de la Pregunta"
+                        value={q.title} onChange={e => updateQuestion(idx, { title: e.target.value })} placeholder="Escriu la pregunta"
                       />
                       
                       <div className="flex flex-wrap gap-4">
@@ -160,10 +168,10 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
                           className="bg-transparent border-2 border-black dark:border-white p-2 text-sm" 
                           value={q.type} onChange={e => updateQuestion(idx, { type: e.target.value as QuestionType })}
                         >
-                          <option value="text">Texto Libre</option>
-                          <option value="integer">Número Entero</option>
-                          <option value="single">Selección Única</option>
-                          <option value="multiple">Selección Múltiple</option>
+                          <option value="text">Text lliure</option>
+                          <option value="integer">Nombre enter</option>
+                          <option value="single">Selecció única</option>
+                          <option value="multiple">Selecció múltiple</option>
                         </select>
 
                         <label className="flex items-center gap-2 text-sm font-bold uppercase cursor-pointer select-none">
@@ -173,19 +181,19 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
                             onChange={e => updateQuestion(idx, { mandatory: e.target.checked })}
                             className="w-5 h-5 accent-[#008DCD]"
                           />
-                          Obligatoria
+                          Obligatòria
                         </label>
                       </div>
 
                       {(q.type === 'single' || q.type === 'multiple') && (
                         <div>
-                          <label className="block text-xs font-bold uppercase mb-1 text-[#008DCD]">Opciones (una por línea)</label>
+                          <label className="block text-xs font-bold uppercase mb-1 text-[#008DCD]">Opcions (una per línia)</label>
                           <textarea 
                              className="w-full bg-zinc-50 dark:bg-zinc-800 border-2 border-black/10 p-2 text-sm" 
                              rows={4}
-                              value={(q.options || []).map(o => o.label).join('\n')}
-                             onChange={e => handleOptionsChange(idx, e.target.value)}
-                             placeholder="Opción 1&#10;Opción 2&#10;Opción 3"
+                              value={optionsDraftByQuestionId[q.id] ?? (q.options || []).map(o => o.label).join('\n')}
+                             onChange={e => handleOptionsChange(q.id, idx, e.target.value)}
+                             placeholder="Opció 1&#10;Opció 2&#10;Opció 3"
                           />
                         </div>
                       )}
@@ -197,7 +205,7 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
 
            {questions.length === 0 && (
              <div className="text-center p-12 border-2 border-dashed border-black/20 dark:border-white/20 opacity-50 font-bold uppercase">
-               No hay preguntas. Añade una arriba.
+               No hi ha preguntes. Afegeix-ne una a dalt.
              </div>
            )}
         </section>
@@ -206,7 +214,7 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
           onClick={handleSave}
           className="bg-[#008DCD] text-white py-4 font-black uppercase text-lg border-2 border-black dark:border-white hover:brightness-110 sticky bottom-6 shadow-xl"
         >
-          Guardar Encuesta
+          Desa l'enquesta
         </button>
 
       </div>

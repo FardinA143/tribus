@@ -174,7 +174,7 @@ export const Auth: React.FC<AuthProps> = ({ onSuccess, onCancel }) => {
                       value={name}
                       onChange={e => setName(e.target.value)}
                       className="border-2 border-black dark:border-white p-4 bg-transparent focus:outline-none focus:border-[#008DCD] transition-colors font-medium"
-                      placeholder="Juan Pérez"
+                      placeholder="Joan Pérez"
                     />
                   </div>
                 )}
@@ -205,7 +205,7 @@ export const Auth: React.FC<AuthProps> = ({ onSuccess, onCancel }) => {
                   type="submit"
                   className="mt-4 bg-black text-white dark:bg-white dark:text-black py-4 font-bold uppercase hover:bg-[#008DCD] dark:hover:bg-[#008DCD] hover:text-white dark:hover:text-white transition-colors border-2 border-transparent text-lg tracking-wide"
                 >
-                  {mode === 'login' ? 'Iniciar Sessió' : 'Registrar-se'}
+                  {mode === 'login' ? 'Inicia sessió' : 'Registra\'t'}
                 </button>
              </motion.div>
             </AnimatePresence>

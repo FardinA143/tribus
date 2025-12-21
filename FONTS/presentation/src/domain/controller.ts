@@ -149,6 +149,10 @@ const createSurvey = (survey: any) => {
 
 const deleteSurvey = (id: string) => sendCommand(`DELETE_SURVEY|${id}`);
 
+const exportSurveyFile = (surveyId: string, path: string) => sendCommand(`EXPORT_SURVEY|${surveyId}|${path}`);
+
+const exportResponsesFile = (surveyId: string, path: string) => sendCommand(`EXPORT_RESPONSES|${surveyId}|${path}`);
+
 const importSurveyFile = (path: string) => sendCommand(`IMPORT_SURVEY|${path}`);
 
 const importResponsesFile = (path: string) => sendCommand(`IMPORT_RESPONSES|${path}`);
@@ -211,6 +215,8 @@ const createResponse = (response: any) => {
 // Backend: LIST_RESPONSES|surveyId
 const requestResponses = (surveyId: string) => sendCommand(`LIST_RESPONSES|${surveyId}`);
 
+const deleteResponse = (responseId: string) => sendCommand(`DELETE_RESPONSE|${responseId}`);
+
 // Analytics
 // Backend: PERFORM_ANALYSIS|surveyId
 const requestAnalysis = (surveyId: string) => sendCommand(`PERFORM_ANALYSIS|${surveyId}`);
@@ -222,6 +228,8 @@ export const controller = {
   // surveys
   createSurvey,
   deleteSurvey,
+  exportSurveyFile,
+  exportResponsesFile,
   importSurveyFile,
   importResponsesFile,
   requestSurveys,
@@ -237,6 +245,7 @@ export const controller = {
   // responses
   createResponse,
   requestResponses,
+  deleteResponse,
   // analytics
   requestAnalysis,
   answerSurvey,

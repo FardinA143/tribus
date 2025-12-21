@@ -62,6 +62,21 @@ public class SurveyController {
 
     public void saveSurvey(Survey survey) throws PersistenceException {
 
+        if (survey == null || survey.getQuestions() == null) {
+            throw new PersistenceException("L'enquesta ha de tenir com a mínim una pregunta obligatòria");
+        }
+
+        boolean hasRequired = false;
+        for (Question q : survey.getQuestions()) {
+            if (q != null && q.isRequired()) {
+                hasRequired = true;
+                break;
+            }
+        }
+        if (!hasRequired) {
+            throw new PersistenceException("L'enquesta ha de tenir com a mínim una pregunta obligatòria");
+        }
+
         try {
             persistence.saveSurvey(survey);
         } catch (Exceptions.NullArgumentException e) {
@@ -119,11 +134,8 @@ public class SurveyController {
     public Survey importSurvey(String path) throws IOException, PersistenceException {
         Survey survey = serializer.fromFile(path);
 
-        try {
-            persistence.saveSurvey(survey);
-        } catch (Exceptions.NullArgumentException e) {
-            throw new PersistenceException(e.getMessage());
-        }
+        // Reutilitza la validació i el desat estandard.
+        saveSurvey(survey);
         return survey;
     }
 

@@ -52,7 +52,7 @@ public class AuthService {
      */
     public RegisteredUser register(String id, String displayName, String username, String password) {
         if (registeredUsers.values().stream().anyMatch(u -> u.getUsername().equals(username))) {
-            System.out.println("Username already taken");
+            System.err.println("El nom d'usuari ja existeix");
             return null;
         }
         String passwordHash = hashPassword(password);
@@ -83,7 +83,7 @@ public class AuthService {
                 return sess;
             }
         }
-        System.out.println("Invalid credentials");
+        System.err.println("Credencials invàlides");
         return null;
     }
 
@@ -126,20 +126,20 @@ public class AuthService {
      */
     public RegisteredUser updateUser(String id, String displayName, String username, String password) {
         if (id == null || displayName == null || username == null || password == null) {
-            System.out.println("Parámetros inválidos para actualizar usuario");
+            System.err.println("Paràmetres invàlids per actualitzar l'usuari");
             return null;
         }
 
         RegisteredUser existing = registeredUsers.get(id);
         if (existing == null) {
-            System.out.println("Usuario no encontrado");
+            System.err.println("Usuari no trobat");
             return null;
         }
 
         boolean usernameTaken = registeredUsers.values().stream()
                 .anyMatch(u -> !u.getId().equals(id) && u.getUsername().equals(username));
         if (usernameTaken) {
-            System.out.println("Username already taken");
+            System.err.println("El nom d'usuari ja existeix");
             return null;
         }
 
@@ -156,13 +156,13 @@ public class AuthService {
      */
     public boolean deleteUser(String id) {
         if (id == null) {
-            System.out.println("ID inválido para eliminar usuario");
+            System.err.println("ID invàlid per eliminar l'usuari");
             return false;
         }
 
         RegisteredUser removed = registeredUsers.remove(id);
         if (removed == null) {
-            System.out.println("Usuario no encontrado");
+            System.err.println("Usuari no trobat");
             return false;
         }
 

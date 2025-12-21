@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const { spawn } = require('child_process');
 const path = require('path');
 
@@ -39,6 +39,26 @@ function createWindow() {
   // production
   // win.loadFile(path.join(__dirname, '../build/index.html'));
 }
+
+// Native file dialogs (open/save) exposed to the renderer via preload.
+ipcMain.handle('dialog:openFile', async (_event, options = {}) => {
+  if (!win || win.isDestroyed()) return null;
+  const result = await dialog.showOpenDialog(win, {
+    properties: ['openFile'],
+    ...options,
+  });
+  if (result.canceled) return null;
+  return (result.filePaths && result.filePaths[0]) ? result.filePaths[0] : null;
+});
+
+ipcMain.handle('dialog:saveFile', async (_event, options = {}) => {
+  if (!win || win.isDestroyed()) return null;
+  const result = await dialog.showSaveDialog(win, {
+    ...options,
+  });
+  if (result.canceled) return null;
+  return result.filePath || null;
+});
 
 app.whenReady().then(() => {
   createWindow();

@@ -1,6 +1,7 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import { useApp, Survey } from '../store';
-import { Plus, Download, Upload, BarChart2, Edit3, MessageSquare } from 'lucide-react';
+import controller from '../domain/controller';
+import { Plus, Download, Upload, BarChart2, Edit3, MessageSquare, Trash2 } from 'lucide-react';
 
 interface SurveyListProps {
   onAnalyze: (id: string) => void;
@@ -12,7 +13,6 @@ interface SurveyListProps {
 
 export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onModify, onCreate, filterMode = 'all' }) => {
   const { surveys, currentUser, importSurveys, responses } = useApp();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Filter logic
   const filteredSurveys = surveys.filter(s => {
@@ -27,44 +27,67 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
 
   const getPageTitle = () => {
     switch (filterMode) {
-        case 'my-surveys': return 'Mis Encuestas';
-        case 'my-responses': return 'Mis Respuestas';
-        default: return 'Encuestas';
+        case 'my-surveys': return "Les meves enquestes";
+        case 'my-responses': return "Les meves respostes";
+        default: return 'Enquestes';
     }
   };
-  const handleExport = (survey: Survey) => {
-    const surveyResponses = responses.filter(r => r.surveyId === survey.id);
-    const data = { surveys: [survey], responses: surveyResponses };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `tribus_encuesta_${survey.title.replace(/\s+/g, '_').toLowerCase()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+
+  const ensureElectron = () => {
+    if (!controller.isElectron || !(window as any).backend?.openFileDialog) {
+      alert("Aquesta funcionalitat només està disponible a l'app d'Electron.");
+      return false;
+    }
+    return true;
   };
 
-  const handleImportClick = () => {
-    fileInputRef.current?.click();
+  const importSurveyTxt = async () => {
+    if (!ensureElectron()) return;
+    const path = await (window as any).backend.openFileDialog({
+      title: "Importa una enquesta (.tbs)",
+      filters: [{ name: 'Tribus Survey', extensions: ['tbs'] }],
+    });
+    if (!path) return;
+    importSurveys({ type: 'surveys', path });
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const importResponsesTxt = async () => {
+    if (!ensureElectron()) return;
+    const path = await (window as any).backend.openFileDialog({
+      title: "Importa respostes (.tbs)",
+      filters: [{ name: 'Tribus Survey', extensions: ['tbs'] }],
+    });
+    if (!path) return;
+    importSurveys({ type: 'responses', path });
+  };
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const json = JSON.parse(event.target?.result as string);
-        importSurveys(json);
-        alert('¡Importación exitosa!');
-      } catch (err) {
-        alert('Fallo al analizar el archivo.');
-      }
-    };
-    reader.readAsText(file);
-    // Reset
-    e.target.value = '';
+  const exportSurveyTxt = async (survey: Survey) => {
+    if (!ensureElectron()) return;
+    const filePath = await (window as any).backend.saveFileDialog({
+      title: "Exporta enquesta (.tbs)",
+      defaultPath: `enquesta_${(survey.title || 'tribus').replace(/\s+/g, '_')}.tbs`,
+      filters: [{ name: 'Tribus Survey', extensions: ['tbs'] }],
+    });
+    if (!filePath) return;
+    controller.exportSurveyFile(survey.id, filePath);
+  };
+
+  const exportResponsesTxt = async (survey: Survey) => {
+    if (!ensureElectron()) return;
+    const filePath = await (window as any).backend.saveFileDialog({
+      title: "Exporta respostes (.tbs)",
+      defaultPath: `respostes_${(survey.title || 'tribus').replace(/\s+/g, '_')}.tbs`,
+      filters: [{ name: 'Tribus Survey', extensions: ['tbs'] }],
+    });
+    if (!filePath) return;
+    controller.exportResponsesFile(survey.id, filePath);
+  };
+
+  const deleteSurvey = (survey: Survey) => {
+    if (!currentUser || currentUser.id !== survey.authorId) return;
+    if (window.confirm("Segur que vols esborrar aquesta enquesta? Aquesta acció no es pot desfer.")) {
+      controller.deleteSurvey(survey.id);
+    }
   };
 
   return (
@@ -73,9 +96,9 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
         <div>
           <h1 className="text-4xl font-black uppercase tracking-tighter mb-2">{getPageTitle()}</h1>
           <p className="opacity-70">
-            {filterMode === 'all' && 'Explora, Analiza, Crea.'}
-            {filterMode === 'my-surveys' && 'Gestiona tus encuestas creadas.'}
-            {filterMode === 'my-responses' && 'Historial de encuestas contestadas.'}
+            {filterMode === 'all' && 'Explora, analitza, crea.'}
+            {filterMode === 'my-surveys' && "Gestiona les teves enquestes."}
+            {filterMode === 'my-responses' && 'Historial d\'enquestes respostes.'}
           </p>
         </div>
         <div className="flex gap-4">
@@ -84,28 +107,28 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
               className="flex items-center gap-2 text-sm font-bold uppercase hover:text-[#008DCD] transition-colors"
             >
               <Plus size={16} />
-              Crear
+              Crea
             </button>
             <button 
-              onClick={handleImportClick}
+              onClick={importSurveyTxt}
               className="flex items-center gap-2 text-sm font-bold uppercase hover:text-[#008DCD] transition-colors"
             >
               <Upload size={16} />
-              Importar
+              Importa enquestes
+            </button>
+            <button 
+              onClick={importResponsesTxt}
+              className="flex items-center gap-2 text-sm font-bold uppercase hover:text-[#008DCD] transition-colors"
+            >
+              <Upload size={16} />
+              Importa respostes
             </button>
         </div>
-        <input 
-          type="file" 
-          ref={fileInputRef} 
-          className="hidden" 
-          accept=".json" 
-          onChange={handleFileChange} 
-        />
       </div>
 
       {filteredSurveys.length === 0 && (
           <div className="text-center py-20 opacity-50">
-              <p className="text-xl font-bold uppercase">No se encontraron encuestas.</p>
+            <p className="text-xl font-bold uppercase">No s'han trobat enquestes.</p>
           </div>
       )}
 
@@ -120,24 +143,40 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
                     <button 
                       onClick={() => onModify(survey.id)}
                       className="p-1 hover:text-[#008DCD] transition-colors"
-                      title="Modificar Encuesta"
+                      title="Modifica l'enquesta"
                     >
                       <Edit3 size={16} />
                     </button>
                   )}
                   <button 
-                    onClick={() => handleExport(survey)}
+                    onClick={() => exportSurveyTxt(survey)}
                     className="p-1 hover:text-[#008DCD] transition-colors"
-                    title="Descargar Encuesta y Respuestas"
+                    title="Exporta l'enquesta (.tbs)"
                   >
                     <Download size={16} />
                   </button>
+                  <button 
+                    onClick={() => exportResponsesTxt(survey)}
+                    className="p-1 hover:text-[#008DCD] transition-colors"
+                    title="Exporta les respostes (.tbs)"
+                  >
+                    <Download size={16} />
+                  </button>
+                  {currentUser?.id === survey.authorId && (
+                    <button
+                      onClick={() => deleteSurvey(survey)}
+                      className="p-1 hover:text-red-600 transition-colors"
+                      title="Esborra l'enquesta"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
                 </div>
               </div>
               <p className="text-sm opacity-70 mb-6 line-clamp-3">{survey.description}</p>
               
               <div className="text-xs font-mono mb-4 opacity-50">
-                Método: {survey.analysisMethod} | Grupos: {survey.clusterSize}
+                Mètode: {survey.analysisMethod} | Clústers: {survey.clusterSize}
               </div>
             </div>
 
@@ -146,13 +185,13 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
                 onClick={() => onAnswer(survey.id)}
                 className="flex-1 border-2 border-black dark:border-white py-2 px-2 flex justify-center items-center gap-2 font-bold text-sm uppercase hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors"
               >
-                <MessageSquare size={14} /> Responder
+                <MessageSquare size={14} /> Respon
               </button>
               <button 
                 onClick={() => onAnalyze(survey.id)}
                 className="flex-1 border-2 border-black dark:border-white py-2 px-2 flex justify-center items-center gap-2 font-bold text-sm uppercase hover:bg-[#008DCD] hover:text-white transition-colors"
               >
-                <BarChart2 size={14} /> Analizar
+                <BarChart2 size={14} /> Analitza
               </button>
             </div>
           </div>
