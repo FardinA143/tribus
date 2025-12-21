@@ -1,3 +1,8 @@
-/FONTS/presentation/node_modules/
+FONTS/presentation/node_modules/
 FONTS/presentation/package-lock.json
-FONTS/presentation/build
+FONTS/presentation/build/
+FONTS/presentation/dist/
+/EXE/app.jar
+/EXE/classes/
+
+
