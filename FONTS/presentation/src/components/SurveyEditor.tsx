@@ -48,7 +48,7 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
     if (title.length > 40) { setError("El títol no pot superar 40 caràcters"); return; }
     if (description.length > 150) { setError("La descripció no pot superar 150 caràcters"); return; }
     if (!currentUser) { setError("Has d'iniciar sessió"); return; }
-    if (!Number.isFinite(clusterSize) || clusterSize < 1) { setError("El nombre de clústers (k) ha de ser com a mínim 1"); return; }
+    if (!Number.isFinite(clusterSize) || clusterSize < 2) { setError("El nombre de clústers (k) ha de ser com a mínim 2"); return; }
     if (saving) return;
 
     const newSurvey: Survey = {
@@ -154,7 +154,7 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
             <div>
               <label className="block text-xs font-bold uppercase mb-1">Nombre de clústers</label>
               <input 
-                type="number" min={1} max={10}
+                type="number" min={2} max={10}
                 className="w-full bg-transparent border-2 border-black dark:border-white p-2" 
                 value={clusterSize} onChange={e => setClusterSize(Number(e.target.value))}
               />

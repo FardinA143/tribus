@@ -66,8 +66,8 @@ public class SurveyController {
             throw new PersistenceException("L'enquesta ha de tenir com a mínim una pregunta obligatòria");
         }
 
-        if (survey.getK() < 1) {
-            throw new PersistenceException("El nombre de clústers (k) ha de ser com a mínim 1");
+        if (survey.getK() < 2) {
+            throw new PersistenceException("El nombre de clústers (k) ha de ser com a mínim 2");
         }
 
         String title = survey.getTitle() == null ? "" : survey.getTitle();
