@@ -1,15 +1,13 @@
-// Lightweight controller that encapsulates communication with Java (Electron backend)
 const isElectron = typeof window !== 'undefined' && (window as any).backend;
 
 // const isDev = typeof import.meta !== 'undefined' && (import.meta as any).env && (import.meta as any).env.DEV;
 
-const isDev = true; //  verbose logging by default
+const isDev = true; 
 
 const enc = (s: any): string => encodeURIComponent(String(s ?? ''));
 
 const buildQuestionsPayload = (survey: any): string => {
   const qs = Array.isArray(survey?.questions) ? survey.questions : [];
-  // questionSpec: type~mandatory~title~opt1,opt2,opt3
   const specs: string[] = [];
   for (const q of qs) {
     const type = String(q?.type ?? 'text');
@@ -27,19 +25,16 @@ const extractJsonChunks = (input: string): string[] => {
   const chunks: string[] = [];
   if (!input) return chunks;
 
-  // Fast path: split by lines first (common case)
   const lines = input.split(/\r?\n/);
   for (const rawLine of lines) {
     const line = (rawLine || '').trim();
     if (!line) continue;
 
-    // If the line looks like pure JSON, keep it.
     if ((line.startsWith('{') && line.endsWith('}')) || (line.startsWith('[') && line.endsWith(']'))) {
       chunks.push(line);
       continue;
     }
-
-    // Otherwise attempt to extract one or more JSON objects/arrays embedded in the line.
+    // extraccio json
     let start = -1;
     let depth = 0;
     let inString = false;
@@ -60,7 +55,7 @@ const extractJsonChunks = (input: string): string[] => {
         continue;
       }
 
-      // We are inside a JSON chunk
+      
       if (openChar === '{') {
         if (ch === '{') depth++;
         else if (ch === '}') depth--;
@@ -95,21 +90,17 @@ const sendCommand = (command: string) => {
   }
 };
 
-// Subscribe to raw responses from Java. Returns an unsubscribe function.
 const onResponse = (cb: (data: any) => void): (() => void) => {
   if (!isElectron) return () => {};
 
-  // @ts-ignore
   const unsubscribe = (window as any).backend.on('java-response', (responseString: string) => {
     const raw = typeof responseString === 'string' ? responseString : String(responseString);
     const candidates = extractJsonChunks(raw);
 
-    // If we couldn't extract anything, still try parsing the raw string (legacy behavior).
     if (candidates.length === 0) {
       try {
         const parsed = JSON.parse(raw);
         if (isDev) {
-          // Debug only: inspect what the Java backend is actually sending.
           console.debug('[controller] java-response', { data: parsed });
         }
         cb(parsed);
@@ -123,7 +114,6 @@ const onResponse = (cb: (data: any) => void): (() => void) => {
       try {
         const parsed = JSON.parse(candidate);
         if (isDev) {
-          // Debug only: inspect what the Java backend is actually sending.
           console.debug('[controller] java-response', { data: parsed });
         }
         cb(parsed);
@@ -135,10 +125,9 @@ const onResponse = (cb: (data: any) => void): (() => void) => {
 
   return unsubscribe || (() => {});
 };
-
-// High-level helpers that the UI can call.
+// funcions d'alt nivell per a l'aplicació
 const createSurvey = (survey: any) => {
-  // Backend: CREATE_SURVEY_FULL|title|description|k|analysisMethod|questions
+  // CREATE_SURVEY_FULL|title|description|k|analysisMethod|questions
   const title = enc(survey?.title ?? '');
   const description = enc(survey?.description ?? '');
   const k = Number(survey?.clusterSize ?? 3);
@@ -159,11 +148,9 @@ const importResponsesFile = (path: string) => sendCommand(`IMPORT_RESPONSES|${pa
 
 const requestSurveys = () => sendCommand('GET_SURVEYS');
 
-// Clustering methods catalog
 const requestClusteringMethods = () => sendCommand('GET_CLUSTERING_METHODS');
 
 const updateSurvey = (survey: any) => {
-  // Backend: UPDATE_SURVEY_FULL|id|title|description|k|analysisMethod|questions
   const id = String(survey?.id ?? '');
   const title = enc(survey?.title ?? '');
   const description = enc(survey?.description ?? '');
@@ -173,40 +160,30 @@ const updateSurvey = (survey: any) => {
   sendCommand(`UPDATE_SURVEY_FULL|${id}|${title}|${description}|${k}|${method}|${questions}`);
 };
 
-// Answer survey (store response) using the protocol expected by Java.
-// Backend: ANSWER_SURVEY|surveyId|answers
 const answerSurvey = (surveyId: string, answers: string) => {
   sendCommand(`ANSWER_SURVEY|${surveyId}|${answers ?? ''}`);
 };
 
-// User-related commands
 const createUser = (user: any) => sendCommand(`CREATE_USER|${encodeURIComponent(JSON.stringify(user))}`);
 const updateUser = (user: any) => sendCommand(`UPDATE_USER|${encodeURIComponent(JSON.stringify(user))}`);
 const deleteUser = (id: string) => sendCommand(`DELETE_USER|${id}`);
-// const requestUsers = () => sendCommand('GET_USERS');
+// const requestUsers = () => sendCommand('GET_USERS'); // no l'implementem
 
 const registerUser = (username: string, name: string, password: string) => {
-    // Protocolo: REGISTER|username|name|password
     const command = `REGISTER|${username}|${name}|${password}`;
     sendCommand(command);
 };
 
 const login = (username: string, password: string) => {
-    // Protocolo: LOGIN|username|password
     const command = `LOGIN|${username}|${password}`;
     sendCommand(command);
 };
 
-// Response-related commands
-// (Legacy names kept for UI compatibility; Java expects ANSWER_SURVEY.)
 const createResponse = (response: any) => {
-  // If the UI still calls this directly, try best-effort encoding.
-  // Prefer using `answerSurvey` from SurveyResponder where we can map option labels -> ids.
   if (!response || !response.surveyId || !response.answers) {
     console.warn('createResponse called with invalid payload', response);
     return;
   }
-  // Fallback: encode values as strings without choice-id mapping.
   const pairs: string[] = [];
   for (const [qid, val] of Object.entries(response.answers)) {
     if (val === undefined || val === null) continue;
@@ -215,20 +192,17 @@ const createResponse = (response: any) => {
   }
   answerSurvey(response.surveyId, pairs.join(';'));
 };
-// Backend: LIST_RESPONSES|surveyId
 const requestResponses = (surveyId: string) => sendCommand(`LIST_RESPONSES|${surveyId}`);
 
 const deleteResponse = (responseId: string) => sendCommand(`DELETE_RESPONSE|${responseId}`);
 
-// Analytics
-// Backend: PERFORM_ANALYSIS|surveyId
 const requestAnalysis = (surveyId: string) => sendCommand(`PERFORM_ANALYSIS|${surveyId}`);
 
-export const controller = {
+export const controller = {  // registrem
   isElectron,
   sendCommand,
   onResponse,
-  // surveys
+  // enquestes
   createSurvey,
   deleteSurvey,
   exportSurveyFile,
@@ -237,20 +211,19 @@ export const controller = {
   importResponsesFile,
   requestSurveys,
   requestClusteringMethods,
-  // users
+  // usuaris
   createUser,
   updateUser,
   deleteUser,
-//   requestUsers,
   registerUser,
   login,
-  // surveys
+  // enquestes
   updateSurvey,
-  // responses
+  // respostes
   createResponse,
   requestResponses,
   deleteResponse,
-  // analytics
+  // analisis
   requestAnalysis,
   answerSurvey,
 };

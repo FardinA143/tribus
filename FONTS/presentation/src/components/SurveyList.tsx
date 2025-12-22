@@ -3,7 +3,6 @@ import { createPortal } from 'react-dom';
 import { useApp, Survey } from '../store';
 import controller from '../domain/controller';
 import { Plus, Download, Upload, BarChart2, Edit3, MessageSquare, Trash2 } from 'lucide-react';
-// Usamos un modal simple para confirmaciones (estilo NavBar)
 
 interface SurveyListProps {
   onAnalyze: (id: string) => void;
@@ -19,7 +18,6 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
   const [importError, setImportError] = React.useState('');
   const importUnsubRef = React.useRef<null | (() => void)>(null);
 
-  // Filter logic
   const filteredSurveys = surveys.filter(s => {
     if (filterMode === 'my-surveys') return currentUser && s.authorId === currentUser.id;
     if (filterMode === 'my-responses') {
