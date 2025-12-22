@@ -1,8 +1,4 @@
 FONTS/presentation/node_modules/
 FONTS/presentation/package-lock.json
 FONTS/presentation/dist/
-EXE/app.jar
 EXE/classes
-DATA/
-
-FONTS/presentation/src/components/ui/__unused__
