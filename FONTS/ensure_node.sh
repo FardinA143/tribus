@@ -19,13 +19,17 @@ if command -v node >/dev/null 2>&1; then
   major=${major%%.*}
   echo "[ensure-node] Node detectat: $ver"
   if [ "$major" -ge 22 ]; then
-    echo "[ensure-node] Versió suficient (>=22).";
+    echo "[ensure-node] Versió suficient (>=22)."
+    if [ -n "$cmd" ]; then
+      echo "[ensure-node] Executant --cmd: $cmd"
+      eval "$cmd"
+    fi
     exit 0
   else
-    echo "[ensure-node] Versió massa antiga (<22): $ver";
+    echo "[ensure-node] Versió massa antiga (<22): $ver"
   fi
 else
-  echo "[ensure-node] Node no detectat.";
+  echo "[ensure-node] Node no detectat."
 fi
 
 echo "[ensure-node] Comprovant nvm..."
