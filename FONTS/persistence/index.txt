@@ -1,0 +1,9 @@
+Directori: persistence/
+
+- Conte el codi font de la capa de persistencia feta amb Java.
+
+Arxius:
+- PersistenceDriver.java: Driver de persistencia principal que comunica amb la capa domini
+- ResponsePersistence.java: Implementacio de persistencia per respostes d'enquestes
+- UserPersistence.java: Implementacio de persistencia per usuaris
+- SurveyPersistence.java: Implementacio de persistencia per enquestes

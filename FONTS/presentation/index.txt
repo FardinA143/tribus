@@ -1,0 +1,9 @@
+Directori: presentation/
+
+- Conte el codi font de la capa de presentacio feta amb React, TSX i execucio amb Node/NPM.
+
+Directoris
+- src/components/: Components React per la Interficie
+- src/domain/: Drivers de presentacio per la comunicacio amb la capa de domini Java
+- electron/: Configuracio d'Electron per la seva execucio com a app d'escriptori
+- build/: Sortida de la compilacio amb Vite

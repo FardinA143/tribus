@@ -1,17 +1,22 @@
-
 Directori: FONTS/
 
-Proposit:
-- Conte tot el codi font Java del projecte i el Makefile per compilar i empaquetar l'aplicacio.
+- Conte el codi font Java principal del projecte, drivers, persistencia i tests.
 
-Subdirectoriss principals:
-- `app/` : Driver de terminal i controladors (TerminalDriver, controller/).
-- `Encoder/` : Codificadors (OneHotEncoder, IEncoder).
-- `Exceptions/` : Excepcions del domini.
-- `importexport/` : Serialitzadors per enquestes i respostes.
-- `Junit/` : Tests unitaris.
-- `kmeans/`, `kselector/`, `distance/` : Algoritmes i utilitats de clustering.
-- `Response/`, `Survey/`, `user/` : Models de respostes, enquestes (amb la corresponent Pregunta) i usuaris.
+Visio general de la estructura important:
+- domain/: Capa de domini amb les entitats principals
+- persistence/: Implementacions de persistencia Java (PersistenceDriver, etc.).
+- presentation/: Interficie d'usuari web (React + TypeScript) i NPM
 
-Us:
-- Executa `make -C FONTS jar` des de l'arrel o `cd FONTS && make jar` per compilar i generar `../EXE/app.jar`.
+
+Comandes utils:
+- Compilar i executar:
+	```pwsh
+	cd FONTS
+	make run
+	```
+- Compilar nomes (Java):
+	```pwsh
+	cd FONTS
+	make jar
+	```
+
