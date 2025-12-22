@@ -1,14 +1,14 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, Menu } = require('electron');
 const { spawn } = require('child_process');
 const path = require('path');
+const { pathToFileURL } = require('url');
 
 let javaProcess = null;
 let win = null;
 
-// Buffer stdout/stderr so we can emit exactly one line at a time.
-// Node streams may chunk multiple lines together; the frontend expects one JSON per message.
 let stdoutBuffer = '';
 let stderrBuffer = '';
+let dev = true; // cambiar a false para producción, no funciona correctamente ahora
 
 function emitLines(buffer, chunk, emit) {
   buffer += chunk.toString();
@@ -33,14 +33,16 @@ function createWindow() {
     }
   });
 
-  // En desarrollo Vite por defecto
+  // ip para vite
   const devUrl = 'http://localhost:3000';
-  win.loadURL(devUrl);
-  // production
-  // win.loadFile(path.join(__dirname, '../build/index.html'));
+  if (dev) {
+    win.loadURL(devUrl);
+  } else {
+    const indexPath = path.join(__dirname, '../build/index.html');
+    win.loadURL(pathToFileURL(indexPath).href);
+  }
 }
 
-// Native file dialogs (open/save) exposed to the renderer via preload.
 ipcMain.handle('dialog:openFile', async (_event, options = {}) => {
   if (!win || win.isDestroyed()) return null;
   const result = await dialog.showOpenDialog(win, {
@@ -63,9 +65,13 @@ ipcMain.handle('dialog:saveFile', async (_event, options = {}) => {
 app.whenReady().then(() => {
   createWindow();
 
-  const jarPath = path.join(__dirname, '../../../EXE/app.jar');
+  try {
+    Menu.setApplicationMenu(null);
+  } catch (e) {
+  }
 
-  // Ejecutar la clase app.ElectronDriver
+  let jarPath = path.join(__dirname, '../../../EXE/app.jar');
+  // const jarPath = path.join(process.resourcesPath, './app.jar');
   try {
     javaProcess = spawn('java', ['-cp', jarPath, 'app.DomainDriver'], { cwd: path.join(__dirname, '..') });
 
@@ -84,16 +90,15 @@ app.whenReady().then(() => {
       javaProcess = null;
     });
   } catch (err) {
-    console.error('No se pudo iniciar Java:', err);
+    console.error('Could not start Java:', err);
   }
 });
 
-// Recibir desde React y escribir a stdin de Java
 ipcMain.on('to-java', (event, command) => {
   if (javaProcess && javaProcess.stdin.writable) {
     javaProcess.stdin.write(command + '\n');
   } else {
-    event.reply('java-error', 'Proceso Java no está en ejecución');
+    event.reply('java-error', 'Backend not running.');
   }
 });
 

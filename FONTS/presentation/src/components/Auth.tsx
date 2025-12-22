@@ -20,7 +20,7 @@ export const Auth: React.FC<AuthProps> = ({ onSuccess, onCancel }) => {
     onSuccessRef.current = onSuccess;
   }, [onSuccess]);
   
-  // Form State
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState(''); 
@@ -28,16 +28,12 @@ export const Auth: React.FC<AuthProps> = ({ onSuccess, onCancel }) => {
 
   useEffect(() => {
     const handleAuthResponse = (data: any) => {
-      if (isDev) {
-        // Debug only: inspect what the Java backend is actually sending.
-        console.debug('[Auth] java-response', { mode, data });
-      }
+      
       if (data.error) {
         setError(data.error);
         return;
       }
 
-      // Backend variant: some drivers confirm auth as { status: 'ok', userId: '...' }
       if (data && data.status === 'ok' && data.userId) {
         const normalizedUser: User = {
           id: String(data.userId),
@@ -67,7 +63,7 @@ export const Auth: React.FC<AuthProps> = ({ onSuccess, onCancel }) => {
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!username || !password) {
-      setError('Usuari i contrasenya són obligatoris');
+      setError('Usuari i contrasenya obligatoris');
       return;
     }
     controller.login(username, password);
@@ -76,7 +72,7 @@ export const Auth: React.FC<AuthProps> = ({ onSuccess, onCancel }) => {
   const handleRegister = (e: React.FormEvent) => {
     e.preventDefault();
     if (!username || !password || !name) {
-      setError('Tots els camps són obligatoris');
+      setError('Tots els camps obligatoris');
       return;
     }
     controller.registerUser(username, name, password);
@@ -91,10 +87,10 @@ export const Auth: React.FC<AuthProps> = ({ onSuccess, onCancel }) => {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       
-      {/* Brand Section */}
+      {}
       <div className="md:w-1/2 bg-[#008DCD] p-12 flex flex-col justify-between text-white relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none">
-           {/* Decorative pattern could go here */}
+           {}
            <svg width="100%" height="100%">
              <pattern id="pattern-circles" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
                <circle cx="20" cy="20" r="2" fill="currentColor" />
@@ -126,7 +122,7 @@ export const Auth: React.FC<AuthProps> = ({ onSuccess, onCancel }) => {
         </div>
 
         <div className="text-sm font-mono opacity-50">
-          © {new Date().getFullYear()} Tribus
+          {new Date().getFullYear()} | Tribus | PROP G 14.4
         </div>
       </div>
 
@@ -146,7 +142,7 @@ export const Auth: React.FC<AuthProps> = ({ onSuccess, onCancel }) => {
              </motion.div>
           </AnimatePresence>
 
-          {error && (
+          {error && ( // petita animació
             <motion.div 
                initial={{ opacity: 0, height: 0 }}
                animate={{ opacity: 1, height: 'auto' }}
@@ -174,7 +170,7 @@ export const Auth: React.FC<AuthProps> = ({ onSuccess, onCancel }) => {
                       value={name}
                       onChange={e => setName(e.target.value)}
                       className="border-2 border-black dark:border-white p-4 bg-transparent focus:outline-none focus:border-[#008DCD] transition-colors font-medium"
-                      placeholder="Joan Pérez"
+                      placeholder="Fiber"
                     />
                   </div>
                 )}
@@ -186,7 +182,7 @@ export const Auth: React.FC<AuthProps> = ({ onSuccess, onCancel }) => {
                     value={username}
                     onChange={e => setUsername(e.target.value)}
                     className="border-2 border-black dark:border-white p-4 bg-transparent focus:outline-none focus:border-[#008DCD] transition-colors font-medium"
-                    placeholder="juanperez"
+                    placeholder="fiber_prop"
                   />
                 </div>
 
@@ -197,7 +193,7 @@ export const Auth: React.FC<AuthProps> = ({ onSuccess, onCancel }) => {
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     className="border-2 border-black dark:border-white p-4 bg-transparent focus:outline-none focus:border-[#008DCD] transition-colors font-medium"
-                    placeholder="******"
+                    placeholder="*********"
                   />
                 </div>
 

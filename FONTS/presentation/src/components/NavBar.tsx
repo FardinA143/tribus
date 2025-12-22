@@ -60,9 +60,8 @@ export const NavBar: React.FC<NavBarProps> = ({
                 <List size={16} /> Veure les meves enquestes
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onNavigateMyResponses} className="p-3 cursor-pointer hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors rounded-none flex items-center gap-2 font-medium">
-                <MessageSquare size={16} /> Veure les meves respostes
+                <MessageSquare size={16} /> Veure enquestes que he respost
               </DropdownMenuItem>
-              {/* Seguridad (2FA) deshabilitado */}
               <DropdownMenuSeparator className="bg-black dark:bg-zinc-700 h-0.5 m-0" />
               <DropdownMenuItem onClick={() => setCurrentUser(null)} className="p-3 cursor-pointer hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors rounded-none flex items-center gap-2 font-medium">
                 <LogOut size={16} /> Tanca la sessió
@@ -95,7 +94,7 @@ export const NavBar: React.FC<NavBarProps> = ({
           <div className="w-full max-w-md bg-white dark:bg-zinc-900 border-2 border-black dark:border-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6 flex flex-col gap-4">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-2">
-                <h2 className="text-2xl font-black uppercase">Vols esborrar el teu compte?</h2>
+                <h2 className="text-2xl font-black uppercase">Estas segur de voler esborrar el teu compte?</h2>
                 <p className="text-sm opacity-70">Aquesta acció no es pot desfer.</p>
               </div>
               <button
@@ -114,7 +113,7 @@ export const NavBar: React.FC<NavBarProps> = ({
                 onChange={(e) => setDeleteMySurveys(e.target.checked)}
                 className="w-5 h-5 accent-[#008DCD]"
               />
-              <span className="font-bold uppercase text-sm">borrar mis encuestas</span>
+              <span className="font-bold uppercase text-sm">ESBORRAR LES MEVES ENQUESTES</span>
             </label>
 
             <div className="flex justify-end gap-3 pt-2">

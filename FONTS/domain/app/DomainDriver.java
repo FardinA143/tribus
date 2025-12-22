@@ -35,9 +35,9 @@ public class DomainDriver {
     private final AnalyticsController analyticsController;
 
     public DomainDriver() {
-        this.userController = new UserController(this);
+        this.userController = new UserController();
         this.surveyController = new SurveyController(persistenceDriver, surveySerializer);
-        this.responseController = new ResponseController(this, persistenceDriver);
+        this.responseController = new ResponseController(persistenceDriver);
         this.analyticsController = new AnalyticsController();
 
         // Bootstrap persisted users (so LOGIN works after restart)

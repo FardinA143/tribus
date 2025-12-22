@@ -50,7 +50,6 @@ const projectToSvg = (
   }
 
   if (xs.length === 0 || ys.length === 0) {
-    // No data: map everything to center.
     const cx = width / 2;
     const cy = height / 2;
     return {
@@ -64,7 +63,6 @@ const projectToSvg = (
   let minY = Math.min(...ys);
   let maxY = Math.max(...ys);
 
-  // Avoid zero spans.
   if (minX === maxX) {
     minX -= 1;
     maxX += 1;
@@ -107,23 +105,13 @@ export const SurveyAnalyzer = ({ surveyId, onClose, onEditResponse }: SurveyAnal
 
   if (!survey) return <div>Enquesta no trobada</div>;
 
-  const ensureElectron = () => {
-    if (!controller.isElectron || !(window as any).backend?.openFileDialog) {
-      setImportError("Aquesta funcionalitat només està disponible a l'app d'Electron.");
-      return false;
-    }
-    return true;
-  };
-
   const armOneShotImportListener = () => {
-    // Remove previous one-shot listener (if any).
     if (importUnsubRef.current) {
       try { importUnsubRef.current(); } catch { /* ignore */ }
       importUnsubRef.current = null;
     }
 
     const unsubscribe = controller.onResponse((data: any) => {
-      // Only handle terminal outcomes.
       if (!data) return;
       if (data.error) {
         setImportError(String(data.error));
@@ -131,8 +119,6 @@ export const SurveyAnalyzer = ({ surveyId, onClose, onEditResponse }: SurveyAnal
         importUnsubRef.current = null;
         return;
       }
-      // Only treat OKs that look like the IMPORT_RESPONSES completion.
-      // Otherwise we might unsubscribe due to unrelated mutations elsewhere.
       if (data.status === 'ok' && typeof (data as any).imported === 'number') {
         setImportError('');
         try { unsubscribe(); } catch { /* ignore */ }
@@ -144,7 +130,6 @@ export const SurveyAnalyzer = ({ surveyId, onClose, onEditResponse }: SurveyAnal
   };
 
   const importResponsesTbs = async () => {
-    if (!ensureElectron()) return;
     setImportError('');
     const path = await (window as any).backend.openFileDialog({
       title: "Importa respostes (.tbs)",
@@ -156,10 +141,9 @@ export const SurveyAnalyzer = ({ surveyId, onClose, onEditResponse }: SurveyAnal
   };
 
   const exportResponsesTbs = async () => {
-    if (!ensureElectron()) return;
     const filePath = await (window as any).backend.saveFileDialog({
       title: "Exporta respostes (.tbs)",
-      defaultPath: `respostes_${(survey.title || 'tribus').replace(/\s+/g, '_')}.tbs`,
+      defaultPath: `respostes_${(survey.title || 'tribus').replace(/\s+/g, '_')}.tbs`,  // avoid unsupported chars and spaces
       filters: [{ name: 'Tribus Survey', extensions: ['tbs'] }],
     });
     if (!filePath) return;
@@ -229,11 +213,9 @@ export const SurveyAnalyzer = ({ surveyId, onClose, onEditResponse }: SurveyAnal
       y: finiteOr(c?.y, 0),
     })) : [];
 
-    // Project data-space coordinates into the SVG viewport.
     const padding = 16;
     const proj = projectToSvg(points, centroids, width, height, padding);
 
-    // Cluster IDs that exist in current payload.
     const clusterIds = Array.from(
       new Set([
         ...points.map(p => p.cluster),
@@ -269,7 +251,6 @@ export const SurveyAnalyzer = ({ surveyId, onClose, onEditResponse }: SurveyAnal
         const dy = p.y - cy;
         r = Math.max(r, Math.sqrt(dx * dx + dy * dy));
       }
-      // Ensure visible even for 1-point clusters.
       const minR = 18;
       r = Math.max(r, minR);
 
@@ -464,7 +445,7 @@ export const SurveyAnalyzer = ({ surveyId, onClose, onEditResponse }: SurveyAnal
           className={`px-6 py-2 border-2 font-bold uppercase transition-all ${tab === 'responses' ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white' : 'border-transparent opacity-50 hover:opacity-100 hover:border-black/20'}`}
         >
           <div className="flex items-center gap-2">
-            <TableIcon size={16} /> Dades en brut
+            <TableIcon size={16} /> Respostes registrades
           </div>
         </button>
         <button 
@@ -472,7 +453,7 @@ export const SurveyAnalyzer = ({ surveyId, onClose, onEditResponse }: SurveyAnal
           className={`px-6 py-2 border-2 font-bold uppercase transition-all ${tab === 'analysis' ? 'bg-black text-white dark:bg-white dark:text-black border-black dark:border-white' : 'border-transparent opacity-50 hover:opacity-100 hover:border-black/20'}`}
         >
           <div className="flex items-center gap-2">
-            <Activity size={16} /> Anàlisi de clústers
+            <Activity size={16} /> Anàlisi
           </div>
         </button>
       </div>

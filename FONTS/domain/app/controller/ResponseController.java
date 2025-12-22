@@ -6,7 +6,6 @@ import Exceptions.PersistenceException;
 import Response.Answer;
 import Response.SurveyResponse;
 import Survey.Survey;
-import app.DomainDriver;
 import persistence.PersistenceDriver;
 import user.User;
 
@@ -16,15 +15,13 @@ import java.util.UUID;
 
 public class ResponseController {
     private final PersistenceDriver persistenceDriver;
-    @SuppressWarnings("unused")
-    private final DomainDriver domainDriver;
 
-    public ResponseController(DomainDriver domainDriver) {
-        this(domainDriver, new PersistenceDriver());
+    public ResponseController() {
+        this(new PersistenceDriver());
     }
 
-    public ResponseController(DomainDriver domainDriver, PersistenceDriver persistenceDriver) {
-        this.domainDriver = domainDriver;
+    public ResponseController(PersistenceDriver persistenceDriver) {
+        if (persistenceDriver == null) throw new IllegalArgumentException("persistenceDriver cannot be null");
         this.persistenceDriver = persistenceDriver;
     }
 

@@ -34,7 +34,8 @@ public class AnalyticsController {
     public AnalyticsResult analyzeSurvey(Survey survey, List<SurveyResponse> responses) {
         if (survey == null) {
             throw new IllegalArgumentException("Survey cannot be null");
-        }
+        } // no se dispara mai des d'interfície
+
         if (responses == null || responses.size() < 2) {
             throw new IllegalArgumentException("Calen com a mínim dues respostes per analitzar");
         }
@@ -53,8 +54,6 @@ public class AnalyticsController {
             distance = new CosineDistance();
         }
 
-        // Make results deterministic for the same input/config, so visualization isn't perceived as random.
-        // Seed is derived from survey ID + init method + current sample size.
         long seed = Objects.hash(
             survey.getId() == null ? "" : survey.getId(),
             survey.getInitMethod() == null ? "" : survey.getInitMethod(),
@@ -70,9 +69,7 @@ public class AnalyticsController {
             counts.merge(label, 1L, Long::sum);
         }
 
-        // Build 2D projection for UI visualization.
-        // Using the first two one-hot features produces mostly 0/1 values (overlaps).
-        // Instead, use a deterministic random projection with mean-centering.
+        // representació 2D per a visualització (interfície)
         int n = featureMatrix.length;
         int dims = (n > 0 && featureMatrix[0] != null) ? featureMatrix[0].length : 0;
         double[][] points2d;

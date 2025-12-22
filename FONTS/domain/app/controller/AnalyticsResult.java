@@ -9,7 +9,9 @@ public class AnalyticsResult {
     private final double averageSilhouette;
     private final Map<Integer, Long> clusterCounts;
 
-    // Optional: 2D projection for visualization
+
+
+    // para calculos 2D en interfaz. no estaba en e2
     private final String[] responseIds;
     private final int[] labels;
     private final double[][] points2d;

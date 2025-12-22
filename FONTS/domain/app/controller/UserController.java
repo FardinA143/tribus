@@ -1,6 +1,4 @@
 package app.controller;
-
-import app.DomainDriver;
 import user.AuthService;
 import user.RegisteredUser;
 import user.Sesion;
@@ -10,12 +8,9 @@ import java.util.Collection;
 
 public class UserController {
     private final AuthService authService;
-    @SuppressWarnings("unused")
-    private final DomainDriver domainDriver;
     private Sesion currentSession;
 
-    public UserController(DomainDriver domainDriver) {
-        this.domainDriver = domainDriver;
+    public UserController() {
         this.authService = new AuthService();
     }
 

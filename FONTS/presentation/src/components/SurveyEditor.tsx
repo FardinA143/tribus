@@ -21,7 +21,6 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // Load existing if modifying
   useEffect(() => {
     if (surveyId) {
       const existing = surveys.find(s => s.id === surveyId);
@@ -35,7 +34,6 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
     }
   }, [surveyId, surveys]);
 
-  // Si estem creant una nova enquesta i tenim catàleg de mètodes, usa el primer com a default.
   useEffect(() => {
     if (surveyId) return;
     if (!clusteringMethods || clusteringMethods.length === 0) return;
