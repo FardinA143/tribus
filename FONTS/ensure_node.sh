@@ -1,6 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+cmd=""
+if [ "${1:-}" = "--cmd" ]; then
+  shift
+  cmd="${1:-}"
+  if [ -z "$cmd" ]; then
+    echo "[ensure-node] Error: falta el valor de --cmd" >&2
+    exit 2
+  fi
+fi
+
 echo "[ensure-node] Comprovant Node.js..."
 
 if command -v node >/dev/null 2>&1; then
@@ -55,5 +65,10 @@ nvm use 23 >/dev/null 2>&1 || true
 
 echo "[ensure-node] Versió activa de node: $(node -v)"
 echo "[ensure-node] Fet."
+
+if [ -n "$cmd" ]; then
+  echo "[ensure-node] Executant --cmd: $cmd"
+  eval "$cmd"
+fi
 
 exit 0

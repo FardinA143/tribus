@@ -37,10 +37,7 @@ jar: compile
 
 run-dev: jar
 	@echo "[*] Preparant entorn dev..."
-	@$(MAKE) ensure-node
-	@cd presentation && npm install
-	@echo "[*] Executant aplicació en mode desenvolupament..."
-	@cd ./presentation && npm run electron:dev
+	@bash ./ensure_node.sh --cmd "cd presentation && npm install && npm run electron:dev" || (echo "[!] run-dev fallat" && exit 1)
 
 test: compile
 	@echo "[*] Compilant tests..."
