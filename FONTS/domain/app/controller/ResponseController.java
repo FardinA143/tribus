@@ -73,7 +73,6 @@ public class ResponseController {
     }
 
     public List<SurveyResponse> listResponsesByUser(String userId) throws PersistenceException {
-        // No index on disk; scan persisted responses.
         try {
             java.util.ArrayList<SurveyResponse> result = new java.util.ArrayList<>();
             for (Survey s : persistenceDriver.loadAllSurveys()) {
