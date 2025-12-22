@@ -24,9 +24,14 @@ export interface Survey {
   title: string;
   description: string;
   clusterSize: number;
-  analysisMethod: 'kmeans' | 'kmeans++';
+  analysisMethod: string;
   questions: Question[];
   createdAt: number;
+}
+
+export interface ClusteringMethodOption {
+  id: string;
+  label: string;
 }
 
 export interface Response {
@@ -61,6 +66,7 @@ interface AppState {
   surveys: Survey[];
   responses: Response[];
   analyses: Record<string, AnalysisPayload>;
+  clusteringMethods: ClusteringMethodOption[];
   theme: 'light' | 'dark';
 }
 
@@ -89,6 +95,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [responses, setResponses] = useState<Response[]>([]);
   const [analyses, setAnalyses] = useState<Record<string, AnalysisPayload>>({});
+  const [clusteringMethods, setClusteringMethods] = useState<ClusteringMethodOption[]>([]);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [loaded, setLoaded] = useState(false);
   const unsubscribeRef = useRef<(() => void) | null>(null);
@@ -120,6 +127,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (surveyId) {
           setAnalyses(prev => ({ ...prev, [surveyId]: data.payload as AnalysisPayload }));
         }
+      } else if (data && data.type === 'clusteringMethods') {
+        setClusteringMethods(Array.isArray(data.payload) ? data.payload : []);
       } else if (data && data.status === 'ok') {
         // Refrescar llistes després d'operacions mutadores.
         if (data.refresh === 'responses' && data.surveyId) {
@@ -135,6 +144,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     // Solicitar datos iniciales a Java
     controller.requestSurveys();
+    controller.requestClusteringMethods();
     // controller.requestUsers();
     // controller.requestResponses();
     setLoaded(true);
@@ -214,7 +224,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <AppContext.Provider value={{
-      users, currentUser, surveys, responses, analyses, theme,
+      users, currentUser, surveys, responses, analyses, clusteringMethods, theme,
       setCurrentUser, addUser, addSurvey, updateSurvey, deleteSurvey, addResponse, deleteUser, updateUser, toggleTheme, importSurveys
     }}>
       {children}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useApp, Survey, Question, QuestionType, ChoiceOption } from '../store';
 import { ArrowLeft, Save, Plus, Trash2, GripVertical } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
 interface SurveyEditorProps {
   surveyId?: string; // If undefined, creating new
@@ -8,12 +9,12 @@ interface SurveyEditorProps {
 }
 
 export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose }) => {
-  const { surveys, addSurvey, updateSurvey, currentUser } = useApp();
+  const { surveys, addSurvey, updateSurvey, currentUser, clusteringMethods } = useApp();
   
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [clusterSize, setClusterSize] = useState(3);
-  const [analysisMethod, setAnalysisMethod] = useState<'kmeans' | 'kmeans++'>('kmeans');
+  const [analysisMethod, setAnalysisMethod] = useState<string>('kmeans++');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [optionsDraftByQuestionId, setOptionsDraftByQuestionId] = useState<Record<string, string>>({});
 
@@ -30,6 +31,13 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
       }
     }
   }, [surveyId, surveys]);
+
+  // Si estem creant una nova enquesta i tenim catàleg de mètodes, usa el primer com a default.
+  useEffect(() => {
+    if (surveyId) return;
+    if (!clusteringMethods || clusteringMethods.length === 0) return;
+    setAnalysisMethod((prev) => prev || clusteringMethods[0].id);
+  }, [surveyId, clusteringMethods]);
 
   const handleSave = () => {
     if (!title) return alert("El títol és obligatori");
@@ -126,13 +134,19 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
             </div>
             <div>
               <label className="block text-xs font-bold uppercase mb-1">Mètode d'anàlisi</label>
-              <select 
-                className="w-full bg-transparent border-2 border-black dark:border-white p-2" 
-                value={analysisMethod} onChange={e => setAnalysisMethod(e.target.value as any)}
-              >
-                <option value="kmeans">K-Means</option>
-                <option value="kmeans++">K-Means++</option>
-              </select>
+              <Select value={analysisMethod} onValueChange={(v) => setAnalysisMethod(v as any)}>
+                <SelectTrigger className="w-full rounded-none border-2 border-black dark:border-white bg-white dark:bg-zinc-900">
+                  <SelectValue placeholder="Selecciona" />
+                </SelectTrigger>
+                <SelectContent className="rounded-none border-2 border-black dark:border-white bg-white dark:bg-zinc-900">
+                  {(clusteringMethods && clusteringMethods.length > 0 ? clusteringMethods : [
+                    { id: 'kmeans', label: 'K-Means' },
+                    { id: 'kmeans++', label: 'K-Means++' },
+                  ]).map((m) => (
+                    <SelectItem key={m.id} value={m.id}>{m.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </section>
@@ -164,15 +178,19 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
                       />
                       
                       <div className="flex flex-wrap gap-4">
-                        <select 
-                          className="bg-transparent border-2 border-black dark:border-white p-2 text-sm" 
-                          value={q.type} onChange={e => updateQuestion(idx, { type: e.target.value as QuestionType })}
-                        >
-                          <option value="text">Text lliure</option>
-                          <option value="integer">Nombre enter</option>
-                          <option value="single">Selecció única</option>
-                          <option value="multiple">Selecció múltiple</option>
-                        </select>
+                        <div className="min-w-[220px]">
+                          <Select value={q.type} onValueChange={(v) => updateQuestion(idx, { type: v as QuestionType })}>
+                            <SelectTrigger className="rounded-none border-2 border-black dark:border-white bg-white dark:bg-zinc-900 text-sm">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-none border-2 border-black dark:border-white bg-white dark:bg-zinc-900">
+                              <SelectItem value="text">Text lliure</SelectItem>
+                              <SelectItem value="integer">Nombre enter</SelectItem>
+                              <SelectItem value="single">Selecció única</SelectItem>
+                              <SelectItem value="multiple">Selecció múltiple</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
 
                         <label className="flex items-center gap-2 text-sm font-bold uppercase cursor-pointer select-none">
                           <input 

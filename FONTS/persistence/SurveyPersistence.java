@@ -5,6 +5,7 @@ import Exceptions.PersistenceException;
 import Survey.Survey;
 import importexport.SurveySerializer;
 import importexport.TxtSurveySerializer;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -44,49 +45,13 @@ public class SurveyPersistence {
 		this.serializer = serializer;
 	}
 
-	private static String normalizeId(String id) {
+	private static String stripExtIfPresent(String id) {
 		if (id == null) return null;
 		String out = id.trim();
-		boolean changed;
-		do {
-			changed = false;
-			if (out.endsWith(EXT)) {
-				out = out.substring(0, out.length() - EXT.length());
-				changed = true;
-			}
-			// Best-effort migration from older .txt naming.
-			if (out.endsWith(".txt")) {
-				out = out.substring(0, out.length() - ".txt".length());
-				changed = true;
-			}
-		} while (changed);
-		return out;
-	}
-
-	private void migrateFilenamesBestEffort() {
-		try {
-			ensureDir();
-			Files.list(surveysDir)
-				.filter(Files::isRegularFile)
-				.forEach(p -> {
-					try {
-						String name = p.getFileName().toString();
-						String base = normalizeId(name);
-						if (base == null || base.isBlank()) return;
-						Path target = surveysDir.resolve(base + EXT);
-						if (p.equals(target)) return;
-						if (Files.exists(target)) {
-							Files.deleteIfExists(p);
-							return;
-						}
-						Files.move(p, target);
-					} catch (Exception ignored) {
-						// best-effort only
-					}
-				});
-		} catch (Exception ignored) {
-			// best-effort only
+		if (out.endsWith(EXT)) {
+			out = out.substring(0, out.length() - EXT.length());
 		}
+		return out;
 	}
 
 	/** Desa una enquesta en un fitxer (id.tbs) sota la carpeta configurada. */
@@ -95,17 +60,9 @@ public class SurveyPersistence {
 			throw new NullArgumentException("survey");
 		}
 		ensureDir();
-		migrateFilenamesBestEffort();
-		String normalizedId = normalizeId(survey.getId());
+		String normalizedId = stripExtIfPresent(survey.getId());
 		if (normalizedId == null || normalizedId.isBlank()) {
 			throw new PersistenceException("survey", "ID invàlid");
-		}
-		if (!normalizedId.equals(survey.getId())) {
-			try {
-				survey.setId(normalizedId);
-			} catch (Exception ignored) {
-				// If we can't update the object id, still proceed with normalized filename.
-			}
 		}
 		Path target = surveysDir.resolve(normalizedId + EXT);
 		try {
@@ -121,29 +78,16 @@ public class SurveyPersistence {
 			throw new NullArgumentException("surveyId");
 		}
 		ensureDir();
-		migrateFilenamesBestEffort();
-		String normalizedId = normalizeId(surveyId);
+		String normalizedId = stripExtIfPresent(surveyId);
+		if (normalizedId == null || normalizedId.isBlank()) {
+			throw new PersistenceException("survey", "ID invàlid");
+		}
 		Path target = surveysDir.resolve(normalizedId + EXT);
 		if (!Files.exists(target)) {
 			throw new PersistenceException("survey " + normalizedId, "Fitxer no trobat");
 		}
 		try {
-			Survey s = serializer.fromFile(target.toString());
-			// Fix corrupted IDs inside file (best-effort).
-			try {
-				String idIn = normalizeId(s.getId());
-				if (idIn != null && !idIn.isBlank() && !idIn.equals(s.getId())) {
-					s.setId(idIn);
-					Path fixed = surveysDir.resolve(idIn + EXT);
-					if (!fixed.equals(target)) {
-						serializer.toFile(s, fixed.toString());
-						Files.deleteIfExists(target);
-					}
-				}
-			} catch (Exception ignored) {
-				// best-effort only
-			}
-			return s;
+			return serializer.fromFile(target.toString());
 		} catch (IOException e) {
 			throw new PersistenceException("survey " + normalizedId, e.getMessage());
 		}
@@ -152,32 +96,17 @@ public class SurveyPersistence {
 	/** Llista totes les enquestes disponibles carregant cada fitxer .tbs. */
 	public synchronized List<Survey> loadAll() throws PersistenceException {
 		ensureDir();
-		migrateFilenamesBestEffort();
 		List<Survey> surveys = new ArrayList<>();
 		try {
 			Files.list(surveysDir)
-				.filter(p -> p.getFileName().toString().endsWith(EXT))
+				.filter(p -> Files.isRegularFile(p) && p.getFileName().toString().endsWith(EXT))
 				.forEach(p -> {
-				try {
-					Survey s = serializer.fromFile(p.toString());
 					try {
-						String idIn = normalizeId(s.getId());
-						if (idIn != null && !idIn.isBlank() && !idIn.equals(s.getId())) {
-							s.setId(idIn);
-							Path fixed = surveysDir.resolve(idIn + EXT);
-							if (!fixed.equals(p)) {
-								serializer.toFile(s, fixed.toString());
-								Files.deleteIfExists(p);
-							}
-						}
-					} catch (Exception ignored2) {
-						// best-effort only
+						surveys.add(serializer.fromFile(p.toString()));
+					} catch (Exception ignored) {
+						// Skip malformed files
 					}
-					surveys.add(s);
-				} catch (Exception ignored) {
-					// Skip malformed files
-				}
-			});
+				});
 			return surveys;
 		} catch (IOException e) {
 			throw new PersistenceException("surveys", e.getMessage());
@@ -189,11 +118,10 @@ public class SurveyPersistence {
 		if (surveyId == null) {
 			throw new NullArgumentException("surveyId");
 		}
+		ensureDir();
+		String normalizedId = stripExtIfPresent(surveyId);
 		try {
-			migrateFilenamesBestEffort();
-			String normalizedId = normalizeId(surveyId);
-			boolean deleted = Files.deleteIfExists(surveysDir.resolve(normalizedId + EXT));
-			return deleted;
+			return Files.deleteIfExists(surveysDir.resolve(normalizedId + EXT));
 		} catch (IOException e) {
 			throw new PersistenceException("survey " + surveyId, e.getMessage());
 		}

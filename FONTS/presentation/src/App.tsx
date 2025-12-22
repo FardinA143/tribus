@@ -13,6 +13,7 @@ type View =
   | { name: 'list', filterMode?: 'all' | 'my-surveys' | 'my-responses' }
   | { name: 'editor', surveyId?: string }
   | { name: 'responder', surveyId: string }
+  | { name: 'edit-response', surveyId: string; responseId: string; initialAnswers: Record<string, any> }
   | { name: 'analyzer', surveyId: string }
   | { name: 'auth' }
   ;
@@ -109,6 +110,26 @@ const AppContent: React.FC = () => {
           </motion.div>
         )}
 
+        {view.name === 'edit-response' && (
+          <motion.div
+            key="edit-response"
+            variants={pageVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            transition={pageTransition}
+          >
+            <SurveyResponder
+              surveyId={view.surveyId}
+              mode="edit"
+              responseId={view.responseId}
+              initialAnswers={view.initialAnswers}
+              onClose={() => setView({ name: 'analyzer', surveyId: view.surveyId })}
+              onEdited={() => setView({ name: 'analyzer', surveyId: view.surveyId })}
+            />
+          </motion.div>
+        )}
+
         {view.name === 'analyzer' && (
           <motion.div 
             key="analyzer"
@@ -121,6 +142,9 @@ const AppContent: React.FC = () => {
             <SurveyAnalyzer 
               surveyId={view.surveyId} 
               onClose={() => setView({ name: 'list' })} 
+              onEditResponse={({ responseId, surveyId, answers }) =>
+                setView({ name: 'edit-response', responseId, surveyId, initialAnswers: answers })
+              }
             />
           </motion.div>
         )}

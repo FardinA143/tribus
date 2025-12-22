@@ -37,6 +37,7 @@ jar: compile
 
 run-dev: jar
 	@echo "[*] Preparant entorn dev..."
+	@$(MAKE) ensure-node
 	@cd presentation && npm install
 	@echo "[*] Executant aplicació en mode desenvolupament..."
 	@cd ./presentation && npm run electron:dev
@@ -78,6 +79,11 @@ clean:
 	else \
 		echo "[!] No existeix $(EXE_DIR)/"; \
 	fi
+
+.PHONY: ensure-node
+ensure-node:
+	@echo "[*] Assegurant Node (>=22) i nvm..."
+	@bash ./ensure_node.sh || (echo "[!] ensure-node fallat" && exit 1)
 
 cleandocs:
 	@echo "[*] Netejant documentació..."

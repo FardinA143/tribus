@@ -2,7 +2,7 @@ package validation;
 
 import kmeans.ClusterModel;
 import distance.Distance;
-import distance.EuclideanDistance;
+import distance.CosineDistance;
 
 /**
  * Implementació del coeficient de Silhouette per validar la qualitat d'un clustering.
@@ -33,7 +33,7 @@ public class Silhouette implements IClusterValidation {
      */
     @Override
     public double[] scorePerPoint(double[][] X, ClusterModel model, Distance dist) {
-        if (dist == null) dist = new EuclideanDistance();
+        if (dist == null) dist = new CosineDistance();
         int n = X.length, k = model.getCentroids().length;
         int[] lab = model.getLabels();
         double[] s = new double[n];

@@ -47,71 +47,11 @@ public class ResponsePersistance {
 		this.serializer = serializer;
 	}
 
-	private static String normalizeId(String id) {
+	private static String stripExtIfPresent(String id) {
 		if (id == null) return null;
 		String out = id.trim();
-		boolean changed;
-		do {
-			changed = false;
-			if (out.endsWith(EXT)) {
-				out = out.substring(0, out.length() - EXT.length());
-				changed = true;
-			}
-			if (out.endsWith(".txt")) {
-				out = out.substring(0, out.length() - ".txt".length());
-				changed = true;
-			}
-		} while (changed);
-		return out;
-	}
-
-	private void migrateFilenamesBestEffort() {
-		try {
-			ensureDir();
-			Files.list(responsesDir)
-				.filter(Files::isRegularFile)
-				.forEach(p -> {
-					try {
-						String name = p.getFileName().toString();
-						String base = normalizeId(name);
-						if (base == null || base.isBlank()) return;
-						Path target = responsesDir.resolve(base + EXT);
-						if (p.equals(target)) return;
-						if (Files.exists(target)) {
-							Files.deleteIfExists(p);
-							return;
-						}
-						Files.move(p, target);
-					} catch (Exception ignored) {
-						// best-effort only
-					}
-				});
-		} catch (Exception ignored) {
-			// best-effort only
-		}
-	}
-
-	private List<SurveyResponse> normalizeResponsesSurveyId(String normalizedSurveyId, List<SurveyResponse> responses) {
-		if (responses == null) return new ArrayList<>();
-		List<SurveyResponse> out = new ArrayList<>(responses.size());
-		for (SurveyResponse r : responses) {
-			if (r == null) continue;
-			String rid = r.getId();
-			String uid = r.getUserId();
-			String submittedAt = r.getSubmittedAt();
-			List<Response.Answer> answers = r.getAnswers();
-			String sid = normalizeId(r.getSurveyId());
-			String effectiveSid = (sid == null || sid.isBlank()) ? normalizedSurveyId : sid;
-			if (!effectiveSid.equals(r.getSurveyId())) {
-				try {
-					out.add(new SurveyResponse(rid, effectiveSid, uid, submittedAt, answers));
-				} catch (Exception ignored) {
-					// If rebuilding fails, keep original.
-					out.add(r);
-				}
-			} else {
-				out.add(r);
-			}
+		if (out.endsWith(EXT)) {
+			out = out.substring(0, out.length() - EXT.length());
 		}
 		return out;
 	}
@@ -126,15 +66,13 @@ public class ResponsePersistance {
 			throw new NullArgumentException("responses");
 		}
 		ensureDir();
-		migrateFilenamesBestEffort();
-		String normalizedId = normalizeId(surveyId);
+		String normalizedId = stripExtIfPresent(surveyId);
 		if (normalizedId == null || normalizedId.isBlank()) {
 			throw new PersistenceException("responses", "surveyId invàlid");
 		}
 		Path target = responsesDir.resolve(normalizedId + EXT);
 		try {
-			List<SurveyResponse> normalizedResponses = normalizeResponsesSurveyId(normalizedId, responses);
-			serializer.toFile(normalizedResponses, target.toString());
+			serializer.toFile(responses, target.toString());
 		} catch (Exception e) {
 			throw new PersistenceException("responses " + normalizedId, e.getMessage());
 		}
@@ -161,33 +99,13 @@ public class ResponsePersistance {
 			throw new NullArgumentException("surveyId");
 		}
 		ensureDir();
-		migrateFilenamesBestEffort();
-		String normalizedId = normalizeId(surveyId);
+		String normalizedId = stripExtIfPresent(surveyId);
 		Path target = responsesDir.resolve(normalizedId + EXT);
 		if (!Files.exists(target)) {
 			return new ArrayList<>();
 		}
 		try {
-			List<SurveyResponse> res = serializer.fromFile(target.toString());
-			List<SurveyResponse> normalized = normalizeResponsesSurveyId(normalizedId, res);
-			// Persistim la correcció si hem hagut de reconstruir.
-			if (normalized.size() == res.size()) {
-				boolean changed = false;
-				for (int i = 0; i < res.size(); i++) {
-					if (!res.get(i).getSurveyId().equals(normalized.get(i).getSurveyId())) {
-						changed = true;
-						break;
-					}
-				}
-				if (changed) {
-					try {
-						serializer.toFile(normalized, target.toString());
-					} catch (Exception ignored) {
-						// best-effort only
-					}
-				}
-			}
-			return normalized;
+			return serializer.fromFile(target.toString());
 		} catch (IOException e) {
 			throw new PersistenceException("responses " + normalizedId, e.getMessage());
 		}
@@ -199,8 +117,7 @@ public class ResponsePersistance {
 			throw new NullArgumentException("surveyId");
 		}
 		try {
-			migrateFilenamesBestEffort();
-			String normalizedId = normalizeId(surveyId);
+			String normalizedId = stripExtIfPresent(surveyId);
 			boolean deleted = Files.deleteIfExists(responsesDir.resolve(normalizedId + EXT));
 			return deleted;
 		} catch (IOException e) {

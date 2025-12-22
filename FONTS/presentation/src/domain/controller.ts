@@ -159,6 +159,9 @@ const importResponsesFile = (path: string) => sendCommand(`IMPORT_RESPONSES|${pa
 
 const requestSurveys = () => sendCommand('GET_SURVEYS');
 
+// Clustering methods catalog
+const requestClusteringMethods = () => sendCommand('GET_CLUSTERING_METHODS');
+
 const updateSurvey = (survey: any) => {
   // Backend: UPDATE_SURVEY_FULL|id|title|description|k|analysisMethod|questions
   const id = String(survey?.id ?? '');
@@ -233,6 +236,7 @@ export const controller = {
   importSurveyFile,
   importResponsesFile,
   requestSurveys,
+  requestClusteringMethods,
   // users
   createUser,
   updateUser,

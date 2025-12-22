@@ -1,8 +1,11 @@
 package Survey;
 
 import distance.Distance;
+import distance.CosineDistance;
 import distance.EuclideanDistance;
+import java.util.LinkedHashMap;
 import java.util.Locale;
+import java.util.Map;
 import kmeans.IClusteringAlgorithm;
 import kmeans.KMeans;
 import kmeans.KMeansPlusPlus;
@@ -17,7 +20,7 @@ public class AlgorithmConfiguration {
 
     public AlgorithmConfiguration(String initMethod, String distance) {
         this.initMethod = normalizeOrDefault(initMethod, "kmeans++");
-        this.distance = normalizeOrDefault(distance, "euclidean");
+        this.distance = normalizeOrDefault(distance, "cosine");
     }
 
     private String normalizeOrDefault(String value, String fallback) {
@@ -49,12 +52,24 @@ public class AlgorithmConfiguration {
     }
 
     /**
+     * Catàleg de mètodes de clustering disponibles (id -> etiqueta) perquè el frontend
+     * els pugui llistar sense hardcode.
+     */
+    public static Map<String, String> supportedInitMethods() {
+        Map<String, String> methods = new LinkedHashMap<>();
+        methods.put("kmeans", "K-Means");
+        methods.put("kmeans++", "K-Means++");
+        return methods;
+    }
+
+    /**
      * Retorna la mètrica de distància corresponent a la configuració.
      */
     public Distance buildDistance() {
         return switch (distance) {
+            case "cosine", "cos" -> new CosineDistance();
             case "euclidean", "l2" -> new EuclideanDistance();
-            default -> new EuclideanDistance();
+            default -> new CosineDistance();
         };
     }
 

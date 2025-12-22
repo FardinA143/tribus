@@ -6,13 +6,17 @@ import { ArrowLeft, CheckCircle } from 'lucide-react';
 interface SurveyResponderProps {
   surveyId: string;
   onClose: () => void;
+  mode?: 'create' | 'edit';
+  responseId?: string;
+  initialAnswers?: Record<string, any>;
+  onEdited?: () => void;
 }
 
-export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onClose }) => {
+export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onClose, mode = 'create', responseId, initialAnswers, onEdited }) => {
   const { surveys, currentUser } = useApp();
   const survey = surveys.find(s => s.id === surveyId);
 
-  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [answers, setAnswers] = useState<Record<string, any>>(initialAnswers || {});
   const [submitted, setSubmitted] = useState(false);
 
   if (!survey) return <div>Enquesta no trobada</div>;
@@ -64,11 +68,21 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
     }
 
     const answersStr = buildAnswersString();
+    if (mode === 'edit') {
+      // No hi ha API de backend per "update response"; fem best-effort:
+      // esborrem la resposta antiga (si existeix) i creem una de nova.
+      if (responseId) controller.deleteResponse(responseId);
+      controller.answerSurvey(survey.id, answersStr);
+      setSubmitted(true);
+      if (onEdited) onEdited();
+      return;
+    }
+
     controller.answerSurvey(survey.id, answersStr);
     setSubmitted(true);
   };
 
-  if (submitted) {
+  if (submitted && mode !== 'edit') {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 animate-in fade-in zoom-in duration-500">
         <CheckCircle size={80} className="text-[#008DCD] mb-6" />
@@ -81,14 +95,27 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
     );
   }
 
+  if (submitted && mode === 'edit') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 animate-in fade-in zoom-in duration-500">
+        <CheckCircle size={80} className="text-[#008DCD] mb-6" />
+        <h2 className="text-4xl font-black uppercase mb-4">Resposta actualitzada</h2>
+        <p className="text-lg opacity-70 mb-8 max-w-md">S'han desat els canvis. Tornant a l'anàlisi...</p>
+        <button onClick={onClose} className="px-8 py-3 border-2 border-black dark:border-white font-bold uppercase hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors">
+          Tornar a l'anàlisi
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-3xl mx-auto p-6 min-h-screen">
       <button onClick={onClose} className="flex items-center gap-2 mb-8 opacity-60 hover:opacity-100 transition-opacity">
-        <ArrowLeft size={20} /> Cancel·la
+        <ArrowLeft size={20} /> {mode === 'edit' ? 'Torna' : 'Cancel·la'}
       </button>
 
       <div className="mb-10 border-b-2 border-black dark:border-white pb-6">
-        <h1 className="text-3xl font-black uppercase mb-2 text-[#008DCD]">{survey.title}</h1>
+        <h1 className="text-3xl font-black uppercase mb-2 text-[#008DCD]">{mode === 'edit' ? 'Edita resposta' : survey.title}</h1>
         <p className="opacity-70 text-lg">{survey.description}</p>
       </div>
 
@@ -103,6 +130,7 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
             {q.type === 'text' && (
               <textarea 
                 className="w-full bg-transparent border-2 border-black/20 dark:border-white/20 p-4 focus:border-[#008DCD] outline-none min-h-[100px]"
+                value={typeof answers[q.id] === 'string' ? answers[q.id] : ''}
                 onChange={e => handleInputChange(q.id, e.target.value)}
               />
             )}
@@ -111,6 +139,7 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
               <input 
                 type="number"
                 className="w-full bg-transparent border-2 border-black/20 dark:border-white/20 p-4 focus:border-[#008DCD] outline-none"
+                value={typeof answers[q.id] === 'number' ? answers[q.id] : (answers[q.id] === '' ? '' : (answers[q.id] ?? ''))}
                 onChange={e => handleInputChange(q.id, Number(e.target.value))}
               />
             )}
@@ -123,6 +152,7 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
                       type="radio" 
                       name={q.id} 
                       value={opt.id}
+                      checked={Number(answers[q.id]) === opt.id}
                       onChange={e => handleInputChange(q.id, Number(e.target.value))}
                       className="w-5 h-5 accent-[#008DCD]"
                     />
@@ -138,6 +168,7 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
                   <label key={opt.id} className="flex items-center gap-3 p-3 border-2 border-transparent hover:border-black/10 dark:hover:border-white/10 cursor-pointer transition-colors">
                     <input 
                       type="checkbox" 
+                      checked={Array.isArray(answers[q.id]) ? (answers[q.id] as number[]).includes(opt.id) : false}
                       onChange={e => handleCheckboxChange(q.id, opt.id, e.target.checked)}
                       className="w-5 h-5 accent-[#008DCD]"
                     />
@@ -154,7 +185,7 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
         onClick={handleSubmit}
         className="mt-12 w-full bg-[#008DCD] text-white py-4 font-black uppercase text-lg border-2 border-black dark:border-white hover:brightness-110 shadow-xl mb-12"
       >
-        Envia la resposta
+        {mode === 'edit' ? 'Desa canvis' : 'Envia la resposta'}
       </button>
     </div>
   );

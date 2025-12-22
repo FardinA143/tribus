@@ -43,9 +43,6 @@ public class TxtSurveySerializer implements SurveySerializer {
      */
     @Override
     public void toFile(Survey s, String path) {
-        if(!path.toLowerCase().endsWith(".txt")){
-            path = path + ".txt";
-        }
         try (PrintWriter writer = new PrintWriter(new FileWriter(path))) {
 
             // Línia 1: dades principals de l'enquesta
@@ -92,7 +89,7 @@ public class TxtSurveySerializer implements SurveySerializer {
                                         sb.append(",sc,")
                                             .append(serializeOptions(sc.getOptions()));
                                 }
-                                else {
+                                else { // codigo dupe
                                         sb.append(",sc");
                                 }
 

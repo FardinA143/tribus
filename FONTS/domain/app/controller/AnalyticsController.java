@@ -5,7 +5,7 @@ import Response.SurveyResponse;
 import Survey.AlgorithmConfiguration;
 import Survey.Survey;
 import distance.Distance;
-import distance.EuclideanDistance;
+import distance.CosineDistance;
 import kmeans.ClusterModel;
 import kmeans.IClusteringAlgorithm;
 import kmeans.KMeans;
@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 
 public class AnalyticsController {
@@ -49,10 +50,18 @@ public class AnalyticsController {
             algorithm = defaultAlgorithm;
         }
         if (distance == null) {
-            distance = new EuclideanDistance();
+            distance = new CosineDistance();
         }
 
-        ClusterModel model = algorithm.fit(featureMatrix, k, distance, System.nanoTime(), 300, 1e-4);
+        // Make results deterministic for the same input/config, so visualization isn't perceived as random.
+        // Seed is derived from survey ID + init method + current sample size.
+        long seed = Objects.hash(
+            survey.getId() == null ? "" : survey.getId(),
+            survey.getInitMethod() == null ? "" : survey.getInitMethod(),
+            responses.size()
+        );
+
+        ClusterModel model = algorithm.fit(featureMatrix, k, distance, seed, 300, 1e-4);
         double[] scores = silhouette.scorePerPoint(featureMatrix, model, distance);
         double avgSilhouette = Arrays.stream(scores).average().orElse(Double.NaN);
 
@@ -76,7 +85,6 @@ public class AnalyticsController {
             }
             centroids2d = null;
         } else {
-            long seed = (long) (survey.getId() == null ? 0 : survey.getId().hashCode());
             Projection2D proj = projectTo2D(featureMatrix, seed);
             points2d = proj.points;
 

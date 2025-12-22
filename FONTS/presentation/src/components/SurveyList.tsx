@@ -12,7 +12,9 @@ interface SurveyListProps {
 }
 
 export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onModify, onCreate, filterMode = 'all' }) => {
-  const { surveys, currentUser, importSurveys, responses } = useApp();
+  const { surveys, currentUser, responses } = useApp();
+  const [importError, setImportError] = React.useState('');
+  const importUnsubRef = React.useRef<null | (() => void)>(null);
 
   // Filter logic
   const filteredSurveys = surveys.filter(s => {
@@ -43,22 +45,35 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
 
   const importSurveyTxt = async () => {
     if (!ensureElectron()) return;
+    setImportError('');
     const path = await (window as any).backend.openFileDialog({
       title: "Importa una enquesta (.tbs)",
       filters: [{ name: 'Tribus Survey', extensions: ['tbs'] }],
     });
     if (!path) return;
-    importSurveys({ type: 'surveys', path });
-  };
 
-  const importResponsesTxt = async () => {
-    if (!ensureElectron()) return;
-    const path = await (window as any).backend.openFileDialog({
-      title: "Importa respostes (.tbs)",
-      filters: [{ name: 'Tribus Survey', extensions: ['tbs'] }],
+    // One-shot listener to surface backend errors as a red alert box.
+    if (importUnsubRef.current) {
+      try { importUnsubRef.current(); } catch { /* ignore */ }
+      importUnsubRef.current = null;
+    }
+    const unsubscribe = controller.onResponse((data: any) => {
+      if (!data) return;
+      if (data.error) {
+        setImportError(String(data.error));
+        try { unsubscribe(); } catch { /* ignore */ }
+        importUnsubRef.current = null;
+        return;
+      }
+      if (data.status === 'ok') {
+        setImportError('');
+        try { unsubscribe(); } catch { /* ignore */ }
+        importUnsubRef.current = null;
+      }
     });
-    if (!path) return;
-    importSurveys({ type: 'responses', path });
+    importUnsubRef.current = unsubscribe;
+
+    controller.importSurveyFile(path);
   };
 
   const exportSurveyTxt = async (survey: Survey) => {
@@ -70,17 +85,6 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
     });
     if (!filePath) return;
     controller.exportSurveyFile(survey.id, filePath);
-  };
-
-  const exportResponsesTxt = async (survey: Survey) => {
-    if (!ensureElectron()) return;
-    const filePath = await (window as any).backend.saveFileDialog({
-      title: "Exporta respostes (.tbs)",
-      defaultPath: `respostes_${(survey.title || 'tribus').replace(/\s+/g, '_')}.tbs`,
-      filters: [{ name: 'Tribus Survey', extensions: ['tbs'] }],
-    });
-    if (!filePath) return;
-    controller.exportResponsesFile(survey.id, filePath);
   };
 
   const deleteSurvey = (survey: Survey) => {
@@ -116,15 +120,14 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
               <Upload size={16} />
               Importa enquestes
             </button>
-            <button 
-              onClick={importResponsesTxt}
-              className="flex items-center gap-2 text-sm font-bold uppercase hover:text-[#008DCD] transition-colors"
-            >
-              <Upload size={16} />
-              Importa respostes
-            </button>
         </div>
       </div>
+
+      {importError && (
+        <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/30 border-l-4 border-red-500 text-red-700 dark:text-red-300 text-sm font-bold">
+          {importError}
+        </div>
+      )}
 
       {filteredSurveys.length === 0 && (
           <div className="text-center py-20 opacity-50">
@@ -155,17 +158,10 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
                   >
                     <Download size={16} />
                   </button>
-                  <button 
-                    onClick={() => exportResponsesTxt(survey)}
-                    className="p-1 hover:text-[#008DCD] transition-colors"
-                    title="Exporta les respostes (.tbs)"
-                  >
-                    <Download size={16} />
-                  </button>
                   {currentUser?.id === survey.authorId && (
                     <button
                       onClick={() => deleteSurvey(survey)}
-                      className="p-1 hover:text-red-600 transition-colors"
+                      className="p-1 rounded hover:text-red-600 hover:bg-red-600/10 dark:hover:bg-red-500/20 transition-colors"
                       title="Esborra l'enquesta"
                     >
                       <Trash2 size={16} />

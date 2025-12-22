@@ -75,6 +75,7 @@ public class DomainDriver {
                 case "CREATE_SURVEY_FULL" -> handleCreateSurveyFull(parts);
                 case "UPDATE_SURVEY_FULL" -> handleUpdateSurveyFull(parts);
                 case "DELETE_SURVEY" -> handleDeleteSurvey(parts);
+                case "GET_CLUSTERING_METHODS" -> handleGetClusteringMethods();
                 case "LIST_RESPONSES" -> handleListResponses(parts);
                 case "LOGIN" -> handleLogin(parts);
                 case "LOGOUT" -> handleLogout();
@@ -97,6 +98,22 @@ public class DomainDriver {
     }
 
     // ==================== SURVEYS ====================
+
+    private void handleGetClusteringMethods() {
+        Map<String, String> methods = AlgorithmConfiguration.supportedInitMethods();
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\"type\":\"clusteringMethods\",\"payload\":[");
+
+        boolean first = true;
+        for (Map.Entry<String, String> entry : methods.entrySet()) {
+            if (!first) sb.append(',');
+            first = false;
+            sb.append("{\"id\":\"").append(escapeJson(entry.getKey())).append("\"");
+            sb.append(",\"label\":\"").append(escapeJson(entry.getValue())).append("\"}");
+        }
+        sb.append("]}");
+        System.out.println(sb);
+    }
 
     private void handleGetSurveys() {
         try {
@@ -133,7 +150,7 @@ public class DomainDriver {
             int k = Integer.parseInt(parts[3]);
             String surveyId = UUID.randomUUID().toString();
             User owner = userController.requireActiveUser();
-            Survey survey = surveyController.createSurvey(surveyId, title, description, owner, k, "kmeans++", "euclidean");
+            Survey survey = surveyController.createSurvey(surveyId, title, description, owner, k, "kmeans++", "cosine");
             surveyController.saveSurvey(survey);
             System.out.println("{\"status\":\"ok\",\"id\":\"" + survey.getId() + "\"}");
         } catch (Exception e) {
@@ -160,7 +177,7 @@ public class DomainDriver {
 
             String surveyId = UUID.randomUUID().toString();
             User owner = userController.requireActiveUser();
-            Survey survey = surveyController.createSurvey(surveyId, title, description, owner, k, initMethod, "euclidean");
+            Survey survey = surveyController.createSurvey(surveyId, title, description, owner, k, initMethod, "cosine");
             importQuestionsFromPayload(survey, questionsPayload);
             surveyController.saveSurvey(survey);
             System.out.println("{\"status\":\"ok\",\"id\":\"" + survey.getId() + "\"}");

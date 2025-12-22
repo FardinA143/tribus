@@ -2,7 +2,7 @@ package kmeans;
 
 import java.util.*;
 import distance.Distance;
-import distance.EuclideanDistance;
+import distance.CosineDistance;
 
 /**
  * Implementació de l'algorisme K-Means++ per a clustering.
@@ -29,7 +29,7 @@ public class KMeansPlusPlus extends KMeans {
      *
      * @param X Matriu de dades a agrupar (n_mostres x n_features).
      * @param k El nombre de clústers a trobar.
-     * @param dist La mètrica de distància a utilitzar. Si és null, s'usarà EuclideanDistance.
+    * @param dist La mètrica de distància a utilitzar. Si és null, s'usarà CosineDistance.
      * @param seed La llavor per al generador de números aleatoris.
      * @param maxIter El nombre màxim d'iteracions a executar.
      * @param tol La tolerància per declarar convergència (canvi en la inèrcia).
@@ -37,7 +37,7 @@ public class KMeansPlusPlus extends KMeans {
      */
     @Override
     public ClusterModel fit(double[][] X, int k, Distance dist, long seed, int maxIter, double tol) {
-        if (dist == null) dist = new EuclideanDistance();
+        if (dist == null) dist = new CosineDistance();
         final Random rnd = new Random(seed);
         final int n = X.length, d = X[0].length;
 

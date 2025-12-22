@@ -57,9 +57,6 @@ public class TxtResponseSerializer implements ResponseSerializer {
         if (responses == null || responses.isEmpty()) {
             throw new IllegalArgumentException("No hi ha respostes per exportar.");
         }
-        if(!path.toLowerCase().endsWith(".txt")){
-            path = path + ".txt";
-        }
         try (PrintWriter writer = new PrintWriter(new FileWriter(path))) {
             for (SurveyResponse response : responses) {
                 writer.println(String.join(",",

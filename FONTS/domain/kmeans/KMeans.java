@@ -1,7 +1,7 @@
 package kmeans;
 
 import distance.Distance;
-import distance.EuclideanDistance;
+import distance.CosineDistance;
 import java.util.*;
 
 /**
@@ -24,7 +24,7 @@ public class KMeans implements IClusteringAlgorithm {
      *
      * @param X Matriu de dades a agrupar (n_mostres x n_features).
      * @param k El nombre de clústers a trobar.
-     * @param dist La mètrica de distància a utilitzar. Si és null, s'usarà EuclideanDistance.
+    * @param dist La mètrica de distància a utilitzar. Si és null, s'usarà CosineDistance.
      * @param seed La seed per al generador de números aleatoris.
      * @param maxIter El nombre màxim d'iteracions a executar.
      * @param tol La tolerància per declarar convergència (canvi en la inèrcia).
@@ -34,7 +34,7 @@ public class KMeans implements IClusteringAlgorithm {
     public ClusterModel fit(double[][] X, int k, Distance dist, long seed, int maxIter, double tol) {
         Objects.requireNonNull(X);
         if (k <= 0) throw new IllegalArgumentException("k must be > 0");
-        if (dist == null) dist = new EuclideanDistance();
+        if (dist == null) dist = new CosineDistance();
         final Random rnd = new Random(seed);
         final int n = X.length, d = X[0].length;
 
@@ -135,7 +135,7 @@ public class KMeans implements IClusteringAlgorithm {
      * @return Un objecte ClusterModel amb els resultats.
      */
     protected ClusterModel fitWithCustomInit(double[][] X, double[][] initC, Distance dist, long seed, int maxIter, double tol) {
-        if (dist == null) dist = new EuclideanDistance();
+        if (dist == null) dist = new CosineDistance();
         final int n = X.length, d = X[0].length, k = initC.length;
         double[][] C = new double[k][d];
         for (int j = 0; j < k; j++) C[j] = Arrays.copyOf(initC[j], d);

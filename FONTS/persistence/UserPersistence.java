@@ -20,7 +20,7 @@ public class UserPersistence {
 	}
 
 	private static Path resolveDefaultUserDataPath() {
-		// When running from `FONTS` (CLI/make), ../DATA points to repo DATA/.
+		// When running from `FONTS` (CLI/make), ../DATA points to repo DATA/. no haria falta, siempre electron
 		// When running from `FONTS/presentation` (Electron), we need ../../DATA.
 		Path p1 = Path.of("..", "DATA", "userdata.json");
 		try {
@@ -34,7 +34,7 @@ public class UserPersistence {
 		return Path.of("..", "..", "DATA", "userdata.json");
 	}
 
-	public UserPersistence(Path userDataPath) {
+	public UserPersistence(Path userDataPath) {   // verificacion simple, eliminable
 		if (userDataPath == null) {
 			throw new IllegalArgumentException("userDataPath cannot be null");
 		}
@@ -267,7 +267,7 @@ public class UserPersistence {
 		return sb.toString();
 	}
 
-	private String escape(String value) {
+	private String escape(String value) {  // lo pongo para evitar ataques maliciosos.
 		if (value == null) {
 			return "";
 		}
