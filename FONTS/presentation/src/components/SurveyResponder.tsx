@@ -40,7 +40,6 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
   };
 
   const buildAnswersString = () => {
-    // Backend format: "qid:val;qid:val1,val2" where qid/val are numeric for choices.
     const parts: string[] = [];
     for (const q of survey.questions) {
       const qid = String(q.id);
@@ -73,7 +72,6 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
 
     const answersStr = buildAnswersString();
     if (mode === 'edit') {
-      // No hi ha API de backend per "update response"; fem best-effort:
       // esborrem la resposta antiga (si existeix) i creem una de nova.
       if (responseId) controller.deleteResponse(responseId);
       controller.answerSurvey(survey.id, answersStr);
@@ -104,7 +102,7 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6 animate-in fade-in zoom-in duration-500">
         <CheckCircle size={80} className="text-[#008DCD] mb-6" />
         <h2 className="text-4xl font-black uppercase mb-4">Resposta actualitzada</h2>
-        <p className="text-lg opacity-70 mb-8 max-w-md">S'han desat els canvis. Tornant a l'anàlisi...</p>
+        <p className="text-lg opacity-70 mb-8 max-w-md">S'han desat els canvis. </p>
         <button onClick={onClose} className="px-8 py-3 border-2 border-black dark:border-white font-bold uppercase hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black transition-colors">
           Tornar a l'anàlisi
         </button>

@@ -1,8 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import controller from './domain/controller';
 
-// --- Types ---
-
+// pseudoclases per poder utilitzar dins de interficie, no fa cap tipus de lògica, capa domini
 export type QuestionType = 'text' | 'integer' | 'single' | 'multiple';
 
 export interface ChoiceOption {
@@ -15,7 +14,7 @@ export interface Question {
   title: string;
   type: QuestionType;
   mandatory: boolean;
-  options?: ChoiceOption[]; // For single/multiple choice
+  options?: ChoiceOption[]; 
 }
 
 export interface Survey {
@@ -37,8 +36,8 @@ export interface ClusteringMethodOption {
 export interface Response {
   id: string;
   surveyId: string;
-  respondentId: string; // 'anon' or userId
-  answers: Record<string, string | string[] | number>; // questionId -> answer
+  respondentId: string; 
+  answers: Record<string, string | string[] | number>; 
   timestamp: number;
 }
 
@@ -53,11 +52,10 @@ export interface AnalysisPayload {
 
 export interface User {
   id: string;
-  username: string; // The login handle
-  name: string;     // The "user" name
-  password?: string; // In a real app, this is hashed. Mocking here.
-  // twoFactorEnabled?: boolean;
-  // twoFactorSecret?: string;
+  username: string; 
+  name: string;     
+  password?: string; 
+
 }
 
 interface AppState {
@@ -83,11 +81,9 @@ interface AppContextType extends AppState {
   importSurveys: (data: any) => void;
 }
 
-// --- Context ---
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-// --- Store Implementation ---
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [users, setUsers] = useState<User[]>([]);
@@ -106,13 +102,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Carregar dades inicials i connectar listener d'Electron/Java.
   useEffect(() => {
-    // Siempre intentar comunicarse con Java para obtener datos iniciales.
     const unsubscribe = controller.onResponse((data: any) => {
       if (isDev) {
         // Debug only: inspect what the Java backend is actually sending.
         console.debug('[Store] java-response', { data });
       }
-      // The Java backend may return different payloads. Here we react to known patterns.
       if (Array.isArray(data)) {
         // assume surveys array
         setSurveys(data as Survey[]);
@@ -130,11 +124,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       } else if (data && data.type === 'clusteringMethods') {
         setClusteringMethods(Array.isArray(data.payload) ? data.payload : []);
       } else if (data && data.status === 'ok') {
-        // Refrescar llistes després d'operacions mutadores.
         if (data.refresh === 'responses' && data.surveyId) {
           controller.requestResponses(String(data.surveyId));
         }
-        // Per defecte, mantenim el llistat d'enquestes sincronitzat.
         controller.requestSurveys();
       } else if (data && data.error) {
         console.error('Java error:', data.error);
@@ -142,11 +134,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
     unsubscribeRef.current = unsubscribe || null;
 
-    // Solicitar datos iniciales a Java
     controller.requestSurveys();
     controller.requestClusteringMethods();
-    // controller.requestUsers();
-    // controller.requestResponses();
     setLoaded(true);
 
     return () => {
@@ -157,7 +146,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, [isDev]);
 
-  // No fem servir localStorage: tota la persistència es delega a Java.
 
   const addUser = (user: User) => {
     controller.createUser(user);
@@ -172,7 +160,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const sendUpdateFallback = (updated: Survey) => {
-    // If Java doesn't support UPDATE_SURVEY, fall back to sending full payload
     controller.sendCommand && controller.sendCommand(`UPDATE_SURVEY|${encodeURIComponent(JSON.stringify(updated))}`);
   };
 
@@ -197,14 +184,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
   const importSurveys = (data: any) => {
-    // Delegar la importació a Java. `data.path` conté la ruta a importar.
     if (data && data.path) {
       if (data.type === 'responses') controller.importResponsesFile(data.path);
       else controller.importSurveyFile(data.path);
       return;
     }
 
-    // Compatibilitat: si rebem payload directe (per exemple drag&drop), enviar-lo a Java.
     if (data.surveys || data.responses) {
       controller.sendCommand(`IMPORT_PAYLOAD|${encodeURIComponent(JSON.stringify(data))}`);
     }
@@ -213,8 +198,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const escapePipe = (s?: string) => (s || '').replace(/\|/g, '/');
 
   useEffect(() => {
-    // Sync theme with document class for Tailwind dark mode if we were using 'class' strategy
-    // But we will handle colors manually via CSS variables or utility classes based on context
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {
@@ -234,6 +217,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
 export const useApp = () => {
   const context = useContext(AppContext);
-  if (!context) throw new Error("useApp must be used within AppProvider");
+  if (!context) throw new Error("Electron not being used");
   return context;
 };

@@ -1,18 +1,8 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { useApp, Survey } from '../store';
 import controller from '../domain/controller';
 import { Plus, Download, Upload, BarChart2, Edit3, MessageSquare, Trash2 } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from './ui/alert-dialog';
 
 interface SurveyListProps {
   onAnalyze: (id: string) => void;
@@ -24,15 +14,14 @@ interface SurveyListProps {
 
 export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onModify, onCreate, filterMode = 'all' }) => {
   const { surveys, currentUser, responses } = useApp();
+  const [deleteSurveyOpenFor, setDeleteSurveyOpenFor] = React.useState<string | null>(null);
   const [importError, setImportError] = React.useState('');
   const importUnsubRef = React.useRef<null | (() => void)>(null);
 
-  // Filter logic
   const filteredSurveys = surveys.filter(s => {
     if (filterMode === 'my-surveys') return currentUser && s.authorId === currentUser.id;
     if (filterMode === 'my-responses') {
-        if (!currentUser) return false;
-        // Check if current user has responded to this survey
+        if (!currentUser) return false; // per a registrar respostes de usuari
         return responses.some(r => r.surveyId === s.id && r.respondentId === currentUser.id);
     }
     return true;
@@ -46,16 +35,8 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
     }
   };
 
-  const ensureElectron = () => {
-    if (!controller.isElectron || !(window as any).backend?.openFileDialog) {
-      setImportError("Aquesta funcionalitat només està disponible a l'app d'Electron.");
-      return false;
-    }
-    return true;
-  };
 
   const importSurveyTxt = async () => {
-    if (!ensureElectron()) return;
     setImportError('');
     const path = await (window as any).backend.openFileDialog({
       title: "Importa una enquesta (.tbs)",
@@ -63,7 +44,6 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
     });
     if (!path) return;
 
-    // One-shot listener to surface backend errors as a red alert box.
     if (importUnsubRef.current) {
       try { importUnsubRef.current(); } catch { /* ignore */ }
       importUnsubRef.current = null;
@@ -76,8 +56,6 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
         importUnsubRef.current = null;
         return;
       }
-      // Only treat OKs that look like the IMPORT_SURVEY completion.
-      // Otherwise we might unsubscribe due to unrelated mutations elsewhere.
       if (data.status === 'ok' && data.refresh === 'surveys' && typeof data.id === 'string') {
         setImportError('');
         try { unsubscribe(); } catch { /* ignore */ }
@@ -90,7 +68,6 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
   };
 
   const exportSurveyTxt = async (survey: Survey) => {
-    if (!ensureElectron()) return;
     const filePath = await (window as any).backend.saveFileDialog({
       title: "Exporta enquesta (.tbs)",
       defaultPath: `enquesta_${(survey.title || 'tribus').replace(/\s+/g, '_')}.tbs`,
@@ -175,33 +152,54 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
                     <Download size={16} />
                   </button>
                   {currentUser?.id === survey.authorId && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <button
-                          className="p-1 rounded hover:text-red-600 hover:bg-red-600/10 dark:hover:bg-red-500/20 transition-colors"
-                          title="Esborra l'enquesta"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent className="rounded-none border-2 border-black dark:border-white bg-white dark:bg-zinc-900">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle className="uppercase font-black">Segur que vols esborrar aquesta enquesta?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Aquesta acció no es pot desfer.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel className="rounded-none">No</AlertDialogCancel>
-                          <AlertDialogAction
-                            className="rounded-none bg-red-600 text-white hover:bg-red-700"
-                            onClick={() => deleteSurvey(survey)}
-                          >
-                            Sí
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <>
+                      <button
+                        className="p-1 rounded hover:text-red-600 hover:bg-red-600/10 dark:hover:bg-red-500/20 transition-colors"
+                        title="Esborra l'enquesta"
+                        onClick={() => setDeleteSurveyOpenFor(survey.id)}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+
+                      {deleteSurveyOpenFor === survey.id && typeof document !== 'undefined' && createPortal(
+                        (
+                          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" role="dialog" aria-modal="true">
+                            <div className="w-full max-w-md bg-white dark:bg-zinc-900 border-2 border-black dark:border-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6 flex flex-col gap-4">
+                              <div className="flex items-start justify-between gap-4">
+                                <div className="space-y-2">
+                                  <h2 className="text-2xl font-black uppercase">Segur que vols esborrar aquesta enquesta?</h2>
+                                  <p className="text-sm opacity-70">Aquesta acció no es pot desfer.</p>
+                                </div>
+                                <button
+                                  onClick={() => setDeleteSurveyOpenFor(null)}
+                                  className="text-lg font-black leading-none hover:opacity-70"
+                                  aria-label="Tancar"
+                                >
+                                  ×
+                                </button>
+                              </div>
+
+                              <div className="flex justify-end gap-3 pt-2">
+                                <button
+                                  onClick={() => setDeleteSurveyOpenFor(null)}
+                                  className="px-4 py-2 border-2 border-black dark:border-white uppercase font-bold hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
+                                >
+                                  No
+                                </button>
+                                <button
+                                  onClick={() => { deleteSurvey(survey); setDeleteSurveyOpenFor(null); }}
+                                  className="px-4 py-2 border-2 border-black dark:border-white uppercase font-bold hover:bg-red-700"
+                                  style={{ backgroundColor: '#dc2626', color: '#ffffff' }}
+                                >
+                                  Sí
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ),
+                        document.body
+                      )}
+                    </>
                   )}
                 </div>
               </div>

@@ -18,8 +18,7 @@ import java.util.*;
 /**
  * DomainDriver: driver principal de todo el dominio.
  * Orquesta la comunicación con Electron mediante stdin/stdout usando el protocolo pipe-delimited.
- * Protocolo: ACCION|ARG1|ARG2|...
- * Respuestas: JSON por línea.
+ * Protocol: ACTION|ARG1|ARG2|...
  */
 public class DomainDriver {
     private final Scanner scanner = new Scanner(System.in);
@@ -40,12 +39,11 @@ public class DomainDriver {
         this.responseController = new ResponseController(persistenceDriver);
         this.analyticsController = new AnalyticsController();
 
-        // Bootstrap persisted users (so LOGIN works after restart)
         try {
             List<RegisteredUser> users = persistenceDriver.loadAllUsers();
             userController.loadRegisteredUsers(users);
         } catch (Exception ignored) {
-            // If persistence fails we still allow the app to run with empty users.
+            // en cas de que no es pugui carregar, es comença amb la llista buida
         }
     }
 
@@ -97,7 +95,7 @@ public class DomainDriver {
         }
     }
 
-    // ==================== SURVEYS ====================
+    // ==================== ENQUESTES ====================
 
     private void handleGetClusteringMethods() {
         Map<String, String> methods = AlgorithmConfiguration.supportedInitMethods();
@@ -158,10 +156,7 @@ public class DomainDriver {
         }
     }
 
-    /**
-     * Frontend protocol:
-     * CREATE_SURVEY_FULL|title|description|k|analysisMethod|questionsPayload
-     */
+    
     private void handleCreateSurveyFull(String[] parts) {
         if (parts.length < 6) {
             emitError("CREATE_SURVEY_FULL requereix title|description|k|analysisMethod|questions");
@@ -186,10 +181,7 @@ public class DomainDriver {
         }
     }
 
-    /**
-     * Frontend protocol:
-     * UPDATE_SURVEY_FULL|id|title|description|k|analysisMethod|questionsPayload
-     */
+    
     private void handleUpdateSurveyFull(String[] parts) {
         if (parts.length < 7) {
             emitError("UPDATE_SURVEY_FULL requereix id|title|description|k|analysisMethod|questions");
@@ -215,7 +207,6 @@ public class DomainDriver {
             survey.setInitMethod(initMethod);
             survey.setUpdatedAt(LocalDateTime.now().toString());
 
-            // Replace questions
             survey.getQuestions().clear();
             importQuestionsFromPayload(survey, questionsPayload);
 
@@ -296,14 +287,12 @@ public class DomainDriver {
                 return;
             }
 
-            // After registration, log in automatically
+            // login auto
             Sesion sesion = userController.login(username, password);
             if (sesion != null) {
-                // Persist users (so they survive restart)
                 try {
                     persistenceDriver.persistAllUsers(userController.listRegisteredUsers());
                 } catch (Exception ignored) {
-                    // Persistence failure should not block UX; LOGIN already succeeded.
                 }
                 System.out.println(userToJson(sesion.getUser()));
             } else {
@@ -332,12 +321,10 @@ public class DomainDriver {
     }
 
     private void handleUpdateUser(String[] parts) {
-        // UPDATE_USER|<urlencoded json> (frontend legacy) OR UPDATE_USER|id|displayName|username|password
         try {
             if (!ensureRegisteredSession()) { emitError("Cal una sessió registrada"); return; }
             RegisteredUser updated = null;
             if (parts.length == 2) {
-                // Best-effort minimal JSON field extraction (no external JSON lib allowed)
                 String json = decode(parts[1]);
                 String id = readJsonStringField(json, "id");
                 String displayName = readJsonStringField(json, "name");
@@ -361,7 +348,7 @@ public class DomainDriver {
         }
     }
 
-    // ==================== RESPONSES ====================
+    // ==================== RESPOSTES ====================
 
     private void handleAnswerSurvey(String[] parts) {
         if (parts.length < 3) { emitError("ANSWER_SURVEY requereix surveyId|answers"); return; }

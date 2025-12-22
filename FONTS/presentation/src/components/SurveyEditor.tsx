@@ -61,7 +61,6 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
     };
 
     setSaving(true);
-    // One-shot listener: close only if backend replies ok; otherwise show error.
     const unsubscribe = controller.onResponse((data: any) => {
       if (!data) return;
       if (data.error) {
@@ -105,9 +104,7 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
   };
 
   const handleOptionsChange = (qId: string, qIdx: number, val: string) => {
-    // IMPORTANT: mantenim el text cru en estat local perquè l'usuari pugui
-    // escriure salts de línia i espais (incloent línies buides temporals).
-    // A partir del text cru, generem el `options[]` sense línies buides.
+    // generamos el options[] a partir del texto y parseamos saltos de linea
     setOptionsDraftByQuestionId((prev) => ({ ...prev, [qId]: val }));
     updateQuestion(qIdx, { options: parseChoiceOptions(val) });
   };

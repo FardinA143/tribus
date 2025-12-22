@@ -8,7 +8,7 @@ let win = null;
 
 let stdoutBuffer = '';
 let stderrBuffer = '';
-let dev = true; // cambiar a false para producción, no funciona correctamente ahora
+let dev = false; // cambiar a false para producción, no funciona correctamente ahora
 
 function emitLines(buffer, chunk, emit) {
   buffer += chunk.toString();
@@ -71,7 +71,6 @@ app.whenReady().then(() => {
   }
 
   let jarPath = path.join(__dirname, '../../../EXE/app.jar');
-  // const jarPath = path.join(process.resourcesPath, './app.jar');
   try {
     javaProcess = spawn('java', ['-cp', jarPath, 'app.DomainDriver'], { cwd: path.join(__dirname, '..') });
 

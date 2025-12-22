@@ -1,4 +1,3 @@
-
 Projecte: EXTRACTOR DE PROTOTIPUS DE COMPORTAMENT O PERFILS
 
 Descripcio del directori arrel:
@@ -10,6 +9,5 @@ Subdirectoris principals:
 - `libs/`: Llibreries externes (JARs) usades per compilar i fer tests.
 - `EXE/`: Sortida de compilacio; conte classes compilades i el jar executable.
 
-Us recomandat:
-- Canvia a `FONTS/` i executa `make jar` o `make run` per compilar/execucio.
+Notes:
 - Consulta `README.md` per instruccions detallades d'instalacio i execucio.
