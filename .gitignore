@@ -3,5 +3,6 @@ FONTS/presentation/package-lock.json
 FONTS/presentation/build/
 FONTS/presentation/dist/
 EXE/app.jar
-DATA/
 EXE/classes
+DATA/
+
