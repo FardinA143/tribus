@@ -66,6 +66,19 @@ public class SurveyController {
             throw new PersistenceException("L'enquesta ha de tenir com a mínim una pregunta obligatòria");
         }
 
+        if (survey.getK() < 1) {
+            throw new PersistenceException("El nombre de clústers (k) ha de ser com a mínim 1");
+        }
+
+        String title = survey.getTitle() == null ? "" : survey.getTitle();
+        String description = survey.getDescription() == null ? "" : survey.getDescription();
+        if (title.length() > 40) {
+            throw new PersistenceException("El títol no pot superar 40 caràcters");
+        }
+        if (description.length() > 150) {
+            throw new PersistenceException("La descripció no pot superar 150 caràcters");
+        }
+
         boolean hasRequired = false;
         for (Question q : survey.getQuestions()) {
             if (q != null && q.isRequired()) {

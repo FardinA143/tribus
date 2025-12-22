@@ -2,6 +2,17 @@ import React from 'react';
 import { useApp, Survey } from '../store';
 import controller from '../domain/controller';
 import { Plus, Download, Upload, BarChart2, Edit3, MessageSquare, Trash2 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './ui/alert-dialog';
 
 interface SurveyListProps {
   onAnalyze: (id: string) => void;
@@ -37,7 +48,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
 
   const ensureElectron = () => {
     if (!controller.isElectron || !(window as any).backend?.openFileDialog) {
-      alert("Aquesta funcionalitat només està disponible a l'app d'Electron.");
+      setImportError("Aquesta funcionalitat només està disponible a l'app d'Electron.");
       return false;
     }
     return true;
@@ -65,7 +76,9 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
         importUnsubRef.current = null;
         return;
       }
-      if (data.status === 'ok') {
+      // Only treat OKs that look like the IMPORT_SURVEY completion.
+      // Otherwise we might unsubscribe due to unrelated mutations elsewhere.
+      if (data.status === 'ok' && data.refresh === 'surveys' && typeof data.id === 'string') {
         setImportError('');
         try { unsubscribe(); } catch { /* ignore */ }
         importUnsubRef.current = null;
@@ -89,9 +102,7 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
 
   const deleteSurvey = (survey: Survey) => {
     if (!currentUser || currentUser.id !== survey.authorId) return;
-    if (window.confirm("Segur que vols esborrar aquesta enquesta? Aquesta acció no es pot desfer.")) {
-      controller.deleteSurvey(survey.id);
-    }
+    controller.deleteSurvey(survey.id);
   };
 
   return (
@@ -139,8 +150,13 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
         {filteredSurveys.map((survey) => (
           <div key={survey.id} className="border-2 border-black dark:border-white p-6 flex flex-col justify-between hover:translate-x-1 hover:-translate-y-1 transition-transform bg-white dark:bg-zinc-900">
             <div>
-              <div className="flex justify-between items-start mb-4">
-                <h3 className="text-xl font-bold leading-tight">{survey.title}</h3>
+              <div className="flex justify-between items-start mb-4 min-w-0">
+                <h3
+                  className="text-xl font-bold leading-tight flex-1 min-w-0"
+                  style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
+                >
+                  {survey.title}
+                </h3>
                 <div className="flex gap-2">
                   {currentUser?.id === survey.authorId && (
                     <button 
@@ -159,17 +175,42 @@ export const SurveyList: React.FC<SurveyListProps> = ({ onAnalyze, onAnswer, onM
                     <Download size={16} />
                   </button>
                   {currentUser?.id === survey.authorId && (
-                    <button
-                      onClick={() => deleteSurvey(survey)}
-                      className="p-1 rounded hover:text-red-600 hover:bg-red-600/10 dark:hover:bg-red-500/20 transition-colors"
-                      title="Esborra l'enquesta"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <button
+                          className="p-1 rounded hover:text-red-600 hover:bg-red-600/10 dark:hover:bg-red-500/20 transition-colors"
+                          title="Esborra l'enquesta"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="rounded-none border-2 border-black dark:border-white bg-white dark:bg-zinc-900">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="uppercase font-black">Segur que vols esborrar aquesta enquesta?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Aquesta acció no es pot desfer.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel className="rounded-none">No</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="rounded-none bg-red-600 text-white hover:bg-red-700"
+                            onClick={() => deleteSurvey(survey)}
+                          >
+                            Sí
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   )}
                 </div>
               </div>
-              <p className="text-sm opacity-70 mb-6 line-clamp-3">{survey.description}</p>
+              <p
+                className="text-sm opacity-70 mb-6 line-clamp-3"
+                style={{ wordBreak: 'break-word', overflowWrap: 'anywhere' }}
+              >
+                {survey.description}
+              </p>
               
               <div className="text-xs font-mono mb-4 opacity-50">
                 Mètode: {survey.analysisMethod} | Clústers: {survey.clusterSize}

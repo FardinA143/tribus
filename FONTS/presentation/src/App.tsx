@@ -7,6 +7,7 @@ import { Auth } from './components/Auth';
 import { SurveyEditor } from './components/SurveyEditor';
 import { SurveyResponder } from './components/SurveyResponder';
 import { SurveyAnalyzer } from './components/SurveyAnalyzer';
+import controller from './domain/controller';
 // TwoFactorSetup import removed because 2FA is disabled
 
 type View = 
@@ -19,7 +20,7 @@ type View =
   ;
 
 const AppContent: React.FC = () => {
-  const { currentUser, theme, deleteUser } = useApp();
+  const { currentUser, theme, deleteUser, surveys } = useApp();
   const [view, setView] = useState<View>({ name: 'list', filterMode: 'all' });
 
   // Background style based on theme
@@ -43,11 +44,21 @@ const AppContent: React.FC = () => {
           onNavigateHome={() => setView({ name: 'list', filterMode: 'all' })} 
           onNavigateMySurveys={() => setView({ name: 'list', filterMode: 'my-surveys' })}
           onNavigateMyResponses={() => setView({ name: 'list', filterMode: 'my-responses' })}
-          onDeleteAccount={() => {
-            if (currentUser) {
-              deleteUser(currentUser.id);
-              setView({ name: 'list', filterMode: 'all' });
+          onDeleteAccount={({ deleteSurveys }) => {
+            if (!currentUser) return;
+            if (deleteSurveys) {
+              // Best-effort: delete user's surveys first.
+              for (const s of surveys) {
+                if (s.authorId === currentUser.id) {
+                  // Domain enforces permissions.
+                  // We intentionally don't block the UI here to keep UX simple.
+                  // If a delete fails, backend will emit error.
+                  controller.deleteSurvey(s.id);
+                }
+              }
             }
+            deleteUser(currentUser.id);
+            setView({ name: 'list', filterMode: 'all' });
           }}
         />
       )}

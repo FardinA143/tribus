@@ -3,6 +3,17 @@ import { useApp } from '../store';
 import controller from '../domain/controller';
 
 import { ArrowLeft, Table as TableIcon, Activity, Trash2, Download, Upload, Edit3 } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './ui/alert-dialog';
 
 interface SurveyAnalyzerProps {
   surveyId: string;
@@ -98,7 +109,7 @@ export const SurveyAnalyzer = ({ surveyId, onClose, onEditResponse }: SurveyAnal
 
   const ensureElectron = () => {
     if (!controller.isElectron || !(window as any).backend?.openFileDialog) {
-      alert("Aquesta funcionalitat només està disponible a l'app d'Electron.");
+      setImportError("Aquesta funcionalitat només està disponible a l'app d'Electron.");
       return false;
     }
     return true;
@@ -120,10 +131,13 @@ export const SurveyAnalyzer = ({ surveyId, onClose, onEditResponse }: SurveyAnal
         importUnsubRef.current = null;
         return;
       }
-      if (data.status === 'ok') {
+      // Only treat OKs that look like the IMPORT_RESPONSES completion.
+      // Otherwise we might unsubscribe due to unrelated mutations elsewhere.
+      if (data.status === 'ok' && typeof (data as any).imported === 'number') {
         setImportError('');
         try { unsubscribe(); } catch { /* ignore */ }
         importUnsubRef.current = null;
+        controller.requestResponses(surveyId);
       }
     });
     importUnsubRef.current = unsubscribe;
@@ -139,8 +153,6 @@ export const SurveyAnalyzer = ({ surveyId, onClose, onEditResponse }: SurveyAnal
     if (!path) return;
     armOneShotImportListener();
     controller.importResponsesFile(path);
-    // best-effort refresh (també es refresca via status:ok -> refresh:responses)
-    controller.requestResponses(surveyId);
   };
 
   const exportResponsesTbs = async () => {
@@ -388,17 +400,33 @@ export const SurveyAnalyzer = ({ surveyId, onClose, onEditResponse }: SurveyAnal
                           </button>
                         ) : null}
 
-                        <button
-                          className="p-1 rounded hover:text-red-600 hover:bg-red-600/10 dark:hover:bg-red-500/20 transition-colors"
-                          title="Esborra la resposta"
-                          onClick={() => {
-                            if (window.confirm('Segur que vols esborrar aquesta resposta?')) {
-                              controller.deleteResponse(r.id);
-                            }
-                          }}
-                        >
-                          <Trash2 size={16} />
-                        </button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button
+                              className="p-1 rounded hover:text-red-600 hover:bg-red-600/10 dark:hover:bg-red-500/20 transition-colors"
+                              title="Esborra la resposta"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="rounded-none border-2 border-black dark:border-white bg-white dark:bg-zinc-900">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle className="uppercase font-black">Segur que vols esborrar aquesta resposta?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Aquesta acció no es pot desfer.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel className="rounded-none">No</AlertDialogCancel>
+                              <AlertDialogAction
+                                className="rounded-none bg-red-600 text-white hover:bg-red-700"
+                                onClick={() => controller.deleteResponse(r.id)}
+                              >
+                                Sí
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     ) : null}
                   </td>
@@ -425,7 +453,7 @@ export const SurveyAnalyzer = ({ surveyId, onClose, onEditResponse }: SurveyAnal
           <ArrowLeft size={20} /> Tornar
         </button>
         <div className="text-right">
-          <h1 className="text-3xl font-black uppercase text-[#008DCD]">{survey.title}</h1>
+          <h1 className="text-3xl font-black uppercase text-[#008DCD] break-words">{survey.title}</h1>
           <p className="opacity-50">Tauler d'anàlisi</p>
         </div>
       </div>

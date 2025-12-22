@@ -18,14 +18,17 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
 
   const [answers, setAnswers] = useState<Record<string, any>>(initialAnswers || {});
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
   if (!survey) return <div>Enquesta no trobada</div>;
 
   const handleInputChange = (qId: string, value: any) => {
+    if (error) setError('');
     setAnswers(prev => ({ ...prev, [qId]: value }));
   };
 
   const handleCheckboxChange = (qId: string, optionId: number, checked: boolean) => {
+    if (error) setError('');
     setAnswers(prev => {
       const current = (prev[qId] as number[]) || [];
       if (checked) {
@@ -56,12 +59,13 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
   };
 
   const handleSubmit = () => {
+    setError('');
     // Validate
     for (const q of survey.questions) {
       if (q.mandatory) {
         const val = answers[q.id];
         if (val === undefined || val === '' || (Array.isArray(val) && val.length === 0)) {
-          alert(`La pregunta "${q.title}" és obligatòria.`);
+          setError(`La pregunta "${q.title}" és obligatòria.`);
           return;
         }
       }
@@ -114,8 +118,14 @@ export const SurveyResponder: React.FC<SurveyResponderProps> = ({ surveyId, onCl
         <ArrowLeft size={20} /> {mode === 'edit' ? 'Torna' : 'Cancel·la'}
       </button>
 
+      {error && (
+        <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/30 border-l-4 border-red-500 text-red-700 dark:text-red-300 text-sm font-bold">
+          {error}
+        </div>
+      )}
+
       <div className="mb-10 border-b-2 border-black dark:border-white pb-6">
-        <h1 className="text-3xl font-black uppercase mb-2 text-[#008DCD]">{mode === 'edit' ? 'Edita resposta' : survey.title}</h1>
+        <h1 className="text-3xl font-black uppercase mb-2 text-[#008DCD] break-words">{mode === 'edit' ? 'Edita resposta' : survey.title}</h1>
         <p className="opacity-70 text-lg">{survey.description}</p>
       </div>
 

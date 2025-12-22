@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useApp, Survey, Question, QuestionType, ChoiceOption } from '../store';
+import controller from '../domain/controller';
 import { ArrowLeft, Save, Plus, Trash2, GripVertical } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 
@@ -17,6 +18,8 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
   const [analysisMethod, setAnalysisMethod] = useState<string>('kmeans++');
   const [questions, setQuestions] = useState<Question[]>([]);
   const [optionsDraftByQuestionId, setOptionsDraftByQuestionId] = useState<Record<string, string>>({});
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
   // Load existing if modifying
   useEffect(() => {
@@ -40,8 +43,13 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
   }, [surveyId, clusteringMethods]);
 
   const handleSave = () => {
-    if (!title) return alert("El títol és obligatori");
-    if (!currentUser) return alert("Has d'iniciar sessió");
+    setError('');
+    if (!title) { setError("El títol és obligatori"); return; }
+    if (title.length > 40) { setError("El títol no pot superar 40 caràcters"); return; }
+    if (description.length > 150) { setError("La descripció no pot superar 150 caràcters"); return; }
+    if (!currentUser) { setError("Has d'iniciar sessió"); return; }
+    if (!Number.isFinite(clusterSize) || clusterSize < 1) { setError("El nombre de clústers (k) ha de ser com a mínim 1"); return; }
+    if (saving) return;
 
     const newSurvey: Survey = {
       id: surveyId || Math.random().toString(36).substr(2, 9),
@@ -54,12 +62,25 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
       createdAt: surveyId ? (surveys.find(s => s.id === surveyId)?.createdAt || Date.now()) : Date.now()
     };
 
-    if (surveyId) {
-      updateSurvey(newSurvey);
-    } else {
-      addSurvey(newSurvey);
-    }
-    onClose();
+    setSaving(true);
+    // One-shot listener: close only if backend replies ok; otherwise show error.
+    const unsubscribe = controller.onResponse((data: any) => {
+      if (!data) return;
+      if (data.error) {
+        setError(String(data.error));
+        setSaving(false);
+        try { unsubscribe(); } catch { /* ignore */ }
+        return;
+      }
+      if (data.status === 'ok') {
+        setSaving(false);
+        try { unsubscribe(); } catch { /* ignore */ }
+        onClose();
+      }
+    });
+
+    if (surveyId) updateSurvey(newSurvey);
+    else addSurvey(newSurvey);
   };
 
   const addQuestion = () => {
@@ -101,6 +122,12 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
 
       <h1 className="text-4xl font-black uppercase text-[#008DCD] mb-8">{surveyId ? 'Modificar enquesta' : 'Crear enquesta'}</h1>
 
+      {error && (
+        <div className="mb-6 p-4 bg-red-100 dark:bg-red-900/30 border-l-4 border-red-500 text-red-700 dark:text-red-300 text-sm font-bold">
+          {error}
+        </div>
+      )}
+
       <div className="grid gap-6">
         
         {/* Basic Info */}
@@ -111,7 +138,7 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
             <label className="block text-xs font-bold uppercase mb-1">Títol de l'enquesta</label>
             <input 
               className="w-full bg-transparent border-2 border-black dark:border-white p-2 font-bold text-lg" 
-              value={title} onChange={e => setTitle(e.target.value)} placeholder="La meva enquesta"
+              value={title} onChange={e => setTitle(e.target.value)} placeholder="La meva enquesta" maxLength={40}
             />
           </div>
 
@@ -119,7 +146,7 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
             <label className="block text-xs font-bold uppercase mb-1">Descripció</label>
             <textarea 
               className="w-full bg-transparent border-2 border-black dark:border-white p-2" 
-              value={description} onChange={e => setDescription(e.target.value)} rows={3}
+              value={description} onChange={e => setDescription(e.target.value)} rows={3} maxLength={150}
             />
           </div>
 
@@ -127,7 +154,7 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
             <div>
               <label className="block text-xs font-bold uppercase mb-1">Nombre de clústers</label>
               <input 
-                type="number" min={2} max={10}
+                type="number" min={1} max={10}
                 className="w-full bg-transparent border-2 border-black dark:border-white p-2" 
                 value={clusterSize} onChange={e => setClusterSize(Number(e.target.value))}
               />
@@ -230,7 +257,8 @@ export const SurveyEditor: React.FC<SurveyEditorProps> = ({ surveyId, onClose })
 
         <button 
           onClick={handleSave}
-          className="bg-[#008DCD] text-white py-4 font-black uppercase text-lg border-2 border-black dark:border-white hover:brightness-110 sticky bottom-6 shadow-xl"
+          disabled={saving}
+          className="bg-[#008DCD] text-white py-4 font-black uppercase text-lg border-2 border-black dark:border-white hover:brightness-110 sticky bottom-6 shadow-xl disabled:opacity-60 disabled:cursor-not-allowed"
         >
           Desa l'enquesta
         </button>
