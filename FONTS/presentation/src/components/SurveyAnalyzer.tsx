@@ -1,19 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useApp } from '../store';
 import controller from '../domain/controller';
 
 import { ArrowLeft, Table as TableIcon, Activity, Trash2, Download, Upload, Edit3 } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from './ui/alert-dialog';
+// Usamos un modal simple para confirmaciones (estilo NavBar)
 
 interface SurveyAnalyzerProps {
   surveyId: string;
@@ -90,6 +81,7 @@ const projectToSvg = (
 
 export const SurveyAnalyzer = ({ surveyId, onClose, onEditResponse }: SurveyAnalyzerProps) => {
   const { surveys, responses, analyses, currentUser } = useApp();
+  const [deleteOpenFor, setDeleteOpenFor] = useState<string | null>(null);
   const [tab, setTab] = useState<'responses' | 'analysis'>('responses');
   const [importError, setImportError] = useState('');
   const importUnsubRef = useRef<null | (() => void)>(null);
@@ -381,33 +373,54 @@ export const SurveyAnalyzer = ({ surveyId, onClose, onEditResponse }: SurveyAnal
                           </button>
                         ) : null}
 
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <button
-                              className="p-1 rounded hover:text-red-600 hover:bg-red-600/10 dark:hover:bg-red-500/20 transition-colors"
-                              title="Esborra la resposta"
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent className="rounded-none border-2 border-black dark:border-white bg-white dark:bg-zinc-900">
-                            <AlertDialogHeader>
-                              <AlertDialogTitle className="uppercase font-black">Segur que vols esborrar aquesta resposta?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Aquesta acció no es pot desfer.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel className="rounded-none">No</AlertDialogCancel>
-                              <AlertDialogAction
-                                className="rounded-none bg-red-600 text-white hover:bg-red-700"
-                                onClick={() => controller.deleteResponse(r.id)}
-                              >
-                                Sí
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+                        <>
+                          <button
+                            className="p-1 rounded hover:text-red-600 hover:bg-red-600/10 dark:hover:bg-red-500/20 transition-colors"
+                            title="Esborra la resposta"
+                            onClick={() => setDeleteOpenFor(r.id)}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+
+                          {deleteOpenFor === r.id && typeof document !== 'undefined' && createPortal(
+                            (
+                              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" role="dialog" aria-modal="true">
+                                <div className="w-full max-w-md bg-white dark:bg-zinc-900 border-2 border-black dark:border-white shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] p-6 flex flex-col gap-4">
+                                  <div className="flex items-start justify-between gap-4">
+                                    <div className="space-y-2">
+                                      <h2 className="text-2xl font-black uppercase">Segur que vols esborrar aquesta resposta?</h2>
+                                      <p className="text-sm opacity-70">Aquesta acció no es pot desfer.</p>
+                                    </div>
+                                    <button
+                                      onClick={() => setDeleteOpenFor(null)}
+                                      className="text-lg font-black leading-none hover:opacity-70"
+                                      aria-label="Tancar"
+                                    >
+                                      ×
+                                    </button>
+                                  </div>
+
+                                  <div className="flex justify-end gap-3 pt-2">
+                                    <button
+                                      onClick={() => setDeleteOpenFor(null)}
+                                      className="px-4 py-2 border-2 border-black dark:border-white uppercase font-bold hover:bg-black hover:text-white dark:hover:bg-white dark:hover:text-black"
+                                    >
+                                      No
+                                    </button>
+                                    <button
+                                      onClick={() => { controller.deleteResponse(r.id); setDeleteOpenFor(null); }}
+                                      className="px-4 py-2 border-2 border-black dark:border-white uppercase font-bold hover:bg-red-700"
+                                      style={{ backgroundColor: '#dc2626', color: '#ffffff' }}
+                                    >
+                                      Sí
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ),
+                            document.body
+                          )}
+                        </>
                       </div>
                     ) : null}
                   </td>
@@ -431,7 +444,7 @@ export const SurveyAnalyzer = ({ surveyId, onClose, onEditResponse }: SurveyAnal
     <div className="max-w-7xl mx-auto p-6 min-h-screen">
       <div className="flex justify-between items-start mb-8">
         <button onClick={onClose} className="flex items-center gap-2 opacity-60 hover:opacity-100 transition-opacity">
-          <ArrowLeft size={20} /> Tornar
+          <ArrowLeft size={20} /> Tornar enrere
         </button>
         <div className="text-right">
           <h1 className="text-3xl font-black uppercase text-[#008DCD] break-words">{survey.title}</h1>
