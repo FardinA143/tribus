@@ -8,7 +8,6 @@ import { SurveyEditor } from './components/SurveyEditor';
 import { SurveyResponder } from './components/SurveyResponder';
 import { SurveyAnalyzer } from './components/SurveyAnalyzer';
 import controller from './domain/controller';
-// TwoFactorSetup import removed because 2FA is disabled
 
 type View = 
   | { name: 'list', filterMode?: 'all' | 'my-surveys' | 'my-responses' }
@@ -23,7 +22,6 @@ const AppContent: React.FC = () => {
   const { currentUser, theme, deleteUser, surveys } = useApp();
   const [view, setView] = useState<View>({ name: 'list', filterMode: 'all' });
 
-  // Background style based on theme
   const bgClass = theme === 'dark' ? 'bg-black text-white' : 'bg-[#FDFFF5] text-black';
 
   const pageVariants = {
@@ -47,12 +45,8 @@ const AppContent: React.FC = () => {
           onDeleteAccount={({ deleteSurveys }) => {
             if (!currentUser) return;
             if (deleteSurveys) {
-              // Best-effort: delete user's surveys first.
               for (const s of surveys) {
                 if (s.authorId === currentUser.id) {
-                  // Domain enforces permissions.
-                  // We intentionally don't block the UI here to keep UX simple.
-                  // If a delete fails, backend will emit error.
                   controller.deleteSurvey(s.id);
                 }
               }
@@ -160,7 +154,6 @@ const AppContent: React.FC = () => {
           </motion.div>
         )}
 
-        {/* 2FA setup view removed (feature disabled) */}
 
         {view.name === 'auth' && (
           <motion.div 

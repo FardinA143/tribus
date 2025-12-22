@@ -13,10 +13,8 @@ help:
 	@echo "Comandes disponibles:"
 	@echo "  make compile    - Compila tots els fonts Java a $(EXE_DIR)/classes" 
 	@echo "  make jar        - Empaqueta les classes a $(EXE_DIR)/app.jar" 
-	@echo "  make run-dev    - Executa el codi en mode desenvolupament" 
-	@echo "  make test       - Compila i executa els tests JUnit (requereix ../libs/junit-4.13.2.jar)"
+	@echo "  make run        - Executa el codi Java i la interfície Electron" 
 	@echo "  make clean      - Elimina fitxers compilats i jars sota $(EXE_DIR)" 
-	@echo "  make cleandocs  - Elimina el directori de documentació (../javadocs/)" 
 	@echo "  make cleandocs  - Elimina el directori de documentació (../DOCS/DescripcioClasses/)" 
 	@echo "  make docs       - Genera documentació Javadoc (a ../DOCS/DescripcioClasses/)" 
 	@echo "  make help       - Mostra aquest missatge d'ajuda"
@@ -35,35 +33,9 @@ jar: compile
 	@jar cfm $(EXE_DIR)/app.jar $(EXE_DIR)/manifest.txt -C $(EXE_DIR)/classes .
 	@echo "[✓] Jar creat a $(EXE_DIR)/app.jar"
 
-run-dev: jar
+run: jar
 	@echo "[*] Preparant entorn dev..."
-	@bash ./ensure_node.sh --cmd "cd presentation && npm install && npm run electron:dev" || (echo "[!] run-dev fallat" && exit 1)
-
-test: compile
-	@echo "[*] Compilant tests..."
-	@mkdir -p $(EXE_DIR)/classes
-	@JARS=""; \
-	if [ -f ../libs/junit-4.13.2.jar ]; then JARS="../libs/junit-4.13.2.jar"; fi; \
-	if [ -f ../libs/hamcrest-core-1.3.jar ]; then \
-		if [ -z "$$JARS" ]; then JARS="../libs/hamcrest-core-1.3.jar"; else JARS="$$JARS:../libs/hamcrest-core-1.3.jar"; fi; \
-	fi; \
-	if [ -z "$$JARS" ]; then \
-		echo "[!] No s'han trobat jars de JUnit a ../libs/. Compila els tests sense classpath extra."; \
-		javac -cp "$(EXE_DIR)/classes" -d $(EXE_DIR)/classes $(FONTS_DIR)/Junit/*.java; \
-	else \
-		echo "[*] Utilitzant classpath: $$JARS"; \
-		javac -cp "$(EXE_DIR)/classes:$$JARS" -d $(EXE_DIR)/classes $(FONTS_DIR)/Junit/*.java; \
-	fi
-	@echo "[*] Executant tests..."
-	@if [ -f ../libs/junit-4.13.2.jar ]; then \
-		CP="$(EXE_DIR)/classes:../libs/junit-4.13.2.jar"; \
-		if [ -f ../libs/hamcrest-core-1.3.jar ]; then CP="$$CP:../libs/hamcrest-core-1.3.jar"; fi; \
-		CLASSES=""; \
-		for f in $(FONTS_DIR)/Junit/*.java; do base=$$(basename $$f .java); CLASSES="$$CLASSES Junit.$$base"; done; \
-		java -cp "$$CP" app.TestSuiteRunner $$CLASSES; \
-	else \
-		echo "[!] No s'ha trobat junit a ../libs/. Col·loca junit-4.13.2.jar i executa de nou."; exit 1; \
-	fi
+	@bash ./ensure_node.sh --cmd "cd presentation && npm install && npm run electron" || (echo "[!] run fallat" && exit 1)
 
 clean:
 	@echo "[*] Netejant fitxers compilats i jars..."
