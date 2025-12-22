@@ -1,15 +1,69 @@
+PROJECTE TRIBUS - ÍNDEX DE DOCUMENTACIÓ (Carpeta DOCS)
+======================================================
 
-Directori: DOCS/
+1. DOCUMENTS PRINCIPALS (PDF)
+-----------------------------
+Aquests documents es troben a l'arrel de la carpeta DOCS i representen la documentació clau del projecte.
 
-Proposit:
-- Conte la documentacio generada i recursos del projecte.
+- DocumentacioCodi.pdf
+  Documentació tècnica detallada sobre el disseny, l'arquitectura i la implementació del programari. Inclou explicacions sobre algorismes i estructures de dades.
 
-Subdirectoris i contingut clau:
-- `DescripcioClasses/` : Javadoc generat pel projecte (HTML amb la descripcio de paquets i classes).
-- Documentacio adicional: diagrames, exemples i documentacio manual
+- ManualUsuari.pdf
+  Guia completa per a l'usuari final. Explica com instal·lar, executar i utilitzar les funcionalitats de l'aplicació (crear enquestes, respondre, analitzar clústers, etc.).
 
-Us util:
-- Per regenerar la documentacio Javadoc: `make -C FONTS docs` (genera `DescripcioClasses/`).
-- Per eliminar la documentacio generada: `make -C FONTS cleandocs`.
+- DescripcioJocsProva.pdf
+  Document que detalla el pla de proves, incloent-hi els casos de prova unitaris, d'integració i de sistema per validar el funcionament correcte de l'aplicació.
 
+- Relació_de_classes_per_cada_membre_del_grup.pdf
+  Document administratiu que detalla el repartiment de tasques i l'assignació de classes específiques a cada membre de l'equip de desenvolupament.
 
+2. REFERÈNCIA DE L'API (JAVADOC) - /DescripcioClasses
+-----------------------------------------------------
+Aquesta subcarpeta conté la documentació generada automàticament (format HTML) a partir dels comentaris del codi font (JavaDoc).
+
+FITXERS D'ACCÉS:
+- index.html: Pàgina principal d'inici per navegar per la documentació de les classes.
+- overview-tree.html: Diagrama jeràrquic de l'herència de classes del projecte.
+- allclasses-index.html: Llistat alfabètic de totes les classes i interfícies.
+
+ESTRUCTURA DE PAQUETS (Subcarpetes):
+Es detalla el contingut organitzat per paquets de programari:
+
+- app/
+  Conté el punt d'entrada de l'aplicació i els drivers (ex: TerminalDriver, TestSuiteRunner).
+
+- distance/
+  Implementació de mètriques de distància per als càlculs (ex: EuclideanDistance).
+
+- Encoder/
+  Classes encarregades de la transformació de dades (ex: OneHotEncoder).
+
+- Exceptions/
+  Definició d'excepcions personalitzades per a la gestió d'errors (ex: InvalidSurveyException, QuestionNotFoundException).
+
+- importexport/
+  Classes responsables de la persistència, importació i exportació de dades (CSV/TXT) (ex: SurveySerializer, ResponseSerializer).
+
+- kmeans/
+  Nucli dels algorismes de clustering implementats (ex: KMeans, KMeansPlusPlus, ClusterModel).
+
+- kselector/
+  Algorismes per determinar el nombre òptim de clústers (ex: ElbowMethod).
+
+- legal/
+  Informació de llicències de llibreries de tercers (jQuery, jQueryUI).
+
+- Response/
+  Model de domini relacionat amb les respostes dels usuaris (ex: Answer, SurveyResponse).
+
+- Survey/
+  Model de domini relacionat amb l'estructura de les enquestes (ex: Question, Survey).
+
+- user/
+  Gestió d'usuaris i autenticació (ex: User, AuthService, Sesion).
+
+- validation/
+  Mètriques per avaluar la qualitat del clustering (ex: Silhouette).
+
+- resources/
+  Recursos estàtics web (imatges, estils CSS, scripts JS) per a la visualització del Javadoc.

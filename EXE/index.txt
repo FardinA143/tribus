@@ -1,19 +1,46 @@
+PROJECTE TRIBUS - ÍNDEX D'EXECUCIÓ I DADES (Carpeta EXE)
+========================================================
 
-Directori: EXE/
+Aquesta carpeta conté els fitxers de dades necessaris per a l'execució del programa i la realització dels tests funcionals, d'estrès i de casos límit.
 
-Proposit:
-- Destinacio de sortida de la compilacio. Conte classes compilades (`.class`),
-  el jar executable (`app.jar`) i fitxers auxiliars (per ex. `manifest.txt`).
+1. FITXERS DE DADES D'ENQUESTES (.TBS)
+--------------------------------------
+Fitxers amb extensió .tbs (Tribus Survey) utilitzats com a entrada per validar les funcionalitats de l'aplicació (importació, visualització, clustering, etc.).
 
-Arxius habituals:
-- `classes/` : estructura de paquets amb fitxers `.class` generats per la compilacio.
-- `app.jar`  : jar executable creat pel target `jar` del `Makefile` (ubicat a `FONTS/`).
-- `manifest.txt` : manifest temporal usat en el procés d'empaquetat.
-- altres fitxers generats o dades de prova que l'equip utilitzi per execucions locals.
+A. TESTOS FUNCIONALS BÀSICS
+   - all_types.tbs
+     Enquesta que inclou tots els tipus de preguntes suportats (numèriques, text lliure, elecció única i múltiple) per validar la correcta importació i visualització general.
+   - single.tbs
+     Cas minimalista. Enquesta amb una sola pregunta o una estructura molt simple per a proves ràpides.
 
-Comandes utiles:
-- `make -C FONTS compile` : compila el codi i deixa les `.class` a `EXE/classes/`.
-- `make -C FONTS jar`     : crea `EXE/app.jar` (genera `manifest.txt` abans d'empaquetar).
-- `make -C FONTS clean`   : elimina els `.class` i el directori `EXE/classes/`, deixant altres actius.
+B. TESTOS D'ESTRÈS I RENDIMENT
+   - many_questions.tbs
+     Enquesta amb un volum elevat de preguntes (ex: 100+) per comprovar el rendiment de la càrrega i l'estabilitat de la interfície gràfica.
+   - max_options.tbs
+     Pregunta d'elecció múltiple amb un nombre molt elevat d'opcions (ex: 50+) per verificar la correcta paginació o visualització dels elements (scroll).
+   - long_text.tbs
+     Enquesta que conté cadenes de text extremadament llargues en títols o enunciats per testejar l'ajust de text i els límits de la interfície.
 
+C. CASOS LÍMIT I VORES (EDGE CASES)
+   - boundary_ints.tbs
+     Test de valors límit per a respostes numèriques (valors màxims/mínims d'enters, valors negatius, etc.).
+   - edge_max_k.tbs
+     Configuració per testejar l'algorisme de clustering quan el paràmetre K és igual al nombre total d'elements (màxima granularitat).
+   - edge_inverted_dates.tbs
+     Cas específic per comprovar la robustesa en el processament de dades ordenades o formats temporals invertits.
 
+D. GESTIÓ D'ERRORS I DADES INVÀLIDES
+   - empty.tbs
+     Fitxer buit o sense preguntes definides. Serveix per verificar que l'aplicació gestiona l'excepció correctament i no es penja.
+   - zero_k.tbs
+     Fitxer configurat amb un paràmetre de clústers K=0 (valor invàlid). Haurem d'obtenir un missatge d'error adequat.
+   - garbage.tbs
+     Fitxer amb contingut corrupte o format no vàlid per testar la resiliència del parser d'importació.
+
+E. PERMUTACIONS I CODIFICACIÓ
+   - perm_options_shuffle.tbs
+     Variació d'una enquesta estàndard amb l'ordre de les opcions barrejat, per assegurar que l'anàlisi de dades és independent de l'ordre de presentació.
+   - perm_questions_reverse.tbs
+     Variació d'una enquesta amb l'ordre de les preguntes invertit.
+   - unicode.tbs
+     Test de codificació (UTF-8). Inclou caràcters especials, accents, alfabets no llatins o emojis per assegurar la correcta persistència i visualització de les dades.
