@@ -15,7 +15,7 @@ El nom Tribus prové de la idea de grups d'usuaris amb característiques similar
 
     - He, Wenqiang: wenqiang.he@estudiantat.upc.edu
     - Gay, Pol: pol.gay@estudiantat.upc.edu
-    - Grandolfi, Mateus Grandolfi: mateus.grandolfi@estudiantat.upc.edu
+    - Grandolfi, Mateus: mateus.grandolfi@estudiantat.upc.edu
     - Mia, Fardin Arafat: fardin.arafat.mia@estudiantat.upc.edu
 
 ## Estructura i estat actual del projecte
